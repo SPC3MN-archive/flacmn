@@ -6,6 +6,7 @@ really are FLAC. Give it a list of artists/albums, or a genre.
 ```bash
 python3 -m iaflac find -f wanted.example.txt          # look up a list (one "Artist - Album" or "Artist" per line)
 python3 -m iaflac find "Miles Davis - Kind of Blue"   # or pass requests directly
+python3 -m iaflac find "Miles Davis - Kind of Blue" --library ~/Music   # ...and choose what to save into your library afterwards
 python3 -m iaflac genre shoegaze --years 1988-1996    # discover by genre
 python3 -m iaflac find "Miles Davis - Kind of Blue" --search-only   # just list what was found: test nothing
 python3 -m iaflac verify <identifier> --deep --spectral   # check one item as hard as possible
@@ -18,8 +19,8 @@ Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`
 
 ## Walkthrough: from a wish list to a verified album in your library
 
-This takes one album from a search to your library and inventory. Every step that changes something on disk is a
-preview until you add `--yes`. Run everything from this folder.
+This takes one album from a search to your library and inventory, in one command. Nothing is tested until you pick it,
+and nothing is saved until you confirm it. Run everything from this folder.
 
 **1. Check the setup (once).**
 
@@ -67,45 +68,48 @@ Tiers describe how sure the tool is that the source was a CD, not how good the a
 perfectly good lossless file. Also look for `V2 ✓ n/n files decode cleanly` (every file passed `flac -t` and matched archive.org's
 checksum) and the spectrum verdict; open the PNG in `spectrograms/` if it says `SUSPECT`.
 
-**6. Look before you download.**
+**6. Choose what to save.** With `--library` (see below), a **Save** section follows the tests. It lists the albums you
+tested that can be saved (tiers A to C; tier D is never offered), each with the artist and album name it would be filed
+under, size, which tests it has passed and the evidence. Only albums you tested are listed. Enter nothing to save
+nothing, or type numbers such as `1,3`, `2-4` or `a`.
 
 ```bash
-python3 -m iaflac get <identifier> --library ~/Music --as "<identifier>=Miles Davis | Kind of Blue"
+python3 -m iaflac find "Miles Davis - Kind of Blue" --library ~/Music
 ```
 
-Without `--yes` this only prints the plan: the files, their sizes, and the folder they would go to
-(`~/Music/Miles Davis/Kind of Blue/`). `--as` names the album explicitly; without it the name is guessed and shown so
-you can check it. Nothing is written yet.
+**7. Review and confirm.** Before anything is written you see, for each album you picked: the folder it will go to
+(`~/Music/Miles Davis/Kind of Blue/`), the first track names, the file count and size, the cover art, and the exact rows
+that would be added to your inventory. Then `y` saves, `e` lets you correct the artist and album names (archive.org
+titles are messy, so check them), and `n` cancels. Nothing has been downloaded up to this point.
 
-**7. Download, verify and file it.**
+**8. It is saved in the format your library already uses.** The tool copies the library's own conventions:
+
+- folders `<Artist>/<Album>/`, using the artist spelling already in your library (`Boards of Canada`, not `Boards Of Canada`)
+- tracks named `01 Title.flac`, the most common style in the library (`--track-names keep` keeps archive.org's names instead)
+- a `cover.jpg` (`--art none` skips it, `--art all` keeps every scan)
+- audio and cover only, since the library has no rip logs (`--rip-files keep` adds the `.log/.cue/.accurip`)
+- the album added to your inventory workbook, with a timestamped backup made first
+
+Each file downloads to a `.part` name and is renamed only once it matches archive.org's checksum. An album is added to
+the inventory only after every file verified, and the inventory rows are read from the downloaded files. It refuses to
+merge into a folder holding other files and never overwrites a file that differs. Close the workbook in Excel first,
+since an open file stops the write; the download still happens and the command to add it afterwards is printed.
+
+**Setting your library once.** Instead of repeating `--library` and `--inventory`, set them in your shell profile:
 
 ```bash
-python3 -m iaflac get <identifier> --library ~/Music --as "<identifier>=Miles Davis | Kind of Blue" --yes
+export IAFLAC_LIBRARY=~/Music
+export IAFLAC_INVENTORY=~/Music/Inventory.xlsx    # optional: if the library folder holds exactly one *Inventory*.xlsx it is used
 ```
 
-Files download to `.part` names and are renamed only once they match archive.org's checksums. You end up with the
-audio, `cover.jpg`, and the rip `.log/.cue/.accurip` (add `--rip-files skip` to leave those out). It refuses to merge
-into a folder holding other files and never overwrites a file that differs.
-
-**8. Add it to your inventory (optional).** Add `--inventory` to step 6 and 7's command to record the album in your
-workbook:
-
-```bash
-python3 -m iaflac get <identifier> --library ~/Music --inventory ~/Music/Inventory.xlsx \
-    --as "<identifier>=Miles Davis | Kind of Blue"           # preview: shows where the rows would go and the new totals
-python3 -m iaflac get <identifier> --library ~/Music --inventory ~/Music/Inventory.xlsx \
-    --as "<identifier>=Miles Davis | Kind of Blue" --yes     # download and write
-```
-
-Close the workbook in Excel first, since an open file stops the write. A timestamped backup is made before the
-workbook is replaced. For albums you got some other way:
-`python3 -m iaflac inventory add "~/Music/Artist/Album" --xlsx ~/Music/Inventory.xlsx --yes`.
+`--no-inventory` saves without touching any workbook.
 
 **9. Check the result (optional).**
 
 ```bash
 python3 -m iaflac inventory check --xlsx ~/Music/Inventory.xlsx    # Summary matches Library
 python3 -m iaflac verify <identifier> --deep --spectral            # re-test one item as hard as possible
+python3 -m iaflac get <identifier> --library ~/Music --yes         # save one item by identifier, without searching (preview first without --yes)
 ```
 
 **Discovering by genre instead.** When you don't have a specific album in mind:
@@ -115,12 +119,14 @@ python3 -m iaflac genre shoegaze --years 1988-1996
 ```
 
 You get a table of album-shaped hits with rip files, size and popularity. Pick which to inspect at the prompt (Enter
-inspects the first 30), read the report the same way as in step 5, then continue from step 6 with the identifier of an
-album you like. `--terms "dream pop"` adds search words and `--exclude` removes some.
+inspects the first 30), read the report the same way as in step 5, then save an album you like with `get` (see step 9), or search
+for it by name with `find` and use step 6. `--terms "dream pop"` adds search words and `--exclude` removes some.
 
 **Running it unattended.** With no terminal (a script or a pipe) and no `--select`, `find` lists and tests nothing.
-Use `--select 1` to answer the prompt in advance, for example
-`python3 -m iaflac find -f wanted.txt --select 1`.
+Use `--select 1` to answer the test prompt in advance. Saving needs two explicit flags when there is no terminal:
+`--save 1` (numbers from the Save list) and `--yes`, for example
+`python3 -m iaflac find "Miles Davis - Kind of Blue" --library ~/Music --select 1 --save 1 --yes`.
+Without both, nothing is downloaded.
 
 ## Search first, then test what you choose
 
@@ -201,8 +207,8 @@ python3 -m iaflac inventory check --xlsx ~/Music/Inventory.xlsx
 python3 -m iaflac inventory add "~/Music/Artist/Album" --xlsx ~/Music/Inventory.xlsx --yes    # for albums you downloaded some other way
 ```
 
-`get --library` files an album at `<library>/<Artist>/<Album>/` with a `cover.jpg` and, by default, the rip
-`.log/.cue/.accurip`. With `--inventory` it then adds the album to a workbook shaped like the one this was built
+`get --library` (and the save step of `find`) files an album at `<library>/<Artist>/<Album>/` as `01 Title.flac` tracks
+with a `cover.jpg`, and by default no rip `.log/.cue/.accurip` files (`--rip-files keep` adds them). With `--inventory` it then adds the album to a workbook shaped like the one this was built
 against (a `Library` sheet with one row per track: Artist, Album, Song, File Type, Format, artists in case-sensitive
 order and rows banded by parity; a `Summary` sheet with per-artist counts and a TOTAL row). Those conventions were
 reverse-engineered from a real inventory and reproduced exactly: its Summary is recomputed from its Library with zero

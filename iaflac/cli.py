@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from . import download, genre as genre_mod, inventory as inv, names as names_mod, preview, queries, report
 from .genre import GenreSpec
@@ -206,8 +208,14 @@ def cmd_find(args, client: IAClient) -> int:
     paths = report.write_run(run_dir, f"find: {name}", results,
                              {"stats": client.stats(), "command": "find " + " ".join(args.items or [args.file])})
     print(report.terminal_summary(results))
-    say(f"\n[{client.stats()}]\nReport: {paths['markdown']}")
-    return 0
+    say(f"\nReport: {paths['markdown']}")
+    try:
+        code = save_phase(args, client, results)
+    except IAError as exc:
+        say(f"error: {exc}")
+        code = 2
+    say(f"\n[{client.stats()}]")
+    return code
 
 
 def cmd_genre(args, client: IAClient) -> int:
@@ -332,82 +340,98 @@ def print_rows(rows: list, indent: str = "    ", head: int = 3) -> None:
         print(f"{indent}{r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]}")
 
 
-def _get_library(args, client: IAClient) -> int:
-    library = Path(args.library).expanduser()
-    overrides = {}
-    for spec in args.as_names or []:
-        try:
-            ident, artist, album = names_mod.parse_override(spec)
-        except ValueError as exc:
-            say(f"error: {exc}")
-            return 2
-        overrides[ident] = (artist, album)
+def open_inventory(path: str):
+    """The inventory workbook, or None with the reason printed."""
+    try:
+        book = inv.Inventory(path)
+    except inv.InventoryError as exc:
+        say(f"error: {exc}")
+        return None
+    for problem in book.consistency_problems()[:5]:
+        say(f"warning: the inventory's Summary disagrees with its Library ({problem}); "
+            "only the rows for the albums being added will be changed")
+    return book
+
+
+def guess_names(cand, known: list) -> tuple:
+    """(artist, album, source) for filing a candidate: FLAC tags, then the item's creator, then its title."""
+    st = cand.stats
+    nm = names_mod.derive_names(cand.item.title, cand.item.creator, st.tag_artist if st else "", st.tag_album if st else "")
+    return names_mod.canonical_artist(nm.artist, known), nm.album, f"GUESSED from the {nm.source}; check it, or pass --as"
+
+
+def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs: list, *, yes: bool, art: str,
+                 rip: str, track_names: str, show_plan: bool = True, named_by: str = "given with --as") -> int:
+    """Plan (yes=False) or carry out (yes=True) filing albums into the library and adding them to the inventory.
+    jobs: [(identifier, (artist, album) or None, already-loaded Candidate or None)]. Names not given are guessed and
+    shown. Returns 0, 1 (something failed) or 2 (could not start)."""
     book = None
-    if args.inventory:
-        try:
-            book = inv.Inventory(args.inventory)
-        except inv.InventoryError as exc:
-            say(f"error: {exc}")
+    if inventory:
+        book = open_inventory(inventory)
+        if book is None:
             return 2
-        for problem in book.consistency_problems()[:5]:
-            say(f"warning: the inventory's Summary disagrees with its Library ({problem}); "
-                "only the rows for the albums being added will be changed")
     known = list(book.artists()) if book else []
     if library.exists():
         known += [d.name for d in library.iterdir() if d.is_dir()]
     pipe, exit_code, to_add, previews = Pipeline(client, log=say), 0, [], []
-    for identifier in args.identifiers:
+    for identifier, override, cand in jobs:
         try:
-            cand = pipe.load(identifier)
-            pipe.probe(cand)
+            cand = cand or pipe.load(identifier)
+            if not cand.probes:
+                pipe.probe(cand)
         except IAError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
             continue
-        if identifier in overrides:
-            artist, album = overrides[identifier]
-            source = "given with --as"
+        if override:
+            artist, album = override
+            source = named_by
         else:
-            st = cand.stats
-            nm = names_mod.derive_names(cand.item.title, cand.item.creator, st.tag_artist if st else "", st.tag_album if st else "")
-            artist, album, source = nm.artist, nm.album, f"GUESSED from the {nm.source}; check it, or pass --as"
+            artist, album, source = guess_names(cand, known)
         artist = names_mod.canonical_artist(artist, known)
         try:
-            res = download.library_get(client, cand.item, library, artist, album, yes=args.yes, art=args.art,
-                                       rip=args.rip_files, log=say)
+            res = download.library_get(client, cand.item, library, artist, album, yes=yes, art=art,
+                                       rip=rip, track_names=track_names, log=say)
         except download.DownloadError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
             continue
         flacs = [pf for pf in res.planned if pf.info.name.lower().endswith(".flac")]
         rip_files = sum(1 for pf in res.planned if download.file_kind(pf.info.name) in download.LIB_RIP_ROLES)
-        print(f"\n{identifier}\n  {artist}  /  {album}   ({source})")
-        print(f"  destination: {res.folder}")
-        print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} FLAC"
-              + (f", cover: {res.cover.name}" if res.cover else ", no cover art")
-              + (f", rip evidence: {rip_files} file(s)" if args.rip_files == "keep" else ""))
-        for note in res.skipped:
-            print(f"  skipped {note}")
+        if show_plan:
+            print(f"\n{identifier}\n  {artist}  /  {album}   ({source})")
+            print(f"  destination: {res.folder}")
+            print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} FLAC"
+                  + (f", cover: {res.cover.name}" if res.cover else ", no cover art")
+                  + (f", rip evidence: {rip_files} file(s)" if rip == "keep" else ""))
+            for pf in flacs[:3]:
+                print(f"    {pf.path.relative_to(res.folder.resolve())}")
+            if len(flacs) > 3:
+                print(f"    ... {len(flacs) - 3} more")
+            for note in res.skipped:
+                print(f"  skipped {note}")
         preview = None
         if book:
             try:
                 preview = inv.album_from_item(cand.item, cand.probes, artist, album)
                 status = book.plan([preview]).placements[0].status
                 if status == "already in inventory":
-                    print("  inventory: this album is ALREADY in the inventory, so nothing will be added for it")
+                    if show_plan:
+                        print("  inventory: this album is ALREADY in the inventory, so nothing will be added for it")
                 else:
                     previews.append(preview)
-                    print(f"  inventory: {len(preview.rows)} row(s) to add ({status})")
-                    print_rows(book.plan([preview]).placements[0].album.rows)
-                    if cand.stats and cand.stats.n < len(cand.item.flacs):
-                        print(f"    (file types assumed from {cand.stats.n} of {len(cand.item.flacs)} probed tracks; "
-                              "the real rows are rebuilt from the downloaded files)")
+                    if show_plan:
+                        print(f"  inventory: {len(preview.rows)} row(s) to add ({status})")
+                        print_rows(book.plan([preview]).placements[0].album.rows)
+                        if cand.stats and cand.stats.n < len(cand.item.flacs):
+                            print(f"    (file types assumed from {cand.stats.n} of {len(cand.item.flacs)} probed tracks; "
+                                  "the real rows are rebuilt from the downloaded files)")
             except inv.InventoryError as exc:
                 say(f"  cannot preview the inventory rows: {exc}")
-        if not args.yes:
-            print("  Nothing was downloaded and nothing was changed. Re-run with --yes to do it.")
+        if not yes:
             continue
-        print(f"  downloaded {res.downloaded}, already had {res.already_had}, failed {len(res.failures)}")
+        print(f"\n{artist}  /  {album}: downloaded {res.downloaded}, already had {res.already_had}, failed {len(res.failures)}"
+              f"\n  {res.folder}")
         for w in res.warnings:
             print(f"  ! {w}")
         for fail in res.failures:
@@ -427,26 +451,192 @@ def _get_library(args, client: IAClient) -> int:
             if preview is not None and [r[2:] for r in preview.rows] != [r[2:] for r in actual.rows]:
                 print("  note: the rows read from the downloaded files differ from the preview (the real files win)")
             to_add.append(actual)
-    if book and not args.yes and previews:
+    if book and not yes and previews and show_plan:
         print("\nInventory, if all of the above are added together:")
         print_plan(book.plan(previews))
-    if book and args.yes and to_add:
+    if book and yes and to_add:
         try:
-            fresh = inv.Inventory(args.inventory)              # re-read right before writing, in case it changed
+            fresh = inv.Inventory(inventory)              # re-read right before writing, in case it changed
             plan = fresh.plan(to_add)
             print("\nUpdating the inventory:")
             print_plan(plan)
             result = fresh.apply(plan)
             if result["written"]:
-                print(f"  wrote {args.inventory}\n  backup of the previous version: {result['backup']}")
+                print(f"  wrote {inventory}\n  backup of the previous version: {result['backup']}")
             else:
                 print("  nothing to write")
         except inv.InventoryError as exc:
             say(f"error: the albums are downloaded but the inventory was NOT updated: {exc}\n"
                 "       fix that (for example close the workbook in Excel) and run:  inventory add <album folder> --xlsx ... --yes")
             exit_code = exit_code or 1
-    say(f"\n[{client.stats()}]")
     return exit_code
+
+
+SAVE_HINT = ("To save an album, add --library <your music folder> to the same command (or set IAFLAC_LIBRARY). "
+             "Or use:  python3 -m iaflac get <identifier> --library <folder> --yes")
+
+
+def library_from(args) -> Optional[Path]:
+    value = getattr(args, "library", None) or os.environ.get("IAFLAC_LIBRARY")
+    return Path(value).expanduser() if value else None
+
+
+def inventory_from(args, library: Path) -> tuple:
+    """(path or None, note). An explicit --inventory or $IAFLAC_INVENTORY wins; otherwise the one workbook in the
+    library folder, if there is exactly one (backups and lock files don't count)."""
+    if getattr(args, "no_inventory", False):
+        return None, ""
+    value = getattr(args, "inventory", None) or os.environ.get("IAFLAC_INVENTORY")
+    if value:
+        return str(Path(value).expanduser()), ""
+    if library.is_dir():
+        hits = sorted(p for p in library.glob("*nventory*.xlsx") if ".backup-" not in p.name and not p.name.startswith(("~$", ".")))
+        if len(hits) == 1:
+            return str(hits[0]), "  (the only inventory workbook in the library folder; --no-inventory to skip)"
+    return None, ""
+
+
+def savable(results: list) -> tuple:
+    """Tested candidates that may be saved (tier A-C), and the ones that may not (tier D or unknown), by identifier."""
+    ok, blocked, seen = [], [], set()
+    for res in results:
+        for cand in getattr(res, "candidates", []):
+            if cand.identifier in seen:
+                continue
+            seen.add(cand.identifier)
+            (ok if cand.tier in ("A", "B", "C") else blocked).append(cand)
+    return ok, blocked
+
+
+def choose_save(n: int) -> "preview.Selection":
+    prompt = "Save which to your library?   Enter = none · numbers like 1,3 or 2-4 · a = all\n> "
+    while True:
+        try:
+            answer = ask(prompt)
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return preview.Selection("skip")
+        try:
+            return preview.parse_selection(answer, n, default="s")
+        except preview.SelectionError as exc:
+            print(f"  {exc}. Try again.")
+
+
+def confirm_save(n: int, size_mb: int) -> str:
+    """'y' save, 'e' edit names, 'n' cancel."""
+    while True:
+        try:
+            answer = ask(f"\nSave {n} album(s), about {size_mb:,} MB?   y = save · e = edit names · n = cancel\n> ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return "n"
+        if answer in ("y", "yes", "e", "edit", "n", "no", ""):
+            return {"yes": "y", "edit": "e", "no": "n", "": "n"}.get(answer, answer)
+        print("  Answer y, e or n.")
+
+
+def edit_names(picked: list, overrides: dict, known: list) -> None:
+    for cand in picked:
+        artist, album, _ = guess_names(cand, known)
+        artist, album = overrides.get(cand.identifier, (artist, album))
+        try:
+            answer = ask(f"  {cand.identifier}\n  Artist | Album   Enter keeps [{artist} | {album}]\n> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return
+        if not answer:
+            continue
+        try:
+            _, a, b = names_mod.parse_override(f"{cand.identifier}={answer}")
+        except ValueError:
+            print("  Expected: Artist | Album. Kept the current names.")
+            continue
+        overrides[cand.identifier] = (a, b)
+
+
+def save_phase(args, client: IAClient, results: list) -> int:
+    """After the tests: choose which tested albums to save, see exactly what would be written, confirm, then download
+    into the library in its own layout and add them to the inventory. Nothing is downloaded without a confirmation:
+    a 'y' at the prompt, or --save SPEC together with --yes when there is no terminal."""
+    cands, blocked = savable(results)
+    if not cands and not blocked:
+        return 0
+    print("\n" + "=" * 78 + "\nSave")
+    if blocked:
+        print("  Not offered (failed or suspect, tier D): " + ", ".join(c.identifier for c in blocked))
+    if not cands:
+        print("  None of the tested albums can be saved.")
+        return 0
+    library = library_from(args)
+    if library is None:
+        print(f"  {SAVE_HINT}")
+        return 0
+    inventory, note = inventory_from(args, library)
+    print(f"  library:   {library}\n  inventory: {inventory or 'none (nothing will be added to a workbook)'}{note}")
+    known = [d.name for d in library.iterdir() if d.is_dir()] if library.is_dir() else []
+    print("\n  Tested albums you can save:")
+    for i, cand in enumerate(cands, 1):
+        artist, album, _ = guess_names(cand, known)
+        spectral = f" · spectrum {cand.spectral.verdict}" if cand.spectral else ""
+        print(f"  {i:>3}. {cand.tier}  {artist} / {album}\n       {len(cand.item.flacs)} FLAC · "
+              f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
+              f"       {cand.item.url}")
+    interactive = is_interactive()
+    if getattr(args, "save", None):
+        sel = preview.parse_selection(args.save, len(cands), strict=False)
+    elif interactive:
+        print()
+        sel = choose_save(len(cands))
+    else:
+        print(f"\n  Not saved: this is not an interactive terminal. Use --save 1 --yes (numbers from the list above).")
+        return 0
+    if sel.action != "test":
+        print("  Nothing saved.")
+        return 0
+    picked = [cands[k] for k in sel.indexes]
+    overrides: dict = {}
+    while True:
+        jobs = [(c.identifier, overrides.get(c.identifier), c) for c in picked]
+        print("\nWhat saving would do (nothing is written yet):")
+        library_flow(client, library, inventory, jobs, yes=False, art=args.art, rip=args.rip_files, track_names=args.track_names, named_by="edited by you")
+        if interactive:
+            answer = confirm_save(len(picked), round(sum(c.item.flac_bytes for c in picked) / 1e6))
+        else:
+            answer = "y" if args.yes else "n"
+        if answer == "e":
+            edit_names(picked, overrides, known)
+            continue
+        break
+    if answer != "y":
+        print("\nNothing saved." + ("" if interactive else "  Add --yes to save."))
+        return 0
+    print("\nSaving. Ctrl-C stops; run the same command again to resume.")
+    try:
+        return library_flow(client, library, inventory, jobs, yes=True, art=args.art, rip=args.rip_files,
+                            track_names=args.track_names, show_plan=False)
+    except KeyboardInterrupt:
+        say("\nInterrupted. Finished files are kept and unfinished ones are marked; run again to resume.")
+        return 130
+
+
+def _get_library(args, client: IAClient) -> int:
+    library = Path(args.library).expanduser()
+    overrides = {}
+    for spec in args.as_names or []:
+        try:
+            ident, artist, album = names_mod.parse_override(spec)
+        except ValueError as exc:
+            say(f"error: {exc}")
+            return 2
+        overrides[ident] = (artist, album)
+    inventory = str(Path(args.inventory).expanduser()) if args.inventory else None
+    jobs = [(i, overrides.get(i), None) for i in args.identifiers]
+    code = library_flow(client, library, inventory, jobs, yes=args.yes, art=args.art, rip=args.rip_files,
+                        track_names=getattr(args, "track_names", "keep"))
+    if not args.yes:
+        print("\nNothing was downloaded and nothing was changed. Re-run with --yes to do it.")
+    say(f"\n[{client.stats()}]")
+    return code
 
 
 def cmd_get(args, client: IAClient) -> int:
@@ -512,6 +702,24 @@ def add_common(p: argparse.ArgumentParser, deep_default: str = "top") -> None:
     p.add_argument("-o", "--out", default=str(PROJECT_ROOT / "runs"), help="where run folders are written")
 
 
+def add_save(p: argparse.ArgumentParser) -> None:
+    """Options for saving into the library after testing (find)."""
+    p.add_argument("--library", help="your music folder; enables the save step after testing (or set $IAFLAC_LIBRARY)")
+    p.add_argument("--inventory", help="the inventory .xlsx to add saved albums to (default: the one workbook in the library folder)")
+    p.add_argument("--no-inventory", action="store_true", help="save albums without touching any inventory workbook")
+    p.add_argument("--save", metavar="SPEC", help="without a terminal: save these tested albums (numbers from the Save list); needs --yes")
+    p.add_argument("--yes", action="store_true", help="with --save and no terminal: confirm the download")
+    add_layout(p)
+
+
+def add_layout(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--art", choices=["cover", "all", "none"], default="cover", help="cover.jpg only (default), all scans, or none")
+    p.add_argument("--rip-files", choices=["keep", "skip"], default="skip",
+                   help="keep the rip .log/.cue/.accurip next to the audio, or skip them (default: skip, as the rest of the library has none)")
+    p.add_argument("--track-names", choices=["library", "keep"], default="library",
+                   help="library: name tracks '01 Title.flac' like the rest of the library (default); keep: archive.org's names")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="iaflac", description="Find and verify FLAC (ideally CD-rip) albums on the Internet Archive.")
     ap.add_argument("--cache", help="cache directory (default: .cache next to the package, or $IAFLAC_CACHE)")
@@ -524,6 +732,7 @@ def main(argv=None) -> int:
     f.add_argument("--top", type=int, default=3, help="candidates listed per request (default 3)")
     f.add_argument("--max-candidates", type=int, default=10, help="search hits to inspect per request (default 10)")
     add_common(f)
+    add_save(f)
 
     g = sub.add_parser("genre", help="discover albums by genre instead of by name")
     g.add_argument("genre", help='e.g. shoegaze, "post-punk", ambient (see genres.yml; any phrase works)')
@@ -553,8 +762,7 @@ def main(argv=None) -> int:
     d.add_argument("--inventory", help="with --library: the inventory .xlsx to add each verified album to (a backup is made first)")
     d.add_argument("--as", dest="as_names", action="append", metavar='"ID=Artist | Album"',
                    help="name an item explicitly (repeatable); otherwise names are guessed and shown for checking")
-    d.add_argument("--art", choices=["cover", "all", "none"], default="cover", help="library layout: cover.jpg only (default), all scans, or none")
-    d.add_argument("--rip-files", choices=["keep", "skip"], default="keep", help="library layout: keep the rip .log/.cue/.accurip next to the audio (default) or skip them")
+    add_layout(d)
     d.add_argument("--yes", action="store_true", help="actually download (without it, only the plan is shown)")
     d.add_argument("--no-art", action="store_true", help="archive-style layout: skip cover art and booklet scans")
 

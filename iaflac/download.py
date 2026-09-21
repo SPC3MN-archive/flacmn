@@ -245,9 +245,34 @@ def pick_cover(item: ItemInfo) -> Optional[FileInfo]:
     return best if best_key is not None and best_key[0] < 20 else None     # never a back/disc/booklet scan
 
 
+TRACK_STYLES = ("library", "keep")
+DISC_TRACK = re.compile(r"^\s*(\d{1,2})[-.](\d{1,3})(?=[\s._\-)])[\s._\-)]*")
+PLAIN_TRACK = re.compile(r"^\s*(\d{1,3})(?=[\s._\-)])[\s._\-)]*")
+
+
+def library_track_name(rel: Path, artist: str) -> Path:
+    """The library's dominant style: 'NN Title.flac' ('01 Airbag.flac'), from archive names like '01 - Artist - Airbag.flac'.
+    A disc-track number ('1-05') is kept as is. A name with no leading track number is left alone."""
+    stem = rel.stem
+    m = DISC_TRACK.match(stem)
+    if m:
+        number, rest = f"{int(m.group(1))}-{int(m.group(2)):02d}", stem[m.end():]
+    else:
+        m = PLAIN_TRACK.match(stem)
+        if not m:
+            return rel
+        number, rest = f"{int(m.group(1)):02d}", stem[m.end():]
+    prefix = f"{artist} - "
+    if rest.casefold().startswith(prefix.casefold()):
+        rest = rest[len(prefix):]
+    rest = rest.strip()
+    return rel.with_name(f"{number} {rest}{rel.suffix.lower()}") if rest else rel
+
+
 def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art: str = "cover",
-                 rip: str = "keep") -> GetResult:
-    """Where everything would go, without touching the disk. art: cover | all | none. rip: keep | skip."""
+                 rip: str = "keep", track_names: str = "keep") -> GetResult:
+    """Where everything would go, without touching the disk. art: cover | all | none. rip: keep | skip.
+    track_names: 'library' renames tracks to 'NN Title.flac' like the rest of the library, 'keep' uses archive.org's names."""
     a_dir, al_dir = folder_component(artist), folder_component(album)
     if not a_dir or not al_dir:
         raise DownloadError(f"cannot make folder names from artist {artist!r} and album {album!r}")
@@ -274,6 +299,11 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
     tops = {rel.parts[0] for _, rel in entries}
     if len(tops) == 1 and entries and all(len(rel.parts) > 1 for _, rel in entries):
         entries = [(f, Path(*rel.parts[1:])) for f, rel in entries]
+    if track_names == "library":
+        renamed = [(f, library_track_name(rel, artist) if file_kind(f.name) == "flac" else rel) for f, rel in entries]
+        names = [str(rel).casefold() for _, rel in renamed]
+        if len(set(names)) == len(names):            # never let two tracks land on one name: then keep archive names
+            entries = renamed
     for f, rel in entries:
         target = (folder / rel).resolve()
         if root not in target.parents:
@@ -287,8 +317,9 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
 
 
 def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, album: str, *, yes: bool = False,
-                art: str = "cover", rip: str = "keep", log: Callable[[str], None] = lambda m: None) -> GetResult:
-    res = plan_library(item, library, artist, album, art=art, rip=rip)
+                art: str = "cover", rip: str = "keep", track_names: str = "keep",
+                log: Callable[[str], None] = lambda m: None) -> GetResult:
+    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names)
     if not yes:
         return res
     folder = res.folder

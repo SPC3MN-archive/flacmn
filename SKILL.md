@@ -61,6 +61,16 @@ high-bitrate lossy (MP3 V0) and can flag band-limited old masters; logs and auCD
 uploader-supplied. A tier is a ranking with reasons, not a guarantee. If an uploader's description says "CD rip" but
 the report says 48 kHz, tell the user the claim is contradicted.
 
+## The whole pipeline in one command
+
+`python3 -m iaflac find "Artist - Album" --library ~/Desktop/1Music` runs search, then a prompt for what to test, then
+a report, then a **Save** step: pick which tested albums to save, see the exact plan (folders, tracks, size, cover,
+inventory rows), and confirm with `y` (`e` edits the guessed names). The user runs this in their own terminal. Without a
+terminal it never downloads unless both `--save SPEC` and `--yes` are given, and you must not add `--yes` on your own
+initiative: show the plan first and get the user's yes. Files are saved as the library already has them:
+`<Artist>/<Album>/01 Title.flac` plus `cover.jpg`, no rip logs (`--rip-files keep`, `--track-names keep` change that),
+and the album is added to the inventory workbook found in the library folder (`--inventory`, `--no-inventory`).
+
 ## Downloading (needs the user's explicit yes)
 
 `python3 -m iaflac get <identifier> --dest <folder>` prints the files and sizes and downloads nothing. Show the
@@ -88,8 +98,8 @@ case-insensitive order, a blank row, TOTAL). Never edit it by hand; use the tool
 4. If Excel or LibreOffice has the workbook open, the download still happens but the workbook is left alone; tell the
    user to close it, then `python3 -m iaflac inventory add "<album folder>" --xlsx <workbook> --yes`.
 5. `python3 -m iaflac inventory check --xlsx <workbook>` (read-only) says whether Summary agrees with Library.
-   `--rip-files skip` and `--art none|all` change what lands in the album folder (default: audio, `cover.jpg`, and the
-   rip `.log/.cue/.accurip`). FLAC albums only; other audio in a folder is refused.
+   `--rip-files skip` and `--art none|all` change what lands in the album folder (default: audio as `01 Title.flac`
+   and `cover.jpg`; no rip files, like the rest of the library; `--track-names keep` keeps archive.org's names). FLAC albums only; other audio in a folder is refused.
 
 ## Etiquette and safety
 

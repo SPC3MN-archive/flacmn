@@ -6,7 +6,7 @@ really are FLAC. Give it a list of artists/albums, or a genre.
 ```bash
 python3 -m iaflac find -f wanted.example.txt          # look up a list (one "Artist - Album" or "Artist" per line)
 python3 -m iaflac find "Miles Davis - Kind of Blue"   # or pass requests directly
-python3 -m iaflac find "Miles Davis - Kind of Blue" --library ~/Music   # ...and choose what to save into your library afterwards
+python3 -m iaflac find "Miles Davis - Kind of Blue"   # search, test what you pick, then confirm saving it into your library
 python3 -m iaflac genre shoegaze --years 1988-1996    # discover by genre
 python3 -m iaflac find "Miles Davis - Kind of Blue" --search-only   # just list what was found: test nothing
 python3 -m iaflac verify <identifier> --deep --spectral   # check one item as hard as possible
@@ -68,19 +68,20 @@ Tiers describe how sure the tool is that the source was a CD, not how good the a
 perfectly good lossless file. Also look for `V2 ✓ n/n files decode cleanly` (every file passed `flac -t` and matched archive.org's
 checksum) and the spectrum verdict; open the PNG in `spectrograms/` if it says `SUSPECT`.
 
-**6. Choose what to save.** With `--library` (see below), a **Save** section follows the tests. It lists the albums you
-tested that can be saved (tiers A to C; tier D is never offered), each with the artist and album name it would be filed
-under, size, which tests it has passed and the evidence. Only albums you tested are listed. Enter nothing to save
-nothing, or type numbers such as `1,3`, `2-4` or `a`.
+**6. Confirm the save.** After the tests, a **Save** section lists the albums you tested that can be saved (tiers A to
+C; tier D is never offered), each with the artist and album name it would be filed under, size, the tests it passed and
+the evidence. Only albums you tested are listed. If more than one is listed you choose with numbers such as `1,3`,
+`2-4` or `a` (Enter saves nothing); if there is one, you go straight to the next step. The first time, it asks where
+your music library is and remembers the answer (`~/.config/iaflac/config.json`), so later runs don't ask.
 
 ```bash
-python3 -m iaflac find "Miles Davis - Kind of Blue" --library ~/Music
+python3 -m iaflac find "Miles Davis - Kind of Blue"
 ```
 
-**7. Review and confirm.** Before anything is written you see, for each album you picked: the folder it will go to
+**7. Review, then say yes.** Before anything is written you see, for each album: the folder it will go to
 (`~/Music/Miles Davis/Kind of Blue/`), the first track names, the file count and size, the cover art, and the exact rows
-that would be added to your inventory. Then `y` saves, `e` lets you correct the artist and album names (archive.org
-titles are messy, so check them), and `n` cancels. Nothing has been downloaded up to this point.
+that would be added to your inventory. Then one question: `y` saves right away, `e` lets you correct the artist and album
+names (archive.org titles are messy, so check them), and `n` or Enter cancels. Nothing has been downloaded before your `y`.
 
 **8. It is saved in the format your library already uses.** The tool copies the library's own conventions:
 
@@ -95,7 +96,9 @@ the inventory only after every file verified, and the inventory rows are read fr
 merge into a folder holding other files and never overwrites a file that differs. Close the workbook in Excel first,
 since an open file stops the write; the download still happens and the command to add it afterwards is printed.
 
-**Setting your library once.** Instead of repeating `--library` and `--inventory`, set them in your shell profile:
+**Choosing the library.** In order: `--library`, then `$IAFLAC_LIBRARY`, then the folder remembered from the first
+run. Change it any time with `--library <folder>` plus a fresh answer, or by editing the config file. To set both in
+your shell profile instead:
 
 ```bash
 export IAFLAC_LIBRARY=~/Music

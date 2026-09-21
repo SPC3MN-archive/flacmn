@@ -88,6 +88,8 @@ class FindThenSave(unittest.TestCase):
             make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=4, rip=True, downloads=50, seed=1),
             make_item("ta-mp3", "Test Artist - Fake Album", "Test Artist", tracks=4, rip=True, downloads=40, seed=3,
                       mp3=True, album_tag="Fake Album"),
+            make_item("ta-two", "Test Artist - Second Record", "Test Artist", tracks=4, rip=True, downloads=30, seed=6,
+                      album_tag="Second Record"),
         ]
 
     def setUp(self):
@@ -103,6 +105,8 @@ class FindThenSave(unittest.TestCase):
         self.env.start()
         for k in ("IAFLAC_LIBRARY", "IAFLAC_INVENTORY"):
             os.environ.pop(k, None)
+        self.config = root / "config.json"
+        os.environ["IAFLAC_CONFIG"] = str(self.config)
 
     def tearDown(self):
         self.env.stop()
@@ -128,9 +132,9 @@ class FindThenSave(unittest.TestCase):
     # ---- the full flow ---------------------------------------------------------------------------
 
     def test_search_test_save_confirm_files_the_album_and_updates_the_inventory(self):
-        code, out, err, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "1", "y"], interactive=True)
+        code, out, err, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "y"], interactive=True)
         self.assertEqual(code, 0, err)
-        self.assertEqual([p.split()[0] for p in self.prompts(asked)], ["Test", "Save", "Save"])
+        self.assertEqual([p.split()[0] for p in self.prompts(asked)], ["Test", "Save"], "one album: test, then one save question")
         self.assertEqual(sorted(os.listdir(self.album_dir())), ["01 Track 1.flac", "02 Track 2.flac", "03 Track 3.flac", "04 Track 4.flac"])
         self.assertFalse(any(n.endswith((".log", ".cue")) for n in os.listdir(self.album_dir())), "rip files skipped by default")
         songs = [r for r in self.rows() if r[0] == "Test Artist"]
@@ -139,7 +143,7 @@ class FindThenSave(unittest.TestCase):
         self.assertEqual(len(list(self.lib.glob("*.backup-*.xlsx"))), 1)
 
     def test_nothing_is_downloaded_before_the_save_confirmation(self):
-        _, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "1", "n"], interactive=True)
+        _, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "n"], interactive=True)
         confirm = asked[-1]
         self.assertIn("Save 1 album(s)", confirm["prompt"])
         self.assertIn("What saving would do (nothing is written yet)", confirm["shown"])
@@ -153,11 +157,20 @@ class FindThenSave(unittest.TestCase):
     def test_the_save_prompt_comes_after_the_tests_and_the_default_is_to_save_nothing(self):
         _, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", ""], interactive=True)
         self.assertEqual(len(asked), 2)
-        self.assertIn("Enter = none", asked[1]["prompt"])
+        self.assertIn("y = save", asked[1]["prompt"])
         self.assertIn("Tested albums you can save", asked[1]["shown"])
         self.assertIn("tests V0 V1", asked[1]["shown"])
-        self.assertFalse(self.album_dir().exists())
+        self.assertFalse(self.album_dir().exists(), "Enter is not a yes")
         self.assertIn("Nothing saved.", out)
+
+    def test_with_several_tested_albums_you_choose_which_and_then_confirm(self):
+        code, out, _, asked = run_cli(cli.cmd_find, self.args("Test Artist", select=None), self.client,
+                                      answers=["a", "2", "y"], interactive=True)
+        self.assertEqual(code, 0)
+        self.assertIn("Save which to your library?", asked[1]["prompt"])
+        self.assertEqual(len(asked), 3)
+        self.assertTrue((self.lib / "Test Artist" / "Second Record" / "01 Track 1.flac").exists())
+        self.assertFalse(self.album_dir().exists(), "only #2 was chosen")
 
     def test_only_albums_that_were_tested_can_be_saved(self):
         _, _, _, asked = run_cli(cli.cmd_find, self.args("Test Artist"), self.client, answers=["1", ""], interactive=True)
@@ -176,7 +189,7 @@ class FindThenSave(unittest.TestCase):
 
     def test_names_can_be_edited_before_saving(self):
         code, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client,
-                                      answers=["1", "1", "e", "Test Artist | Renamed Album", "y"], interactive=True)
+                                      answers=["1", "e", "Test Artist | Renamed Album", "y"], interactive=True)
         self.assertEqual(code, 0)
         self.assertTrue((self.lib / "Test Artist" / "Renamed Album" / "01 Track 1.flac").exists())
         self.assertFalse(self.album_dir().exists())
@@ -184,24 +197,43 @@ class FindThenSave(unittest.TestCase):
 
     def test_an_existing_artist_spelling_in_the_library_is_reused(self):
         (self.lib / "TEST ARTIST").mkdir()
-        run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "1", "y"], interactive=True)
+        run_cli(cli.cmd_find, self.args(), self.client, answers=["1", "y"], interactive=True)
         self.assertTrue((self.lib / "TEST ARTIST" / "Test Album" / "01 Track 1.flac").exists())
         self.assertNotIn("Test Artist", os.listdir(self.lib), "no second spelling was created (exact-case listing)")
 
     def test_no_inventory_flag_leaves_the_workbook_alone(self):
-        run_cli(cli.cmd_find, self.args(no_inventory=True), self.client, answers=["1", "1", "y"], interactive=True)
+        run_cli(cli.cmd_find, self.args(no_inventory=True), self.client, answers=["1", "y"], interactive=True)
         self.assertTrue(self.album_dir().exists())
         self.assertEqual(self.xlsx.read_bytes(), self.original)
 
-    def test_without_a_library_it_says_how_and_saves_nothing(self):
-        _, out, _, asked = run_cli(cli.cmd_find, self.args(library=None), self.client, answers=["1"], interactive=True)
-        self.assertEqual(len(asked), 1)
+    def test_without_a_library_it_asks_once_saves_on_yes_and_remembers_the_answer(self):
+        code, out, _, asked = run_cli(cli.cmd_find, self.args(library=None), self.client,
+                                      answers=["1", str(self.lib), "y"], interactive=True)
+        self.assertEqual(code, 0)
+        self.assertIn("Where is your music library?", asked[1]["prompt"])
+        self.assertTrue((self.album_dir() / "01 Track 1.flac").exists(), "saved as soon as you said yes")
+        self.assertIn(str(self.lib), self.config.read_text())
+        # next time it does not ask again
+        (self.lib / "Test Artist").rename(self.lib / "moved-away")
+        _, _, _, asked = run_cli(cli.cmd_find, self.args(library=None), self.client, answers=["1", "n"], interactive=True)
+        self.assertEqual([p.split()[0] for p in self.prompts(asked)], ["Test", "Save"])
+
+    def test_a_library_that_is_not_a_folder_is_asked_again_and_s_skips_saving(self):
+        _, out, _, asked = run_cli(cli.cmd_find, self.args(library=None), self.client,
+                                   answers=["1", str(self.lib / "nope"), "s"], interactive=True)
+        self.assertIn("is not a folder", out)
+        self.assertFalse(self.album_dir().exists())
+        self.assertFalse(self.config.exists(), "nothing remembered when skipped")
+
+    def test_without_a_library_and_without_a_terminal_it_says_how_and_saves_nothing(self):
+        _, out, _, asked = run_cli(cli.cmd_find, self.args(library=None, select="1"), self.client, interactive=False)
+        self.assertEqual(asked, [])
         self.assertIn("--library", out)
         self.assertFalse(self.album_dir().exists())
 
     def test_the_library_can_come_from_the_environment(self):
         os.environ["IAFLAC_LIBRARY"] = str(self.lib)
-        run_cli(cli.cmd_find, self.args(library=None), self.client, answers=["1", "1", "y"], interactive=True)
+        run_cli(cli.cmd_find, self.args(library=None), self.client, answers=["1", "y"], interactive=True)
         self.assertTrue(self.album_dir().exists())
 
     # ---- without a terminal ----------------------------------------------------------------------

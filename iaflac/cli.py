@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -476,9 +477,56 @@ SAVE_HINT = ("To save an album, add --library <your music folder> to the same co
              "Or use:  python3 -m iaflac get <identifier> --library <folder> --yes")
 
 
+def config_path() -> Path:
+    return Path(os.environ.get("IAFLAC_CONFIG") or "~/.config/iaflac/config.json").expanduser()
+
+
+def read_config() -> dict:
+    try:
+        data = json.loads(config_path().read_text())
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def remember(**values) -> bool:
+    """Keep the library (and inventory) between runs. Never fatal: a read-only home just means asking again."""
+    try:
+        path = config_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({**read_config(), **values}, indent=2) + "\n")
+        return True
+    except OSError:
+        return False
+
+
 def library_from(args) -> Optional[Path]:
-    value = getattr(args, "library", None) or os.environ.get("IAFLAC_LIBRARY")
+    """--library, then $IAFLAC_LIBRARY, then the folder remembered from an earlier run."""
+    value = getattr(args, "library", None) or os.environ.get("IAFLAC_LIBRARY") or read_config().get("library")
     return Path(value).expanduser() if value else None
+
+
+def ask_library() -> Optional[Path]:
+    """First save in a terminal: ask where the music library is, and remember the answer."""
+    guess = next((d for d in (Path("~/Desktop/1Music").expanduser(), Path("~/Music").expanduser()) if d.is_dir()), None)
+    while True:
+        try:
+            answer = ask("\nWhere is your music library? It will be remembered."
+                         + (f"   Enter = {guess}" if guess else "") + "   s = don't save\n> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return None
+        if answer.lower() in ("s", "skip", "q"):
+            return None
+        chosen = Path(answer).expanduser() if answer else guess
+        if chosen is None:
+            print("  Type the folder, or s to skip.")
+        elif not chosen.is_dir():
+            print(f"  {chosen} is not a folder. Try again.")
+        else:
+            where = config_path()
+            print(f"  Using {chosen}" + (f" (remembered in {where})" if remember(library=str(chosen)) else " (could not remember it)"))
+            return chosen
 
 
 def inventory_from(args, library: Path) -> tuple:
@@ -486,7 +534,7 @@ def inventory_from(args, library: Path) -> tuple:
     library folder, if there is exactly one (backups and lock files don't count)."""
     if getattr(args, "no_inventory", False):
         return None, ""
-    value = getattr(args, "inventory", None) or os.environ.get("IAFLAC_INVENTORY")
+    value = getattr(args, "inventory", None) or os.environ.get("IAFLAC_INVENTORY") or read_config().get("inventory")
     if value:
         return str(Path(value).expanduser()), ""
     if library.is_dir():
@@ -568,6 +616,8 @@ def save_phase(args, client: IAClient, results: list) -> int:
         print("  None of the tested albums can be saved.")
         return 0
     library = library_from(args)
+    if library is None and is_interactive() and not getattr(args, "save", None):
+        library = ask_library()
     if library is None:
         print(f"  {SAVE_HINT}")
         return 0
@@ -584,6 +634,8 @@ def save_phase(args, client: IAClient, results: list) -> int:
     interactive = is_interactive()
     if getattr(args, "save", None):
         sel = preview.parse_selection(args.save, len(cands), strict=False)
+    elif interactive and len(cands) == 1:
+        sel = preview.Selection("test", [0])        # one album: the plan and the y/n below are the only question
     elif interactive:
         print()
         sel = choose_save(len(cands))

@@ -32,6 +32,11 @@ def run_cli(func, args, client, answers=(), interactive=False):
     return code, out.getvalue(), err.getvalue(), asked
 
 
+def test_asks(asked):
+    """Only the 'which to test' prompts (the save step has its own, see test_cli_save)."""
+    return [a for a in asked if "Test which" in a["prompt"]]
+
+
 def file_reads(client):
     return [c for c in client.calls if c[0] in ("range", "stream")]
 
@@ -51,8 +56,13 @@ class FindFlow(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.out = self.tmp.name
         self.client = FakeIA(self.items)
+        self.env = mock.patch.dict(os.environ, {"IAFLAC_CONFIG": os.path.join(self.tmp.name, "config.json")})
+        self.env.start()
+        for k in ("IAFLAC_LIBRARY", "IAFLAC_INVENTORY"):
+            os.environ.pop(k, None)
 
     def tearDown(self):
+        self.env.stop()
         self.tmp.cleanup()
 
     def args(self, *items, **kw):
@@ -137,7 +147,7 @@ class FindFlow(unittest.TestCase):
     def test_a_bad_answer_is_explained_and_asked_again(self):
         code, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["x", "9", "1"], interactive=True)
         self.assertEqual(code, 0)
-        self.assertEqual(len(asked), 3)
+        self.assertEqual(len(test_asks(asked)), 3)
         self.assertIn("'x' is not a number", out)
         self.assertIn("outside 1-", out)
         self.assertEqual({c[1] for c in file_reads(self.client)}, {"ta-log"})
@@ -160,7 +170,7 @@ class FindFlow(unittest.TestCase):
     def test_every_request_is_searched_and_shown_before_any_testing_starts(self):
         args = self.args("Test Artist - Test Album", "Zed Zed - Other Album")
         _, out, _, asked = run_cli(cli.cmd_find, args, self.client, answers=["1", "1"], interactive=True)
-        self.assertEqual(len(asked), 2)
+        self.assertEqual(len(test_asks(asked)), 2)
         self.assertEqual(asked[1]["file_calls"], [], "the second prompt still came before any testing")
         self.assertEqual({c[1] for c in file_reads(self.client)}, {"ta-log", "zz-log"})
         kinds = [c[0] for c in self.client.calls]
@@ -171,7 +181,7 @@ class FindFlow(unittest.TestCase):
     def test_d_uses_the_default_for_all_remaining_requests(self):
         args = self.args("Test Artist - Test Album", "Zed Zed - Other Album")
         _, _, _, asked = run_cli(cli.cmd_find, args, self.client, answers=["d"], interactive=True)
-        self.assertEqual(len(asked), 1, "asked once, then it stopped asking")
+        self.assertEqual(len(test_asks(asked)), 1, "asked once, then it stopped asking")
         self.assertEqual({c[1] for c in file_reads(self.client)}, {"ta-log", "zz-log"})
 
     def test_skipping_one_request_still_tests_the_others_and_says_so(self):

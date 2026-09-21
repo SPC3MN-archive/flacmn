@@ -63,7 +63,7 @@ the report says 48 kHz, tell the user the claim is contradicted.
 
 ## The whole pipeline in one command
 
-`python3 -m iaflac find "Artist - Album" --library ~/Desktop/1Music` runs search, then a prompt for what to test, then
+`python3 -m iaflac find "Artist - Album"` (the library is remembered after the first run, or pass `--library`) runs search, then a prompt for what to test, then
 a report, then a **Save** step: pick which tested albums to save, see the exact plan (folders, tracks, size, cover,
 inventory rows), and confirm with `y` (`e` edits the guessed names). The user runs this in their own terminal. Without a
 terminal it never downloads unless both `--save SPEC` and `--yes` are given, and you must not add `--yes` on your own

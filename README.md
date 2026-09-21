@@ -11,6 +11,7 @@ python3 -m iaflac genre shoegaze --years 1988-1996    # discover by genre
 python3 -m iaflac find "Miles Davis - Kind of Blue" --search-only   # just list what was found: test nothing
 python3 -m iaflac verify <identifier> --deep --spectral   # check one item as hard as possible
 python3 -m iaflac get <identifier> --dest ~/Music/IA      # lists files and sizes; add --yes to download
+python3 -m iaflac replace --scan                      # albums you have only as MP3 (then: replace "Artist/Album")
 ```
 
 Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac` and `ffmpeg` binaries.
@@ -200,6 +201,32 @@ destination, downloads to `.part` files that must match archive.org's checksums,
   MusicBrainz track-count completeness check.
 - archive.org metadata is free-form and many albums aren't there.
 - Cold archive.org requests are slow (metadata ~3 s, ranged reads ~1.8 s), so a first genre run takes about 2 minutes.
+
+## Replacing an album you already have (MP3 to FLAC)
+
+```bash
+python3 -m iaflac replace --scan                       # list every album in your library that has audio but no FLAC
+python3 -m iaflac replace "Solange/When I Get Home"    # find a FLAC version of that album and replace it
+python3 -m iaflac replace "Artist/One" "Artist/Two"    # several at once
+```
+
+`replace` is the same pipeline as `find` (search, choose what to test, test, confirm), pointed at an album you already
+own. Give it the album folder (`Artist/Album` inside your library, or a path). A plain `find` also notices when the
+album you are about to save is an MP3 album you already have, and offers to replace it. The plan then says
+`** REPLACES your album (19 MP3) **` and shows the old folder, the old and new track counts (with a warning if they differ,
+for example a deluxe edition), and the inventory change. One `y` does everything, in this order:
+
+1. The FLACs are downloaded into a hidden staging folder next to your album and verified against archive.org's checksums.
+   **Your MP3s are not touched until every file has verified.** If anything fails, the original stays exactly as it was
+   and the partial download is resumed next time.
+2. Anything in the old folder that is not audio (booklets, notes, a cover the new album lacks) is copied across.
+3. The old folder is moved to the **Trash**, never deleted, so you can put it back. If the Trash isn't usable it goes to a
+   hidden `.iaflac-replaced/` folder inside the library. The new folder takes its place, under your existing folder name.
+4. In the inventory workbook the album's old rows (`MP3 (CBR 128kbps)`, format `MP3`) are replaced by the new FLAC rows in
+   the same place, the Summary is recomputed, and a timestamped backup is made first.
+
+An album that already contains any FLAC is never replaced. Without a terminal, `find --save --yes` will not replace an
+album unless you also pass `--replace` (`replace ... --save 1 --yes` counts as explicit).
 
 ## Your library and inventory
 

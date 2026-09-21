@@ -270,13 +270,13 @@ def library_track_name(rel: Path, artist: str) -> Path:
 
 
 def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art: str = "cover",
-                 rip: str = "keep", track_names: str = "keep") -> GetResult:
+                 rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None) -> GetResult:
     """Where everything would go, without touching the disk. art: cover | all | none. rip: keep | skip.
     track_names: 'library' renames tracks to 'NN Title.flac' like the rest of the library, 'keep' uses archive.org's names."""
     a_dir, al_dir = folder_component(artist), folder_component(album)
     if not a_dir or not al_dir:
         raise DownloadError(f"cannot make folder names from artist {artist!r} and album {album!r}")
-    folder = library / a_dir / al_dir
+    folder = folder or library / a_dir / al_dir      # an explicit folder (a staging folder for a replacement) must still be inside the library
     res = GetResult(identifier=item.identifier, folder=folder, artist=artist, album=album)
     root = folder.resolve()
     if library.resolve() not in root.parents:
@@ -317,9 +317,9 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
 
 
 def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, album: str, *, yes: bool = False,
-                art: str = "cover", rip: str = "keep", track_names: str = "keep",
+                art: str = "cover", rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
                 log: Callable[[str], None] = lambda m: None) -> GetResult:
-    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names)
+    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder)
     if not yes:
         return res
     folder = res.folder

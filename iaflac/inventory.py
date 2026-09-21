@@ -71,6 +71,7 @@ class NewAlbum:
     album: str
     rows: list                      # [(artist, album, song, file_type, format)] in track order
     folder: Optional[Path] = None
+    replaces: str = ""              # an album already in the inventory (same artist) whose rows this one takes over
 
 
 def rows_for_entries(entries: list, artist: str, album: str) -> list:
@@ -140,9 +141,10 @@ def summarise(rows: list) -> "OrderedDict[str, tuple]":
 @dataclass
 class Placement:
     album: NewAlbum                  # with the artist spelled as it will appear
-    status: str                      # "new artist" | "existing artist" | "already in inventory"
+    status: str                      # "new artist" | "existing artist" | "replaces existing rows" | "already in inventory"
     library_row: int = 0             # first Library sheet row the album will occupy
     summary_row: int = 0
+    removed: list = field(default_factory=list)      # the old rows a replacement takes out
 
     @property
     def added(self) -> bool:
@@ -159,10 +161,16 @@ class Plan:
     library_rows: list = field(default_factory=list)      # the full new Library data
     summary_rows: list = field(default_factory=list)      # [(artist, albums, songs, formats)] in sheet order
     changed_artists: set = field(default_factory=set)
+    removed_rows: list = field(default_factory=list)      # rows taken out by replacements (everything else is kept)
 
     @property
     def changes(self) -> bool:
         return any(p.added for p in self.placements)
+
+
+def album_rows(rows: list, artist: str, album: str) -> list:
+    """Indexes of an album's rows (the artist exactly, the album case-insensitively)."""
+    return [i for i, r in enumerate(rows) if r[0] == artist and str(r[1]).casefold() == album.casefold()]
 
 
 def artist_insert_index(rows: list, artist: str) -> int:
@@ -254,10 +262,25 @@ class Inventory:
     def plan(self, albums: list) -> Plan:
         rows = list(self.library_rows)
         albums_before = sum(v[0] for v in summarise(rows).values())
-        placements, changed = [], set()
+        placements, changed, removed_rows = [], set(), []
         for al in albums:
             artist = self.canonical_artist(al.artist)
             fixed = NewAlbum(artist, al.album, [(artist, al.album, s, ft, fm) for _a, _b, s, ft, fm in al.rows], al.folder)
+            old_idx = album_rows(rows, artist, al.replaces) if al.replaces else []
+            if old_idx:
+                # Replace in place: the new rows go where the old album's rows were, nothing else moves.
+                old = [rows[i] for i in old_idx]
+                if old == fixed.rows:
+                    placements.append(Placement(fixed, "already in inventory"))
+                    continue
+                if old_idx != list(range(old_idx[0], old_idx[0] + len(old_idx))):
+                    raise InventoryError(f"the rows of {artist} / {al.replaces} are not together in the Library sheet; "
+                                         "not replacing them automatically")
+                rows[old_idx[0]:old_idx[-1] + 1] = fixed.rows
+                changed.add(artist)
+                removed_rows += old
+                placements.append(Placement(fixed, "replaces existing rows", removed=old))
+                continue
             if any(r[0] == artist and str(r[1]).casefold() == al.album.casefold() for r in rows):
                 placements.append(Placement(fixed, "already in inventory"))
                 continue
@@ -278,7 +301,7 @@ class Inventory:
         return Plan(placements=placements, rows_before=len(self.library_rows), rows_after=len(rows),
                     totals_before=(albums_before, len(self.library_rows)),
                     totals_after=(sum(v[0] for v in computed.values()), len(rows)),
-                    library_rows=rows, summary_rows=summary, changed_artists=changed)
+                    library_rows=rows, summary_rows=summary, changed_artists=changed, removed_rows=removed_rows)
 
     def _new_summary(self, rows: list, changed: set) -> list:
         """Existing Summary rows stay exactly as they are; only changed artists are recomputed, new ones inserted
@@ -300,6 +323,8 @@ class Inventory:
                 raise InventoryError(f"{lock.name} exists: the workbook is open in a spreadsheet app "
                                      "(Excel or LibreOffice). Close it and try again.")
 
+        if len(plan.summary_rows) < len(self.summary_rows):
+            raise InventoryError("this change would remove an artist from the Summary, which is not supported; nothing was changed")
         wb = load_workbook(self.path)                  # a fresh copy: `self.wb` stays untouched
         lib, summ = wb[LIBRARY], wb[SUMMARY]
         lib_style = {0: [copy(lib.cell(2, c)._style) for c in range(1, 6)], 1: [copy(lib.cell(3, c)._style) for c in range(1, 6)]}
@@ -313,6 +338,9 @@ class Inventory:
                 cell = lib.cell(r, j + 1)
                 cell.value = value
                 cell._style = copy(lib_style[r % 2][j])
+        stale = lib.max_row - (1 + len(plan.library_rows))
+        if stale > 0:                                  # a replacement can shrink the sheet: drop the leftover rows
+            lib.delete_rows(2 + len(plan.library_rows), stale)
         lib.auto_filter.ref = f"A1:E{1 + len(plan.library_rows)}"
 
         for i, values in enumerate(plan.summary_rows):
@@ -489,7 +517,17 @@ def verify_written(new_path: Path, plan: Plan, reference: Path) -> list:
         if _sheet_facts(new[name]) != _sheet_facts(old[name]):
             problems.append(f"{name}: column widths, zoom, frozen panes or header formatting changed")
     # every original Library row is still there, in order
-    old_rows = [tuple(r) for r in old[LIBRARY].iter_rows(min_row=2, max_col=5, values_only=True) if r[0] is not None]
+    gone = list(plan.removed_rows)                     # only rows a replacement was asked to take out may disappear
+    old_rows = []
+    for r in old[LIBRARY].iter_rows(min_row=2, max_col=5, values_only=True):
+        if r[0] is None:
+            continue
+        if tuple(r) in gone:
+            gone.remove(tuple(r))
+            continue
+        old_rows.append(tuple(r))
+    if gone:
+        problems.append("a row to be replaced was not in the original workbook")
     it = iter(got)
     if not all(any(row == g for g in it) for row in old_rows):
         problems.append("an existing Library row was lost or reordered")

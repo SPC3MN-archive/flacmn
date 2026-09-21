@@ -8,10 +8,11 @@ import os
 import re
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from . import download, genre as genre_mod, inventory as inv, names as names_mod, preview, queries, report
+from . import download, genre as genre_mod, inventory as inv, matching, names as names_mod, preview, queries, replace as replace_mod, report
 from .genre import GenreSpec
 from .ia_client import IAClient, IAError
 from .pipeline import Candidate, Options, Pipeline
@@ -321,7 +322,11 @@ def mb(n: int) -> str:
 def print_plan(plan: "inv.Plan", indent: str = "  ") -> None:
     for pl in plan.placements:
         a = pl.album
-        if pl.added:
+        if pl.added and pl.removed:
+            print(f"{indent}inventory: replaces {len(pl.removed)} existing row(s) of {a.artist} / {a.album} "
+                  f"({pl.removed[0][4]}) with {len(a.rows)} row(s) ({a.rows[0][4]}), Library rows "
+                  f"{pl.library_row}-{pl.library_row + len(a.rows) - 1}")
+        elif pl.added:
             print(f"{indent}inventory: {pl.status}: {a.artist} / {a.album}: {len(a.rows)} row(s) -> Library rows "
                   f"{pl.library_row}-{pl.library_row + len(a.rows) - 1}, Summary row {pl.summary_row}")
         else:
@@ -354,6 +359,23 @@ def open_inventory(path: str):
     return book
 
 
+@dataclass
+class Job:
+    identifier: str
+    names: Optional[tuple] = None          # (artist, album) given by the user
+    cand: object = None                    # an already loaded and probed Candidate
+    replace: Optional[Path] = None         # an existing album folder this download takes the place of
+
+
+def inventory_album_for(book, artist: str, folder_name: str) -> Optional[str]:
+    """The album name the inventory uses for an existing folder (they are not always spelled alike), or None."""
+    albums = list(dict.fromkeys(r[1] for r in book.library_rows if r[0] == artist))
+    plain = replace_mod.album_name_from_folder(folder_name, artist)
+    scored = [(max(matching.similarity(folder_name, a), matching.similarity(plain, a)), a) for a in albums]
+    best = max(scored, default=(0.0, None))
+    return best[1] if best[0] >= 0.85 else None
+
+
 def guess_names(cand, known: list) -> tuple:
     """(artist, album, source) for filing a candidate: FLAC tags, then the item's creator, then its title."""
     st = cand.stats
@@ -364,8 +386,9 @@ def guess_names(cand, known: list) -> tuple:
 def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs: list, *, yes: bool, art: str,
                  rip: str, track_names: str, show_plan: bool = True, named_by: str = "given with --as") -> int:
     """Plan (yes=False) or carry out (yes=True) filing albums into the library and adding them to the inventory.
-    jobs: [(identifier, (artist, album) or None, already-loaded Candidate or None)]. Names not given are guessed and
-    shown. Returns 0, 1 (something failed) or 2 (could not start)."""
+    jobs: [Job]. Names not given are guessed and shown. A job with `replace` takes the place of that existing album
+    folder: the new files are downloaded and verified beside it first, and only then is the old folder moved to the
+    Trash and the inventory's rows for it replaced. Returns 0, 1 (something failed) or 2 (could not start)."""
     book = None
     if inventory:
         book = open_inventory(inventory)
@@ -375,7 +398,8 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
     if library.exists():
         known += [d.name for d in library.iterdir() if d.is_dir()]
     pipe, exit_code, to_add, previews = Pipeline(client, log=say), 0, [], []
-    for identifier, override, cand in jobs:
+    for job in jobs:
+        identifier, override, cand = job.identifier, job.names, job.cand
         try:
             cand = cand or pipe.load(identifier)
             if not cand.probes:
@@ -384,15 +408,28 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
             say(f"error: {identifier}: {exc}")
             exit_code = 2
             continue
-        if override:
+        old = old_album = staging = None
+        if job.replace:
+            old = replace_mod.survey(job.replace)
+            if not old.replaceable:
+                say(f"error: {identifier}: {job.replace} {'already has FLAC files' if old.has_flac else 'has no audio files'}; "
+                    "not replacing it")
+                exit_code = 2
+                continue
+            artist = job.replace.parent.name
+            old_album = inventory_album_for(book, artist, job.replace.name) if book else None
+            album = (override[1] if override else None) or old_album or replace_mod.album_name_from_folder(job.replace.name, artist)
+            source = "kept from the album you already have"
+            staging = replace_mod.staging_folder(job.replace, identifier)
+        elif override:
             artist, album = override
             source = named_by
         else:
             artist, album, source = guess_names(cand, known)
-        artist = names_mod.canonical_artist(artist, known)
+        artist = artist if job.replace else names_mod.canonical_artist(artist, known)
         try:
             res = download.library_get(client, cand.item, library, artist, album, yes=yes, art=art,
-                                       rip=rip, track_names=track_names, log=say)
+                                       rip=rip, track_names=track_names, folder=staging, log=say)
         except download.DownloadError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
@@ -401,7 +438,13 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         rip_files = sum(1 for pf in res.planned if download.file_kind(pf.info.name) in download.LIB_RIP_ROLES)
         if show_plan:
             print(f"\n{identifier}\n  {artist}  /  {album}   ({source})")
-            print(f"  destination: {res.folder}")
+            if job.replace:
+                print(f"  REPLACES: {job.replace}\n            now {old.describe()}  ->  {len(flacs)} FLAC")
+                if old.tracks != len(flacs):
+                    print(f"  ! the old album has {old.tracks} track(s) and the new one {len(flacs)}: check the names above before saying yes")
+                print("  The old folder goes to the Trash (you can put it back); anything else in it, such as booklets, is kept.")
+            else:
+                print(f"  destination: {res.folder}")
             print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} FLAC"
                   + (f", cover: {res.cover.name}" if res.cover else ", no cover art")
                   + (f", rip evidence: {rip_files} file(s)" if rip == "keep" else ""))
@@ -415,6 +458,7 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         if book:
             try:
                 preview = inv.album_from_item(cand.item, cand.probes, artist, album)
+                preview.replaces = old_album or ""
                 status = book.plan([preview]).placements[0].status
                 if status == "already in inventory":
                     if show_plan:
@@ -432,19 +476,34 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         if not yes:
             continue
         print(f"\n{artist}  /  {album}: downloaded {res.downloaded}, already had {res.already_had}, failed {len(res.failures)}"
-              f"\n  {res.folder}")
+              f"\n  {job.replace or res.folder}")
         for w in res.warnings:
             print(f"  ! {w}")
         for fail in res.failures:
             print(f"  FAILED {fail}")
         if not res.ok or res.warnings:
             exit_code = exit_code or 1
-            if book:
+            if job.replace:
+                print(f"  NOT replacing anything: your original album is untouched. The partial download is in {res.folder.name} "
+                      "and will be resumed next time.")
+            elif book:
                 print("  NOT adding this album to the inventory until every file has verified cleanly")
             continue
+        final = res.folder
+        if job.replace:
+            try:
+                moved_to, carried = replace_mod.swap_in(job.replace, staging, library)
+            except (replace_mod.ReplaceError, OSError) as exc:
+                say(f"  could not replace the album: {exc}\n  The verified FLACs are in {staging}")
+                exit_code = exit_code or 1
+                continue
+            final = job.replace
+            print(f"  replaced {job.replace.name}: the old files are in {moved_to}"
+                  + (f"\n  kept from the old folder: {', '.join(carried[:6])}" if carried else ""))
         if book:
             try:
-                actual = inv.album_from_folder(res.folder, artist, album)
+                actual = inv.album_from_folder(final, artist, album)
+                actual.replaces = old_album or ""
             except inv.InventoryError as exc:
                 say(f"  cannot read the downloaded folder for the inventory: {exc}")
                 exit_code = exit_code or 1
@@ -545,15 +604,33 @@ def inventory_from(args, library: Path) -> tuple:
 
 
 def savable(results: list) -> tuple:
-    """Tested candidates that may be saved (tier A-C), and the ones that may not (tier D or unknown), by identifier."""
+    """Tested candidates that may be saved (tier A-C), and the ones that may not (tier D or unknown), by identifier.
+    Each candidate remembers the request it came from (`cand.request`)."""
     ok, blocked, seen = [], [], set()
     for res in results:
         for cand in getattr(res, "candidates", []):
             if cand.identifier in seen:
                 continue
             seen.add(cand.identifier)
+            cand.request = res.want.label if hasattr(res, "want") else ""
             (ok if cand.tier in ("A", "B", "C") else blocked).append(cand)
     return ok, blocked
+
+
+def existing_albums(args, library: Path, cands: list, known: list) -> dict:
+    """{identifier: existing album folder} for candidates that would take the place of an album you already have
+    with no FLAC in it. A folder named with `replace <folder>` is used as given; otherwise it is matched by name."""
+    named = getattr(args, "replace_map", None) or {}
+    out = {}
+    for cand in cands:
+        folder = named.get(getattr(cand, "request", ""))
+        if folder is None:
+            artist, album, _ = guess_names(cand, known)
+            found = replace_mod.find_existing(library, artist, album)
+            folder = found.path if found and found.replaceable else None
+        if folder is not None:
+            out[cand.identifier] = folder
+    return out
 
 
 def choose_save(n: int) -> "preview.Selection":
@@ -570,11 +647,13 @@ def choose_save(n: int) -> "preview.Selection":
             print(f"  {exc}. Try again.")
 
 
-def confirm_save(n: int, size_mb: int) -> str:
+def confirm_save(n: int, size_mb: int, replacing: int = 0) -> str:
     """'y' save, 'e' edit names, 'n' cancel."""
+    what = f"Save {n} album(s)" if not replacing else (f"Replace {replacing} of your albums" + (f" and save {n - replacing} more" if n > replacing else ""))
+    extra = "; the old files go to the Trash" if replacing else ""
     while True:
         try:
-            answer = ask(f"\nSave {n} album(s), about {size_mb:,} MB?   y = save · e = edit names · n = cancel\n> ").strip().lower()
+            answer = ask(f"\n{what}, about {size_mb:,} MB to download{extra}?   y = yes · e = edit names · n = cancel\n> ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             print()
             return "n"
@@ -583,8 +662,11 @@ def confirm_save(n: int, size_mb: int) -> str:
         print("  Answer y, e or n.")
 
 
-def edit_names(picked: list, overrides: dict, known: list) -> None:
+def edit_names(picked: list, overrides: dict, known: list, replacing: Optional[dict] = None) -> None:
     for cand in picked:
+        if replacing and cand.identifier in replacing:
+            print(f"  {cand.identifier}: keeps the names of your existing album ({replacing[cand.identifier].name})")
+            continue
         artist, album, _ = guess_names(cand, known)
         artist, album = overrides.get(cand.identifier, (artist, album))
         try:
@@ -624,10 +706,18 @@ def save_phase(args, client: IAClient, results: list) -> int:
     inventory, note = inventory_from(args, library)
     print(f"  library:   {library}\n  inventory: {inventory or 'none (nothing will be added to a workbook)'}{note}")
     known = [d.name for d in library.iterdir() if d.is_dir()] if library.is_dir() else []
+    replacing = existing_albums(args, library, cands, known)
     print("\n  Tested albums you can save:")
     for i, cand in enumerate(cands, 1):
         artist, album, _ = guess_names(cand, known)
         spectral = f" · spectrum {cand.spectral.verdict}" if cand.spectral else ""
+        if cand.identifier in replacing:
+            now = replace_mod.survey(replacing[cand.identifier])
+            artist, album = replacing[cand.identifier].parent.name, replace_mod.album_name_from_folder(replacing[cand.identifier].name, replacing[cand.identifier].parent.name)
+            print(f"  {i:>3}. {cand.tier}  {artist} / {album}   ** REPLACES your album ({now.describe()}) **\n       {len(cand.item.flacs)} FLAC · "
+                  f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
+                  f"       {cand.item.url}")
+            continue
         print(f"  {i:>3}. {cand.tier}  {artist} / {album}\n       {len(cand.item.flacs)} FLAC · "
               f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
               f"       {cand.item.url}")
@@ -646,17 +736,26 @@ def save_phase(args, client: IAClient, results: list) -> int:
         print("  Nothing saved.")
         return 0
     picked = [cands[k] for k in sel.indexes]
+    if not interactive and replacing and not (getattr(args, "replace", False) or getattr(args, "replace_map", None)):
+        skipped = [c for c in picked if c.identifier in replacing]
+        picked = [c for c in picked if c.identifier not in replacing]
+        for c in skipped:
+            print(f"  Not replacing {replacing[c.identifier]}: replacing an existing album without a terminal needs --replace.")
+        if not picked:
+            print("\nNothing saved.")
+            return 0
     overrides: dict = {}
     while True:
-        jobs = [(c.identifier, overrides.get(c.identifier), c) for c in picked]
+        jobs = [Job(c.identifier, overrides.get(c.identifier), c, replacing.get(c.identifier)) for c in picked]
         print("\nWhat saving would do (nothing is written yet):")
         library_flow(client, library, inventory, jobs, yes=False, art=args.art, rip=args.rip_files, track_names=args.track_names, named_by="edited by you")
         if interactive:
-            answer = confirm_save(len(picked), round(sum(c.item.flac_bytes for c in picked) / 1e6))
+            answer = confirm_save(len(picked), round(sum(c.item.flac_bytes for c in picked) / 1e6),
+                                  sum(1 for c in picked if c.identifier in replacing))
         else:
             answer = "y" if args.yes else "n"
         if answer == "e":
-            edit_names(picked, overrides, known)
+            edit_names(picked, overrides, known, replacing)
             continue
         break
     if answer != "y":
@@ -682,13 +781,55 @@ def _get_library(args, client: IAClient) -> int:
             return 2
         overrides[ident] = (artist, album)
     inventory = str(Path(args.inventory).expanduser()) if args.inventory else None
-    jobs = [(i, overrides.get(i), None) for i in args.identifiers]
+    jobs = [Job(i, overrides.get(i)) for i in args.identifiers]
     code = library_flow(client, library, inventory, jobs, yes=args.yes, art=args.art, rip=args.rip_files,
                         track_names=getattr(args, "track_names", "keep"))
     if not args.yes:
         print("\nNothing was downloaded and nothing was changed. Re-run with --yes to do it.")
     say(f"\n[{client.stats()}]")
     return code
+
+
+def cmd_replace(args, client: IAClient) -> int:
+    """Replace albums you already have (typically MP3) with FLAC. With --scan, list the candidates and stop."""
+    library = library_from(args)
+    if library is None and is_interactive():
+        library = ask_library()
+    if library is None or not library.is_dir():
+        say("error: say where your library is with --library <folder> (or set IAFLAC_LIBRARY)")
+        return 2
+    if args.scan:
+        found = replace_mod.scan(library)
+        if not found:
+            print(f"Every album in {library} that has audio already has FLAC.")
+            return 0
+        print(f"{len(found)} album(s) in {library} have audio but no FLAC:\n")
+        for info in found:
+            print(f"  {info.path.relative_to(library)}   ({info.describe()})")
+        print("\nReplace one with:  python3 -m iaflac replace \"<Artist>/<Album>\"     (or several at once)")
+        return 0
+    if not args.items and not args.file:
+        say("error: name the album folder(s) to replace, e.g.  replace \"Solange/When I Get Home\"   (or --scan to list candidates)")
+        return 2
+    requests, replace_map = [], {}
+    for spec in args.items:
+        try:
+            folder = replace_mod.resolve_folder(spec, library)
+        except replace_mod.ReplaceError:
+            requests.append(spec)               # not a folder: a plain "Artist - Album" request, matched to your album by name
+            continue
+        info = replace_mod.survey(folder)
+        if not info.replaceable:
+            say(f"skipping {folder.relative_to(library)}: " + ("it already has FLAC files" if info.has_flac else "it has no audio files"))
+            continue
+        artist = folder.parent.name
+        text = f"{artist} - {replace_mod.album_name_from_folder(folder.name, artist)}"
+        requests.append(text)
+        replace_map[queries.parse_wanted(text)[0].label] = folder
+    if not requests:
+        return 2
+    args.items, args.file, args.library, args.replace_map = requests, None, str(library), replace_map
+    return cmd_find(args, client)
 
 
 def cmd_get(args, client: IAClient) -> int:
@@ -754,6 +895,14 @@ def add_common(p: argparse.ArgumentParser, deep_default: str = "top") -> None:
     p.add_argument("-o", "--out", default=str(PROJECT_ROOT / "runs"), help="where run folders are written")
 
 
+def add_find_options(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--rip-only", action="store_true", help="only items that ship a rip log or cue sheet")
+    p.add_argument("--top", type=int, default=3, help="candidates listed per request (default 3)")
+    p.add_argument("--max-candidates", type=int, default=10, help="search hits to inspect per request (default 10)")
+    add_common(p)
+    add_save(p)
+
+
 def add_save(p: argparse.ArgumentParser) -> None:
     """Options for saving into the library after testing (find)."""
     p.add_argument("--library", help="your music folder; enables the save step after testing (or set $IAFLAC_LIBRARY)")
@@ -777,14 +926,17 @@ def main(argv=None) -> int:
     ap.add_argument("--cache", help="cache directory (default: .cache next to the package, or $IAFLAC_CACHE)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    f = sub.add_parser("find", help="look up albums / artists")
+    f = sub.add_parser("find", help="look up albums / artists, test them, and save what you confirm")
     f.add_argument("items", nargs="*", help='requests such as "Miles Davis - Kind of Blue"')
     f.add_argument("-f", "--file", help="text file (one request per line) or .csv (artist,album)")
-    f.add_argument("--rip-only", action="store_true", help="only items that ship a rip log or cue sheet")
-    f.add_argument("--top", type=int, default=3, help="candidates listed per request (default 3)")
-    f.add_argument("--max-candidates", type=int, default=10, help="search hits to inspect per request (default 10)")
-    add_common(f)
-    add_save(f)
+    add_find_options(f)
+    f.add_argument("--replace", action="store_true",
+                   help="without a terminal, let --save --yes replace an album you already have (with no FLAC in it)")
+
+    r = sub.add_parser("replace", help="replace albums you have (e.g. MP3) with FLAC; --scan lists candidates")
+    r.add_argument("items", nargs="*", help='album folders ("Artist/Album" in the library, or a path) or "Artist - Album" requests')
+    r.add_argument("--scan", action="store_true", help="list the albums in the library that have audio but no FLAC, and stop")
+    add_find_options(r)
 
     g = sub.add_parser("genre", help="discover albums by genre instead of by name")
     g.add_argument("genre", help='e.g. shoegaze, "post-punk", ambient (see genres.yml; any phrase works)')
@@ -828,7 +980,8 @@ def main(argv=None) -> int:
 
     args = ap.parse_args(argv)
     client = IAClient(cache_dir=args.cache)
-    return {"find": cmd_find, "genre": cmd_genre, "verify": cmd_verify, "get": cmd_get, "inventory": cmd_inventory}[args.cmd](args, client)
+    return {"find": cmd_find, "replace": cmd_replace, "genre": cmd_genre, "verify": cmd_verify, "get": cmd_get,
+                                  "inventory": cmd_inventory}[args.cmd](args, client)
 
 
 if __name__ == "__main__":

@@ -157,7 +157,7 @@ class FindThenSave(unittest.TestCase):
     def test_the_save_prompt_comes_after_the_tests_and_the_default_is_to_save_nothing(self):
         _, out, _, asked = run_cli(cli.cmd_find, self.args(), self.client, answers=["1", ""], interactive=True)
         self.assertEqual(len(asked), 2)
-        self.assertIn("y = save", asked[1]["prompt"])
+        self.assertIn("y = yes", asked[1]["prompt"])
         self.assertIn("Tested albums you can save", asked[1]["shown"])
         self.assertIn("tests V0 V1", asked[1]["shown"])
         self.assertFalse(self.album_dir().exists(), "Enter is not a yes")

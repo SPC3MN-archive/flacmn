@@ -71,6 +71,14 @@ initiative: show the plan first and get the user's yes. Files are saved as the l
 `<Artist>/<Album>/01 Title.flac` plus `cover.jpg`, no rip logs (`--rip-files keep`, `--track-names keep` change that),
 and the album is added to the inventory workbook found in the library folder (`--inventory`, `--no-inventory`).
 
+## Replacing an album the user already has (MP3 to FLAC)
+
+`python3 -m iaflac replace --scan` lists library albums with audio but no FLAC (read-only). `replace "Artist/Album"` runs
+the same search, test and confirm pipeline against that album: the new FLACs are downloaded and verified into a hidden
+staging folder first, and only then is the old folder moved to the Trash (never deleted) and the inventory's rows for it
+replaced. It refuses albums that already contain FLAC. Show the user the plan, including the old and new track counts, and
+get a clear yes; never pass `--yes` or `--replace` on your own initiative, because it moves their music.
+
 ## Downloading (needs the user's explicit yes)
 
 `python3 -m iaflac get <identifier> --dest <folder>` prints the files and sizes and downloads nothing. Show the

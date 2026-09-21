@@ -57,6 +57,10 @@ def rip_files(item) -> list:
 
 def format_label(item) -> str:
     """archive.org's own format label per file: 'Flac', or '24bit Flac' for hi-res. Not verified."""
+    if getattr(item, "media", "flac") == "wav":
+        return "WAV, converted to FLAC when saved"
+    if getattr(item, "media", "flac") == "mp3":
+        return "VBR MP3, lossy"
     seen = []
     for f in item.flacs:
         name = FORMAT_NAMES.get(f.format, f.format or "FLAC")
@@ -93,6 +97,21 @@ def description_hints(item) -> str:
     return "; ".join(parts)
 
 
+def source_label(item) -> str:
+    """What kind of upload this looks like, from the rip files it ships and what its uploader says (claims, not checks)."""
+    kind = {"wav": "WAV", "mp3": "VBR MP3"}.get(getattr(item, "media", "flac"), "FLAC")
+    if item.files_of("log") or item.files_of("cue"):
+        return "CD rip (ships a rip log or cue)"
+    claims = prov.scan_claims(item)
+    if claims["cd"]:
+        return "CD rip (claimed by the uploader)"
+    if "vinyl" in claims["other"]:
+        return "vinyl rip (claimed by the uploader)"
+    if claims["other"]:
+        return "/".join(claims["other"]) + " source (claimed by the uploader)"
+    return f"plain {kind} (source not stated)"
+
+
 def artist_label(artist: str, item) -> str:
     """How an item relates to an artist-only request. Finding the name inside a title is weak evidence, so say so."""
     if item.creator and matching.similarity(artist, item.creator) >= 0.9 and matching.normalize(artist) == matching.normalize(item.creator):
@@ -125,7 +144,7 @@ def facts(cand, artist: str = "") -> dict:
         "downloads": it.downloads, "rip_files": rip_files(it), "cover": pick_cover(it) is not None,
         "licence": short_licence(it.licenseurl), "free": it.is_free, "live": it.is_live,
         "collections": it.collections[:3], "other_lossless": it.other_lossless,
-        "tracks": track_preview(it, artist), "description": description_hints(it),
+        "tracks": track_preview(it, artist), "description": description_hints(it), "source": source_label(it),
     }
 
 
@@ -135,12 +154,14 @@ def candidate_lines(index: int, cand, artist: str = "", label: Optional[str] = N
     bits = []
     if label:
         bits.append(label)
+    bits.append(f["source"])
     if same_as:
         bits.append(f"another upload or edition of #{same_as}")
     creator = f["creator"]
     if creator and creator.casefold() not in (f["title"] or "").casefold():
         bits.append("by " + cut(creator, 40))
-    bits += [f"{f['flac_files']} FLAC ({f['format']})",
+    word = {"wav": "WAV", "mp3": "MP3"}.get(cand.item.media, "FLAC")
+    bits += [f"{f['flac_files']} {word} ({f['format']})",
              f"{f['runtime_min']:.1f} min" if f["runtime_min"] else "runtime not listed", f"{f['flac_mb']:,} MB"]
     if f["year"]:
         bits.append(str(f["year"]))

@@ -20,9 +20,12 @@ def fmt_mb(nbytes: int) -> str:
     return f"{nbytes / 1e6:,.0f} MB"
 
 
+MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "mp3": "VBR MP3"}
+
+
 def facts(c: Candidate) -> str:
-    st = c.stats
-    return (f"{len(c.item.flacs)} FLAC · {st.format_label() if st else '?'} · "
+    st = c.alt_stats if c.item.media != "flac" else c.stats
+    return (f"{len(c.item.flacs)} {MEDIA_WORD.get(c.item.media, 'FLAC')} · {st.format_label() if st else '?'} · "
             f"{fmt_minutes(c.item.runtime_seconds)} · {fmt_mb(c.item.flac_bytes)}")
 
 
@@ -35,6 +38,12 @@ def verification(c: Candidate) -> str:
             parts.append(f"V1 ✗ {len(st.bad)}/{st.n} files are not FLAC ({kinds})")
         else:
             parts.append(f"V1 ✓ {st.ok}/{st.n} headers are real FLAC")
+    if c.alt_stats and c.alt_stats.n:
+        a, word = c.alt_stats, MEDIA_WORD.get(c.item.media, "")
+        if a.bad:
+            parts.append(f"V1 ✗ {len(a.bad)}/{a.n} files are not real {word} ({', '.join(sorted({k for _, k, _ in a.bad}))})")
+        else:
+            parts.append(f"V1 ✓ {a.ok}/{a.n} headers are real {word} ({a.format_label()})")
     if c.integrity:
         ok = sum(r.ok for _, r in c.integrity)
         bits = "; ".join(sorted({r.message for _, r in c.integrity if r.message}))[:120]
@@ -98,7 +107,7 @@ def render_markdown(title: str, results: list, meta: dict) -> str:
     out = [f"# iaflac report — {title}", "",
            f"Generated {meta.get('generated', '')} · {meta.get('stats', '')}", "",
            "Tiers: **A** CD rip with strong evidence · **B** CD rip, likely · **C** real lossless, source not verified as CD "
-           "· **D** failed or suspect. Evidence is uploader-supplied or heuristic, so a tier is a ranking, not a guarantee.", ""]
+           "· **L** lossy MP3, only when no FLAC or WAV exists · **D** failed or suspect. Evidence is uploader-supplied or heuristic, so a tier is a ranking, not a guarantee.", ""]
     for note in meta.get("notes", []):
         out.append(f"- {note}")
     if meta.get("searched"):

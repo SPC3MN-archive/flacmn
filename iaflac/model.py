@@ -68,6 +68,18 @@ def file_kind(name: str) -> str:
     return "other"
 
 
+VBR_FORMAT = "VBR MP3"
+
+
+def is_track(f: "FileInfo", media: str = "flac") -> bool:
+    """Is this file one of the album's tracks in the given media? Original WAVs, IA's 'VBR MP3' files, or FLAC."""
+    if media == "wav":
+        return f.name.lower().endswith((".wav", ".wave")) and f.source != "derivative"
+    if media == "mp3":
+        return f.format == VBR_FORMAT
+    return file_kind(f.name) == "flac"
+
+
 @dataclass
 class FileInfo:
     name: str
@@ -104,6 +116,7 @@ class ItemInfo:
     downloads: int = 0
     item_size: int = 0
     files: list = field(default_factory=list)      # list[FileInfo]
+    media: str = "flac"                            # what `flacs` (the tracks) means: "flac", or for the fallback "wav" / "mp3" (VBR)
 
     @property
     def url(self) -> str:
@@ -111,8 +124,9 @@ class ItemInfo:
 
     @property
     def flacs(self) -> list:
-        return sorted((f for f in self.files if file_kind(f.name) == "flac"),
-                      key=lambda f: natural_key(f.name))
+        """The item's tracks in the media being looked at: FLAC files, or (when no FLAC exists and the fallback search
+        found this item by its WAV or VBR MP3 files) those files. The name is kept so everything downstream works alike."""
+        return sorted((f for f in self.files if is_track(f, self.media)), key=lambda f: natural_key(f.name))
 
     def files_of(self, kind: str) -> list:
         return sorted((f for f in self.files if file_kind(f.name) == kind and f.source != "derivative"),

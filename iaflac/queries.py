@@ -120,6 +120,27 @@ def other_lossless_rung(artist: str, album: str) -> Rung:
     return Rung("other lossless formats (ALAC/WAV/APE/WavPack/SHN)", q, rows=10)
 
 
+ALT_FORMAT = {"wav": "format:WAVE", "vbr": 'format:"VBR MP3"'}
+ALT_NAME = {"wav": "WAV", "vbr": "VBR MP3"}
+ALT_MEDIA = {"wav": "wav", "vbr": "mp3"}          # search key -> ItemInfo.media
+
+
+def alt_rungs(artist: str, album: str, media: str) -> list:
+    """The fallback when no FLAC exists: uploads that have WAV files (lossless, converted to FLAC when saved), or
+    IA's 'VBR MP3' files (lossy, saved as MP3). Same artist/title matching as for FLAC."""
+    artist, album = clean_title(artist), clean_title(album)
+    base = f"mediatype:audio AND -access-restricted-item:true AND {ALT_FORMAT[media]}"
+    name = ALT_NAME[media]
+    if not album:
+        return [Rung(f"artist, {name}", f"{base} AND {_artist_clause(artist)}", rows=30)]
+    rungs = [Rung(f"exact title, {name}", f"{base} AND {_artist_clause(artist)} AND title:{phrase(album)}")]
+    at, bt = _and_tokens(artist), _and_tokens(album)
+    if at and bt:
+        rungs.append(Rung(f"relaxed words in title/description, {name}",
+                          f"{base} AND (creator:({at}) OR title:({at})) AND (title:({bt}) OR description:({bt}))"))
+    return rungs
+
+
 def parse_years(spec: str) -> tuple:
     m = re.fullmatch(r"\s*(\d{4})\s*(?:[-:]\s*(\d{4}))?\s*", spec or "")
     if not m:

@@ -81,11 +81,15 @@ def cmd_verify(args, client: IAClient) -> int:
     return 0
 
 
+FALLBACKS = {"both": ("wav", "vbr"), "wav": ("wav",), "vbr": ("vbr",), "none": ()}
+MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "mp3": "MP3"}
+
+
 def options_from(args, run_dir: Path) -> Options:
     return Options(top=args.top, include_live=args.include_live, free_only=args.free_only,
                    rip_only=getattr(args, "rip_only", False), deep=args.deep, spectral=not args.no_spectral,
                    max_candidates=getattr(args, "max_candidates", 10), max_deep_bytes=args.max_deep_mb * 1024 * 1024,
-                   spectrogram_dir=run_dir / "spectrograms")
+                   spectrogram_dir=run_dir / "spectrograms", fallback=FALLBACKS.get(getattr(args, "fallback", "none"), ()))
 
 
 SEARCH_ONLY_HINT = """Nothing was tested. To test some of these, either:
@@ -402,13 +406,18 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         identifier, override, cand = job.identifier, job.names, job.cand
         try:
             cand = cand or pipe.load(identifier)
-            if not cand.probes:
+            if not cand.probes and not cand.alt_stats:
                 pipe.probe(cand)
         except IAError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
             continue
         old = old_album = staging = None
+        media = cand.item.media
+        if job.replace and media == "mp3":
+            say(f"error: {identifier}: this upload only has lossy MP3 files, so it cannot replace your album with FLAC")
+            exit_code = 2
+            continue
         if job.replace:
             old = replace_mod.survey(job.replace)
             if not old.replaceable:
@@ -429,27 +438,33 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         artist = artist if job.replace else names_mod.canonical_artist(artist, known)
         try:
             res = download.library_get(client, cand.item, library, artist, album, yes=yes, art=art,
-                                       rip=rip, track_names=track_names, folder=staging, log=say)
+                                       rip=rip, track_names=track_names, folder=staging, media=media, log=say)
         except download.DownloadError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
             continue
-        flacs = [pf for pf in res.planned if pf.info.name.lower().endswith(".flac")]
+        flacs = [pf for pf in res.planned if download.is_track(pf.info, media)]
         rip_files = sum(1 for pf in res.planned if download.file_kind(pf.info.name) in download.LIB_RIP_ROLES)
+        word = MEDIA_WORD[media]
         if show_plan:
             print(f"\n{identifier}\n  {artist}  /  {album}   ({source})")
             if job.replace:
-                print(f"  REPLACES: {job.replace}\n            now {old.describe()}  ->  {len(flacs)} FLAC")
+                print(f"  REPLACES: {job.replace}\n            now {old.describe()}  ->  {len(flacs)} {'FLAC' if media != 'mp3' else word}")
                 if old.tracks != len(flacs):
                     print(f"  ! the old album has {old.tracks} track(s) and the new one {len(flacs)}: check the names above before saying yes")
                 print("  The old folder goes to the Trash (you can put it back); anything else in it, such as booklets, is kept.")
             else:
                 print(f"  destination: {res.folder}")
-            print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} FLAC"
+            if media == "wav":
+                print("  These are WAV files. Each is downloaded, checked against archive.org's checksum, encoded to FLAC "
+                      "(lossless, verified as it is encoded) and the WAV removed.")
+            elif media == "mp3":
+                print("  ** LOSSY: no FLAC or WAV exists for this album. These are VBR MP3 files and will be saved as MP3. **")
+            print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} {word}"
                   + (f", cover: {res.cover.name}" if res.cover else ", no cover art")
                   + (f", rip evidence: {rip_files} file(s)" if rip == "keep" else ""))
             for pf in flacs[:3]:
-                print(f"    {pf.path.relative_to(res.folder.resolve())}")
+                print(f"    {(pf.final or pf.path).relative_to(res.folder.resolve())}")
             if len(flacs) > 3:
                 print(f"    ... {len(flacs) - 3} more")
             for note in res.skipped:
@@ -457,7 +472,8 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         preview = None
         if book:
             try:
-                preview = inv.album_from_item(cand.item, cand.probes, artist, album)
+                preview = (inv.album_from_alt(cand.item, cand.alt_stats, artist, album) if media != "flac"
+                           else inv.album_from_item(cand.item, cand.probes, artist, album))
                 preview.replaces = old_album or ""
                 status = book.plan([preview]).placements[0].status
                 if status == "already in inventory":
@@ -502,7 +518,7 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
                   + (f"\n  kept from the old folder: {', '.join(carried[:6])}" if carried else ""))
         if book:
             try:
-                actual = inv.album_from_folder(final, artist, album)
+                actual = inv.album_from_folder(final, artist, album, allow_mp3=media == "mp3")
                 actual.replaces = old_album or ""
             except inv.InventoryError as exc:
                 say(f"  cannot read the downloaded folder for the inventory: {exc}")
@@ -604,7 +620,7 @@ def inventory_from(args, library: Path) -> tuple:
 
 
 def savable(results: list) -> tuple:
-    """Tested candidates that may be saved (tier A-C), and the ones that may not (tier D or unknown), by identifier.
+    """Tested candidates that may be saved (tier A-C, or L for lossy MP3 when no lossless copy exists), and the ones that may not (tier D or unknown), by identifier.
     Each candidate remembers the request it came from (`cand.request`)."""
     ok, blocked, seen = [], [], set()
     for res in results:
@@ -613,7 +629,7 @@ def savable(results: list) -> tuple:
                 continue
             seen.add(cand.identifier)
             cand.request = res.want.label if hasattr(res, "want") else ""
-            (ok if cand.tier in ("A", "B", "C") else blocked).append(cand)
+            (ok if cand.tier in ("A", "B", "C", "L") else blocked).append(cand)
     return ok, blocked
 
 
@@ -714,11 +730,13 @@ def save_phase(args, client: IAClient, results: list) -> int:
         if cand.identifier in replacing:
             now = replace_mod.survey(replacing[cand.identifier])
             artist, album = replacing[cand.identifier].parent.name, replace_mod.album_name_from_folder(replacing[cand.identifier].name, replacing[cand.identifier].parent.name)
-            print(f"  {i:>3}. {cand.tier}  {artist} / {album}   ** REPLACES your album ({now.describe()}) **\n       {len(cand.item.flacs)} FLAC · "
+            print(f"  {i:>3}. {cand.tier}  {artist} / {album}   ** REPLACES your album ({now.describe()}) **\n       {len(cand.item.flacs)} {MEDIA_WORD[cand.item.media]} · "
                   f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
                   f"       {cand.item.url}")
             continue
-        print(f"  {i:>3}. {cand.tier}  {artist} / {album}\n       {len(cand.item.flacs)} FLAC · "
+        print(f"  {i:>3}. {cand.tier}  {artist} / {album}"
+              + ({"wav": "   (WAV, will be converted to FLAC)", "mp3": "   ** LOSSY: VBR MP3 **"}.get(cand.item.media, ""))
+              + f"\n       {len(cand.item.flacs)} {MEDIA_WORD[cand.item.media]} · "
               f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
               f"       {cand.item.url}")
     interactive = is_interactive()
@@ -896,6 +914,9 @@ def add_common(p: argparse.ArgumentParser, deep_default: str = "top") -> None:
 
 
 def add_find_options(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--fallback", choices=list(FALLBACKS), default="both",
+                   help="when no FLAC is found, look for WAV (lossless, converted to FLAC when saved) and/or VBR MP3 "
+                        "(lossy, saved as MP3): both (default), wav, vbr or none")
     p.add_argument("--rip-only", action="store_true", help="only items that ship a rip log or cue sheet")
     p.add_argument("--top", type=int, default=3, help="candidates listed per request (default 3)")
     p.add_argument("--max-candidates", type=int, default=10, help="search hits to inspect per request (default 10)")
@@ -937,6 +958,7 @@ def main(argv=None) -> int:
     r.add_argument("items", nargs="*", help='album folders ("Artist/Album" in the library, or a path) or "Artist - Album" requests')
     r.add_argument("--scan", action="store_true", help="list the albums in the library that have audio but no FLAC, and stop")
     add_find_options(r)
+    r.set_defaults(fallback="wav")            # replacing an MP3 album with another MP3 is not the point
 
     g = sub.add_parser("genre", help="discover albums by genre instead of by name")
     g.add_argument("genre", help='e.g. shoegaze, "post-punk", ambient (see genres.yml; any phrase works)')

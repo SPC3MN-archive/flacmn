@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .ia_client import IAClient, IAError
-from .model import FileInfo, ItemInfo, file_kind
+from .model import FileInfo, ItemInfo, file_kind, is_track
 from .names import folder_component
 
 # roles we will fetch. Cover art is included by default but only originals (never IA's derived thumbnails).
@@ -41,6 +41,7 @@ class DownloadError(RuntimeError):
 class PlannedFile:
     info: FileInfo
     path: Path
+    final: Optional[Path] = None      # a WAV is downloaded to `path` and encoded to this .flac (then the WAV is removed)
 
 
 @dataclass
@@ -57,6 +58,7 @@ class GetResult:
     artist: str = ""                                  # library layout only
     album: str = ""
     cover: Optional[FileInfo] = None
+    media: str = "flac"               # flac | wav (encoded to FLAC after download) | mp3 (VBR, kept as MP3)
 
     @property
     def total_bytes(self) -> int:
@@ -180,6 +182,36 @@ def _fetch(client: IAClient, identifier: str, pf: PlannedFile) -> None:
         resp.close()
 
 
+def encode_wavs(res: GetResult, log: Callable[[str], None]) -> None:
+    """Encode each downloaded WAV to FLAC (lossless, `flac --verify` decodes and compares as it goes), then remove the
+    WAV. The FLAC gets ARTIST/ALBUM/TITLE/TRACKNUMBER tags because a WAV carries none. Failures go in res.failures and
+    leave the WAV where it is."""
+    flac = shutil.which("flac")
+    if not flac:
+        res.failures.append("flac is not installed, so the WAV files cannot be encoded")
+        return
+    todo = [pf for pf in res.planned if pf.final and pf.path.exists()]
+    for i, pf in enumerate(todo, 1):
+        log(f"  encoding {i}/{len(todo)}: {pf.final.name}")
+        out = pf.final.with_name(pf.final.name + ".part")
+        stem = LEADING_TRACK.sub("", pf.final.stem).strip() or pf.final.stem
+        number = LEADING_TRACK.match(pf.final.stem)
+        tags = [f"--tag=ARTIST={res.artist}", f"--tag=ALBUM={res.album}", f"--tag=TITLE={stem}"]
+        if number and number.group(1).isdigit():
+            tags.append(f"--tag=TRACKNUMBER={int(number.group(1))}")
+        proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), *tags, str(pf.path)], capture_output=True)
+        if proc.returncode != 0 or not out.exists():
+            out.unlink(missing_ok=True)
+            msg = next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "flac failed")
+            res.failures.append(f"{pf.info.name}: could not be encoded to FLAC ({msg}); the WAV was kept")
+            continue
+        out.replace(pf.final)
+        pf.path.unlink()
+
+
+LEADING_TRACK = re.compile(r"^\s*(?:\d{1,2}[-.])?(\d{1,3})[\s._\-)]*")
+
+
 def get_item(client: IAClient, item: ItemInfo, dest: Path, *, yes: bool = False, art: bool = True,
              log: Callable[[str], None] = lambda m: None) -> GetResult:
     res = plan_get(item, dest, art=art)
@@ -192,6 +224,10 @@ def _execute(client: IAClient, identifier: str, res: GetResult, log: Callable[[s
     res.executed = True
     for i, pf in enumerate(res.planned, 1):
         f, part = pf.info, pf.path.with_name(pf.path.name + ".part")
+        if pf.final and pf.final.exists() and not pf.path.exists():          # a WAV that was already encoded to FLAC
+            res.already_had += 1
+            log(f"  [{i}/{len(res.planned)}] have {pf.final.name}")
+            continue
         if matches_manifest(pf.path, f) is True:
             res.already_had += 1
             log(f"  [{i}/{len(res.planned)}] have {pf.path.name}")
@@ -270,24 +306,25 @@ def library_track_name(rel: Path, artist: str) -> Path:
 
 
 def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art: str = "cover",
-                 rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None) -> GetResult:
+                 rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
+                 media: str = "flac") -> GetResult:
     """Where everything would go, without touching the disk. art: cover | all | none. rip: keep | skip.
     track_names: 'library' renames tracks to 'NN Title.flac' like the rest of the library, 'keep' uses archive.org's names."""
     a_dir, al_dir = folder_component(artist), folder_component(album)
     if not a_dir or not al_dir:
         raise DownloadError(f"cannot make folder names from artist {artist!r} and album {album!r}")
     folder = folder or library / a_dir / al_dir      # an explicit folder (a staging folder for a replacement) must still be inside the library
-    res = GetResult(identifier=item.identifier, folder=folder, artist=artist, album=album)
+    res = GetResult(identifier=item.identifier, folder=folder, artist=artist, album=album, media=media)
     root = folder.resolve()
     if library.resolve() not in root.parents:
         raise DownloadError(f"refusing {folder}: it is not inside {library}")
     cover = pick_cover(item) if art in ("cover", "all") else None
     entries = []
     for f in sorted(item.files, key=lambda f: f.name):
-        role = file_kind(f.name)
-        if SKIP_NAMES.search(f.name) or (role != "flac" and f.source == "derivative"):
+        role, track = file_kind(f.name), is_track(f, media)
+        if SKIP_NAMES.search(f.name) or (not track and f.source == "derivative"):
             continue
-        wanted = (role == "flac" or (rip == "keep" and role in LIB_RIP_ROLES)
+        wanted = (track or (rip == "keep" and role in LIB_RIP_ROLES)
                   or (art == "all" and role == "art" and f is not cover))
         if not wanted:
             continue
@@ -296,11 +333,12 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
             res.skipped.append(f"{f.name!r}: unsafe path, refused")
             continue
         entries.append((f, rel))
+    tracks = {id(f) for f, _ in entries if is_track(f, media)}
     tops = {rel.parts[0] for _, rel in entries}
     if len(tops) == 1 and entries and all(len(rel.parts) > 1 for _, rel in entries):
         entries = [(f, Path(*rel.parts[1:])) for f, rel in entries]
     if track_names == "library":
-        renamed = [(f, library_track_name(rel, artist) if file_kind(f.name) == "flac" else rel) for f, rel in entries]
+        renamed = [(f, library_track_name(rel, artist) if id(f) in tracks else rel) for f, rel in entries]
         names = [str(rel).casefold() for _, rel in renamed]
         if len(set(names)) == len(names):            # never let two tracks land on one name: then keep archive names
             entries = renamed
@@ -309,7 +347,7 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
         if root not in target.parents:
             res.skipped.append(f"{f.name!r}: would land outside the album folder, refused")
             continue
-        res.planned.append(PlannedFile(f, target))
+        res.planned.append(PlannedFile(f, target, target.with_suffix(".flac") if media == "wav" and id(f) in tracks else None))
     if cover is not None:
         res.cover = cover
         res.planned.append(PlannedFile(cover, (folder / f"cover{Path(cover.name).suffix.lower()}").resolve()))
@@ -318,8 +356,8 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
 
 def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, album: str, *, yes: bool = False,
                 art: str = "cover", rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
-                log: Callable[[str], None] = lambda m: None) -> GetResult:
-    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder)
+                media: str = "flac", log: Callable[[str], None] = lambda m: None) -> GetResult:
+    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder, media=media)
     if not yes:
         return res
     folder = res.folder
@@ -328,9 +366,10 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
         # Never merge into, or overwrite, something that is not ours. A folder holding exactly this album's own
         # files (a finished run, or an interrupted one) is fine: verified files are reported as "already had".
         wanted = {pf.path: pf.info for pf in res.planned}
+        converted = {pf.final for pf in res.planned if pf.final}      # the .flac a WAV becomes is ours too
         present = [p.resolve() for p in folder.rglob("*")
                    if p.is_file() and p.name not in IGNORABLE and p.name != INCOMPLETE and not p.name.endswith(".part")]
-        foreign = [p for p in present if p not in wanted]
+        foreign = [p for p in present if p not in wanted and p not in converted]
         if foreign and not marker.exists():
             raise DownloadError(f"{folder} already has files that are not part of this album ({foreign[0].name}); "
                                 "not merging into your album folder")
@@ -340,6 +379,8 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
     folder.mkdir(parents=True, exist_ok=True)
     marker.write_text(f"{item.identifier}\n")
     _execute(client, item.identifier, res, log)
+    if media == "wav" and not res.failures:
+        encode_wavs(res, log)
     if not res.failures:
         marker.unlink(missing_ok=True)
     return res

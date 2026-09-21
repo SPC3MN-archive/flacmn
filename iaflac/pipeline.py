@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
-from . import genre as genre_mod, integrity, matching, provenance as prov, queries, spectral
+from . import altmedia, genre as genre_mod, integrity, matching, provenance as prov, queries, spectral
 from .flac_probe import FlacProbe, cross_check, probe_header
 from .genre import CONFIDENCE, GenreHit, GenreResult, GenreSpec
 from .ia_client import IAClient, IAError
@@ -17,7 +17,7 @@ from .model import ItemInfo, as_list
 from .queries import Want
 
 LOG_MAX_BYTES = 300_000
-TIER_RANK = {"A": 0, "B": 1, "C": 2, "D": 3, "?": 4}
+TIER_RANK = {"A": 0, "B": 1, "C": 2, "L": 3, "D": 4, "?": 5}
 WANTS_LIVE = re.compile(r"\b(live|concert|unplugged|bootleg|sbd|soundboard)\b", re.I)
 
 
@@ -32,6 +32,7 @@ class Options:
     max_candidates: int = 10            # how many search hits get fully inspected
     max_deep_bytes: int = 1500 * 1024 * 1024
     spectrogram_dir: Optional[Path] = None
+    fallback: tuple = ()                # when no FLAC is found, look for these instead: ("wav", "vbr")
 
 
 @dataclass
@@ -51,6 +52,7 @@ class Candidate:
     alternates: list = field(default_factory=list)
     notes: list = field(default_factory=list)
     genre_conf: str = ""
+    alt_stats: Optional[altmedia.AltStats] = None            # WAV / VBR MP3 candidates (no FLAC exists): header facts
 
     @property
     def tier(self) -> str:
@@ -113,15 +115,36 @@ class Pipeline:
 
     # ---- V0: metadata ---------------------------------------------------------------------
 
-    def load(self, identifier: str, via: str = "", downloads: Optional[int] = None) -> Candidate:
+    def load(self, identifier: str, via: str = "", downloads: Optional[int] = None, media: str = "flac") -> Candidate:
         item = ItemInfo.from_metadata(self.client.metadata(identifier))
+        item.media = media
         if downloads is not None:
             item.downloads = downloads
         return Candidate(item=item, via=via)
 
     # ---- V1: header probes ----------------------------------------------------------------
 
+    def probe_alt(self, cand: Candidate) -> None:
+        """V1 for WAV / VBR MP3 candidates: real headers, format, and (WAV) CD sector alignment."""
+        media, files = cand.item.media, cand.item.flacs
+        if len(files) > self.max_probe_tracks:
+            step, total = len(files) / self.max_probe_tracks, len(files)
+            files = [files[int(i * step)] for i in range(self.max_probe_tracks)]
+            cand.notes.append(f"probed {len(files)} of {total} files (evenly sampled)")
+
+        def one(f):
+            return f.name, altmedia.probe_file(media, lambda start, n: self.client.range_get(cand.identifier, f.name, start, n),
+                                               f.size, f.length)
+
+        with ThreadPoolExecutor(self.client.max_concurrency) as pool:
+            probes = dict(pool.map(one, files))
+        cand.alt_stats = altmedia.build_stats(media, probes)
+        if cand.alt_stats.ok and not cand.alt_stats.bad:
+            cand.levels.append("V1")
+
     def probe(self, cand: Candidate) -> None:
+        if cand.item.media != "flac":
+            return self.probe_alt(cand)
         flacs = cand.item.flacs
         if len(flacs) > self.max_probe_tracks:
             step = len(flacs) / self.max_probe_tracks
@@ -178,6 +201,9 @@ class Pipeline:
     # ---- verdict --------------------------------------------------------------------------
 
     def assess(self, cand: Candidate) -> None:
+        if cand.item.media != "flac":
+            cand.provenance = altmedia.assess(cand.item, cand.alt_stats or altmedia.AltStats(cand.item.media), cand.issues)
+            return
         integrity_ok = all(r.ok for _, r in cand.integrity) if cand.integrity else None
         spectral_verdict = cand.spectral.verdict if cand.spectral else None
         cand.provenance = prov.assess(cand.item, cand.stats or prov.ProbeStats(), cand.logs, cand.aucdtect,
@@ -219,15 +245,29 @@ class Pipeline:
                  else queries.artist_rungs(want.artist, opts.rip_only))
         pool: dict = {}
         for rung in rungs:
+            # CD-rip-shaped and plain-FLAC (including vinyl rips) are always both searched, so a pile of CD rips can't hide
+            # the rest; only the loosest word-matching rung is skipped once there are enough exact matches.
+            if want.album and rung.label.startswith("relaxed") and sum(1 for h in pool.values() if h.quick.bucket == 0) >= 3:
+                break
             docs = list(self.client.search_iter(rung.query, max_hits=rung.rows))
             res.rungs.append((rung.label, len(docs)))
             self.log(f"  [{want.label}] {rung.label}: {len(docs)} hit(s)")
             for d in docs:
                 pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), "rip-shaped" in rung.label))
-            good = sum(1 for h in pool.values() if h.quick.bucket == 0)
-            if (want.album and good >= 3) or (not want.album and len(pool) >= 8):
-                break
         return pool
+
+    @staticmethod
+    def choose_hits(plausible: list, limit: int, reserve: int = 3) -> list:
+        """The best `limit` hits, but never letting CD-rip-shaped ones fill every slot: up to `reserve` places go to the
+        best hits that are not (vinyl rips, plain FLAC uploads), so they are listed and can be chosen."""
+        head = plausible[:limit]
+        plain_in_head = [h for h in head if not h.rip_shaped]
+        plain_rest = [h for h in plausible[limit:] if not h.rip_shaped]
+        need = min(reserve, limit // 3, len(plain_in_head) + len(plain_rest)) - len(plain_in_head)
+        if need > 0 and plain_rest:
+            keep = [h for h in head if h.rip_shaped][: limit - need] + plain_in_head
+            head = [h for h in plausible if h in keep or h in plain_rest[:need]]
+        return head
 
     def search_one(self, want: Want, opts: Options) -> WantResult:
         """The search phase: queries plus item metadata. No file is opened; nothing is tested. The result's `found`
@@ -240,7 +280,7 @@ class Pipeline:
         res.near_misses = [{"identifier": h.doc["identifier"], "title": first(h.doc.get("title")),
                             "creator": first(h.doc.get("creator")), "downloads": int(h.doc.get("downloads") or 0)}
                            for h in ranked_docs if h.quick.bucket == 2][:8]
-        selected = plausible[: opts.max_candidates]
+        selected = self.choose_hits(plausible, opts.max_candidates)
         self.log(f"  [{want.label}] reading the item records of {len(selected)} candidate(s) (about 3 s each when not cached)")
 
         def load_one(h):
@@ -253,11 +293,20 @@ class Pipeline:
         with ThreadPoolExecutor(self.client.max_concurrency) as ex:
             loaded = [c for c in ex.map(load_one, selected) if c]
 
+        self._admit(res, loaded, want, opts)
+        if not res.found and opts.fallback and not opts.rip_only:
+            self._alt_search(res, opts)
+        if not res.found:
+            self._fallback(res)
+        return res
+
+    def _admit(self, res: WantResult, loaded: list, want: Want, opts: Options) -> None:
+        """Put loaded candidates on the list of what was found, or count why they were left out."""
         wants_live = bool(WANTS_LIVE.search(want.raw))
         for cand in loaded:
             reason = ""
             if not cand.item.flacs:
-                reason = "no .flac files"
+                reason = "no .flac files" if cand.item.media == "flac" else f"no {cand.item.media.upper()} files"
             elif cand.item.is_live and not (opts.include_live or wants_live):
                 reason = "live recording (use --include-live)"
             elif opts.free_only and not cand.item.is_free:
@@ -269,9 +318,41 @@ class Pipeline:
             else:
                 cand.match = matching.match_fields(want.artist, want.album, cand.item.title, cand.item.creator)
                 res.found.append(cand)
-        if not res.found:
-            self._fallback(res)
-        return res
+
+    def _alt_search(self, res: WantResult, opts: Options) -> None:
+        """No FLAC matched: search again for WAV (lossless) and VBR MP3 uploads, WAV listed first."""
+        want = res.want
+        names = " / ".join(queries.ALT_NAME[m] for m in opts.fallback)
+        self.log(f"  [{want.label}] no FLAC found; searching for {names} instead")
+        for media in opts.fallback:
+            pool: dict = {}
+            for rung in queries.alt_rungs(want.artist, want.album, media):
+                docs = list(self.client.search_iter(rung.query, max_hits=rung.rows))
+                res.rungs.append((rung.label, len(docs)))
+                self.log(f"  [{want.label}] {rung.label}: {len(docs)} hit(s)")
+                for d in docs:
+                    pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), False))
+                if any(h.quick.bucket == 0 for h in pool.values()):
+                    break
+            hits = sorted((h for h in pool.values() if h.quick.bucket < 2),
+                          key=lambda h: (-round(h.quick.score, 1), -int(h.doc.get("downloads") or 0)))[: opts.max_candidates]
+
+            already = {c.identifier for c in res.found}          # a WAV upload also carries IA's derived VBR MP3s: list it once
+
+            def load_one(h, media=queries.ALT_MEDIA[media]):
+                if h.doc["identifier"] in already:
+                    return None
+                try:
+                    return self.load(h.doc["identifier"], via=h.via, downloads=int(h.doc.get("downloads") or 0), media=media)
+                except IAError as exc:
+                    res.notes.append(f"could not load {h.doc['identifier']}: {exc}")
+                    return None
+
+            with ThreadPoolExecutor(self.client.max_concurrency) as ex:
+                self._admit(res, [c for c in ex.map(load_one, hits) if c], want, opts)
+        if res.found:
+            res.notes.append("no FLAC found for this request: these are " + names + " uploads instead. "
+                             "WAV is lossless and is converted to FLAC when saved; VBR MP3 is lossy and stays MP3")
 
     def _fallback(self, res: WantResult) -> None:
         """Nothing matched: say so, and show what does exist (the artist's other FLAC items, other lossless formats)."""
@@ -335,6 +416,11 @@ class Pipeline:
     def deep_verify(self, cand: Candidate, opts: Options, integrity_check: bool = True,
                     spectral_check: bool = True) -> None:
         """V2: stream every file through `flac -t` (nothing is stored). V3: spectral check on 3 slices."""
+        if cand.item.media != "flac":
+            cand.notes.append("no decode or spectrum test for WAV / MP3: the download is checked against archive.org's checksums"
+                              + (" and every WAV is verified as it is encoded to FLAC" if cand.item.media == "wav" else ""))
+            self.assess(cand)
+            return
         item = cand.item
         flacs = item.flacs
         if integrity_check:

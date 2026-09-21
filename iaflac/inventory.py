@@ -81,6 +81,29 @@ def rows_for_entries(entries: list, artist: str, album: str) -> list:
             for path, bits, rate in ordered]
 
 
+def rows_for_typed(entries: list, artist: str, album: str) -> list:
+    """entries: [(relative path, file type, format)] -> inventory rows in natural track order."""
+    ordered = sorted(entries, key=lambda e: natural_key(str(e[0])))
+    return [(artist, album, clean_song(str(path), artist), file_type, fmt) for path, file_type, fmt in ordered]
+
+
+def mp3_file_type(path: Path) -> str:
+    """'MP3 (VBR 245kbps)', in the style of the workbook's 'MP3 (CBR 128kbps)' entries."""
+    from mutagen.mp3 import MP3
+    try:
+        info = MP3(path).info
+    except Exception as exc:
+        raise InventoryError(f"{path} is not a readable MP3 ({exc})") from exc
+    mode = str(getattr(info.bitrate_mode, "name", "") or "").upper()
+    return f"MP3 ({'VBR' if mode in ('', 'UNKNOWN') else mode} {round((info.bitrate or 0) / 1000)}kbps)"
+
+
+def album_from_alt(item, stats, artist: str, album: str) -> NewAlbum:
+    """A preview of the rows saving a WAV (becomes FLAC) or VBR MP3 candidate would produce."""
+    fmt = "FLAC" if item.media == "wav" else "MP3"
+    return NewAlbum(artist, album, rows_for_typed([(f.name, stats.file_type, fmt) for f in item.flacs], artist, album))
+
+
 def album_from_item(item, probes: dict, artist: str, album: str) -> NewAlbum:
     """A preview of the rows a download would produce, from archive.org's file list and the FLAC headers already
     probed. Tracks whose header was not probed are assumed to match the majority format of the ones that were."""
@@ -97,9 +120,9 @@ def album_from_item(item, probes: dict, artist: str, album: str) -> NewAlbum:
     return NewAlbum(artist, album, rows_for_entries(entries, artist, album))
 
 
-def album_from_folder(folder: Path, artist: str, album: str) -> NewAlbum:
-    """Read an album folder on disk (FLAC only) and build its rows from the real file headers."""
-    entries, other = [], []
+def album_from_folder(folder: Path, artist: str, album: str, allow_mp3: bool = False) -> NewAlbum:
+    """Read an album folder on disk (FLAC only, or MP3 only when allow_mp3) and build its rows from the real file headers."""
+    entries, other, mp3s = [], [], []
     for root, _dirs, files in os.walk(folder):
         for name in files:
             path = Path(root) / name
@@ -111,8 +134,14 @@ def album_from_folder(folder: Path, artist: str, album: str) -> NewAlbum:
                     raise InventoryError(f"{path} is not a valid FLAC ({probe.kind}: {probe.detail})")
                 si = probe.streaminfo
                 entries.append((path.relative_to(folder), si.bits_per_sample, si.sample_rate))
+            elif allow_mp3 and low.endswith(".mp3"):
+                mp3s.append((path.relative_to(folder), mp3_file_type(path), "MP3"))
             elif low.endswith(UNSUPPORTED_AUDIO):
                 other.append(name)
+    if mp3s and not entries and not other:
+        return NewAlbum(artist, album, rows_for_typed(mp3s, artist, album), folder)
+    if other or mp3s:
+        other += [p[0].name for p in mp3s]
     if other:
         raise InventoryError(f"{folder} contains non-FLAC audio ({', '.join(sorted(other)[:3])}...); "
                              "only FLAC albums are supported")

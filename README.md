@@ -62,7 +62,8 @@ tested item has a tier and the evidence behind it:
 |---|---|
 | **A** | CD rip, strong evidence: rip log plus CD-format, sector-aligned tracks |
 | **B** | CD rip, likely |
-| **C** | Real lossless, but not shown to come from a CD (48 kHz, 24-bit, no rip log) |
+| **C** | Real lossless, but not shown to come from a CD (48 kHz, 24-bit, vinyl rip, plain upload with no rip log) |
+| **L** | Lossy VBR MP3, offered only when no FLAC or WAV exists (see "When there is no FLAC") |
 | **D** | Failed or suspect: not FLAC, failed the decode test, or a lossy spectrum |
 
 Tiers describe how sure the tool is that the source was a CD, not how good the audio is. A tier C item can be a
@@ -165,12 +166,33 @@ Each item is verified in levels; a report row says which it reached.
 `genre` runs V0+V1 only (`--deep top` to add the deep checks to the best few).
 
 Tiers (ranking, best first): **A** CD rip with strong evidence (rip log + CD-format, sector-aligned tracks) ·
-**B** CD rip, likely · **C** real lossless, source not verified as CD (48 kHz, 24-bit, no evidence) ·
-**D** failed or suspect. The weights are constants in `iaflac/provenance.py`, pinned by tests against four real items.
+**B** CD rip, likely · **C** real lossless, source not verified as CD (48 kHz, 24-bit, vinyl, no evidence) ·
+**L** lossy MP3 (fallback only) · **D** failed or suspect. The weights are constants in `iaflac/provenance.py`, pinned by tests against four real items.
 
 CD-origin evidence: a CD track is a whole number of 588-sample sectors, so a real rip's tracks all have
 `total_samples % 588 == 0`. In real items: an EAC rip 12/12 and 14/14, a 48 kHz "(FLAC)" upload 0/12. Only meaningful
 in aggregate (three or more tracks, 90%+).
+
+## Vinyl rips, plain FLAC, and when there is no FLAC
+
+**Every kind of FLAC upload is searched, not just CD rips.** A name search always runs both the CD-rip query (uploads that
+ship a rip log or cue sheet) and the plain-FLAC query, and a few result slots are kept for the non-CD uploads so a pile
+of CD rips can't crowd them out. Each result says what kind of upload it looks like: `CD rip (ships a rip log or cue)`,
+`CD rip (claimed by the uploader)`, `vinyl rip (claimed by the uploader)`, or `plain FLAC (source not stated)`. Vinyl rips
+and plain FLAC get tier C: real lossless, just not provably CD. Use `--rip-only` to see CD rips only.
+
+**When there is no FLAC at all**, the search automatically looks again for two other kinds of upload:
+
+| Found | What it is | What saving does |
+|---|---|---|
+| **WAV** (tried first) | uncompressed and lossless | each WAV is downloaded, checked against archive.org's checksum, encoded to FLAC (`flac --best --verify`, so it is decoded and compared as it is written), tagged, and the WAV removed. The inventory records it as FLAC. |
+| **VBR MP3** | lossy (tier L) | saved as MP3, marked `** LOSSY **` in the plan, and recorded in the inventory as `MP3 (VBR 245kbps)`. |
+
+WAVs are tested by reading only their headers (real PCM, sample rate and bit depth, and for 44.1 kHz/16-bit whether
+every track is a whole number of CD sectors, which makes it tier B). There is no decode or spectrum test for WAV or MP3:
+the download's checksum is the check. `--fallback wav|vbr|both|none` chooses what is looked for (default `both`). `replace`
+only ever falls back to WAV, since swapping an MP3 album for another MP3 isn't the point. The fallback is skipped with
+`--rip-only`.
 
 ## Searching
 

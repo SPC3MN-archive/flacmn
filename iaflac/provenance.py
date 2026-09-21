@@ -36,6 +36,7 @@ TIER_LABELS = {
     "A": "CD rip, strong evidence",
     "B": "CD rip, likely",
     "C": "Lossless, source not verified as CD",
+    "L": "Lossy MP3 (no FLAC or WAV exists)",
     "D": "Failed or suspect",
 }
 

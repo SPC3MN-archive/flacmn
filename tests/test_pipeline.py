@@ -52,6 +52,28 @@ def make_item(identifier, title, creator, tracks=6, rip=True, subjects=(), downl
     return FakeItem(doc, {"metadata": metadata, "files": meta_files, "item_size": sum(map(len, files.values()))}, files)
 
 
+def make_alt_item(identifier, title, creator, media="wav", tracks=4, seed=0, samples=SAMPLES, description="", downloads=100):
+    """An item with no FLAC: WAV originals (plus IA's derived VBR MP3s, as IA makes them) or VBR MP3 files only."""
+    files, meta_files = {}, []
+
+    def add(name, data, fmt, source="original"):
+        files[name] = data
+        meta_files.append({"name": name, "format": fmt, "source": source, "size": str(len(data)), "length": None,
+                           "md5": hashlib.md5(data).hexdigest(), "sha1": hashlib.sha1(data).hexdigest()})
+
+    for i in range(tracks):
+        wav = tone_wav(samples, seed=seed * 100 + i)
+        if media == "wav":
+            add(f"{i + 1:02d} Track {i + 1}.wav", wav, "WAVE")
+            add(f"{i + 1:02d} Track {i + 1}.mp3", ffmpeg_convert(wav, "wav", ["-c:a", "libmp3lame", "-q:a", "2"], "mp3"), "VBR MP3", "derivative")
+        else:
+            add(f"{i + 1:02d} Track {i + 1}.mp3", ffmpeg_convert(wav, "wav", ["-c:a", "libmp3lame", "-q:a", "2"], "mp3"), "VBR MP3", "derivative")
+    metadata = {"identifier": identifier, "title": title, "creator": creator, "date": "1999", "description": description,
+                "collection": ["opensource_audio"], "subject": []}
+    doc = {"identifier": identifier, "title": title, "creator": creator, "downloads": downloads, "subject": []}
+    return FakeItem(doc, {"metadata": metadata, "files": meta_files, "item_size": sum(map(len, files.values()))}, files)
+
+
 class FakeResponse:
     def __init__(self, data):
         self.data = data
@@ -78,7 +100,7 @@ class FakeIA:
 
     @staticmethod
     def phrases(q):
-        return [p.casefold() for p in re.findall(r'"([^"]+)"', q.replace('format:"Cue Sheet"', ""))]
+        return [p.casefold() for p in re.findall(r'"([^"]+)"', q.replace('format:"Cue Sheet"', "").replace('format:"VBR MP3"', ""))]
 
     def search_iter(self, q, *, fields=None, sort=None, max_hits=100, page_size=100):
         self.queries.append(q)
@@ -89,6 +111,10 @@ class FakeIA:
         for item in self.items.values():
             doc = item.doc
             if want_rip and not item.rip_shaped:
+                continue
+            have = {f["format"] for f in item.metadata["files"]}
+            if any(clause in q and fmt not in have for clause, fmt in
+                   (("format:Flac", "Flac"), ("format:WAVE", "WAVE"), ('format:"VBR MP3"', "VBR MP3"))):
                 continue
             title_creator = f"{doc['title']} {doc['creator']}".casefold()
             if "subject:(" in q:                      # genre query: any phrase in subject or title

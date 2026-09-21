@@ -51,6 +51,7 @@ cached for 24 h).
 - **B** CD rip, likely: 44.1 kHz/16-bit tracks that are whole CD sectors (588 samples), or an unconfirmed log/cue.
 - **C** real lossless, source not verified as CD: 48 kHz, 24-bit, unaligned tracks, or no evidence. Often a web/store
   release or vinyl rip. Not fake, just not provably CD.
+- **L** lossy VBR MP3, only offered by the fallback below when no FLAC or WAV exists.
 - **D** failed or suspect: not real FLAC, fails `flac -t`, or the spectrum shows a lossy-codec lowpass.
 
 Verification levels in each report row: V0 metadata, V1 header of every (or a sample of) FLAC is real, V2 the whole
@@ -70,6 +71,13 @@ terminal it never downloads unless both `--save SPEC` and `--yes` are given, and
 initiative: show the plan first and get the user's yes. Files are saved as the library already has them:
 `<Artist>/<Album>/01 Title.flac` plus `cover.jpg`, no rip logs (`--rip-files keep`, `--track-names keep` change that),
 and the album is added to the inventory workbook found in the library folder (`--inventory`, `--no-inventory`).
+
+## Vinyl rips, plain FLAC, and no-FLAC fallback
+
+`find` searches CD rips, vinyl rips and plain FLAC together and labels each result's source (a claim, not a check). If no
+FLAC exists it searches again for WAV (lossless: encoded to FLAC and verified when saved) and VBR MP3 (lossy: saved as
+MP3, clearly marked). Say which kind of file it is when you show the user a fallback result, and never present VBR MP3 as
+lossless. `--fallback wav|vbr|both|none` controls it; `replace` uses WAV only.
 
 ## Replacing an album the user already has (MP3 to FLAC)
 

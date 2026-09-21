@@ -1,0 +1,3086 @@
+{
+ "identifier": "final-fantasy-viii-ost",
+ "metadata": {
+  "metadata": {
+   "identifier": "final-fantasy-viii-ost",
+   "title": "Final Fantasy VIII Original Soundtrack",
+   "creator": "Nobuo Uematsu",
+   "date": "1999-03-01",
+   "description": "Complete Final Fantasy VIII OST Release (CD): Final Fantasy VIII: Original Soundtrack Publisher: DigiCube Catalog#: SSCX 10028 Country: Japan Date: Mar 1, 1999 *EAC rip logs and packaging scans included",
+   "collection": [
+    "folksoundomy_gamesoundtracks",
+    "folksoundomy"
+   ],
+   "subject": [
+    "final fantasy viii",
+    "final fantasy 8",
+    "ffviii",
+    "ff8",
+    "soundtrack",
+    "ost",
+    "flac"
+   ],
+   "licenseurl": ""
+  },
+  "files": [
+   {
+    "name": "Disc 1/01. Liberi Fatali.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "20403908",
+    "length": "187.96"
+   },
+   {
+    "name": "Disc 1/02. Balamb Garden.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "17975902",
+    "length": "209.27"
+   },
+   {
+    "name": "Disc 1/03. Blue Fields.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "14788222",
+    "length": "174.13"
+   },
+   {
+    "name": "Disc 1/04. Don't Be Afraid.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "19927292",
+    "length": "172.04"
+   },
+   {
+    "name": "Disc 1/05. The Winner.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7237948",
+    "length": "67.33"
+   },
+   {
+    "name": "Disc 1/06. Find Your Way.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "19527544",
+    "length": "227.69"
+   },
+   {
+    "name": "Disc 1/07. SeeD.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "23052552",
+    "length": "256.77"
+   },
+   {
+    "name": "Disc 1/08. The Landing.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "26596808",
+    "length": "276.27"
+   },
+   {
+    "name": "Disc 1/09. Starting Up.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7740214",
+    "length": "79.73"
+   },
+   {
+    "name": "Disc 1/10. Force Your Way.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "26794477",
+    "length": "233.33"
+   },
+   {
+    "name": "Disc 1/11. The Loser.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7388900",
+    "length": "86.93"
+   },
+   {
+    "name": "Disc 1/12. Never Look Back.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "22095736",
+    "length": "203.47"
+   },
+   {
+    "name": "Disc 1/13. Dead End.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7953814",
+    "length": "71.09"
+   },
+   {
+    "name": "Disc 1/14. Breezy.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "11595128",
+    "length": "163.67"
+   },
+   {
+    "name": "Disc 1/15. Shuffle Or Boogie.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "11758552",
+    "length": "124.4"
+   },
+   {
+    "name": "Disc 1/16. Waltz For The Moon.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "17654035",
+    "length": "180.51"
+   },
+   {
+    "name": "Disc 1/17. Tell Me.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "19058128",
+    "length": "204.87"
+   },
+   {
+    "name": "Disc 1/18. Fear.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "13551582",
+    "length": "144.76"
+   },
+   {
+    "name": "Disc 1/19. The Man With The Machine Gun.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "20785063",
+    "length": "169.57"
+   },
+   {
+    "name": "Disc 1/20. Julia.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "5527953",
+    "length": "83.07"
+   },
+   {
+    "name": "Disc 1/21. Roses And Wine.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "10643962",
+    "length": "138.6"
+   },
+   {
+    "name": "Disc 1/22. Junction.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7751110",
+    "length": "97.89"
+   },
+   {
+    "name": "Disc 1/23. Timber Owls.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "16270969",
+    "length": "171.31"
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC] (DR).txt",
+    "format": "Text",
+    "source": "original",
+    "size": "2117",
+    "length": null
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].accurip",
+    "format": "Unknown",
+    "source": "original",
+    "size": "12195",
+    "length": null
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt",
+    "format": "Text",
+    "source": "original",
+    "size": "9058",
+    "length": null
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].cue",
+    "format": "Cue Sheet",
+    "source": "original",
+    "size": "3287",
+    "length": null
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].log",
+    "format": "Log",
+    "source": "original",
+    "size": "10846",
+    "length": null
+   },
+   {
+    "name": "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].sfv",
+    "format": "Simple File Verification",
+    "source": "original",
+    "size": "2740",
+    "length": null
+   },
+   {
+    "name": "Disc 2/01. My Mind.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "15187144",
+    "length": "192.4"
+   },
+   {
+    "name": "Disc 2/02. The Mission.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "24490206",
+    "length": "216.69"
+   },
+   {
+    "name": "Disc 2/03. Martial Law.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "23156455",
+    "length": "228.04"
+   },
+   {
+    "name": "Disc 2/04. Cactus Jack (Galbadian Anthem).flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "9367001",
+    "length": "90.07"
+   },
+   {
+    "name": "Disc 2/05. Only A Plank Between One And Perdition.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "15738152",
+    "length": "144.27"
+   },
+   {
+    "name": "Disc 2/06. Succession Of Witches.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "18169789",
+    "length": "198.67"
+   },
+   {
+    "name": "Disc 2/07. Galbadia Garden.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21761790",
+    "length": "217.27"
+   },
+   {
+    "name": "Disc 2/08. Unrest.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "13449041",
+    "length": "156.76"
+   },
+   {
+    "name": "Disc 2/09. Under Her Control.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21860058",
+    "length": "210.53"
+   },
+   {
+    "name": "Disc 2/10. The Stage Is Set.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "23872505",
+    "length": "219.97"
+   },
+   {
+    "name": "Disc 2/11. A Sacrifice.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21489625",
+    "length": "206.87"
+   },
+   {
+    "name": "Disc 2/12. Fithos Lusec Wecos Vinosec.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "26085711",
+    "length": "273.47"
+   },
+   {
+    "name": "Disc 2/13. Intruders.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "14365484",
+    "length": "151.93"
+   },
+   {
+    "name": "Disc 2/14. Premonition.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "30740745",
+    "length": "276.8"
+   },
+   {
+    "name": "Disc 2/15. Wounded.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "5861093",
+    "length": "53.2"
+   },
+   {
+    "name": "Disc 2/16. Fragments Of Memories.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "15793886",
+    "length": "193.96"
+   },
+   {
+    "name": "Disc 2/17. Jailed.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "20748366",
+    "length": "230.24"
+   },
+   {
+    "name": "Disc 2/18. Rivals.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "18504883",
+    "length": "210.93"
+   },
+   {
+    "name": "Disc 2/19. Ami.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "23190196",
+    "length": "277.33"
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC] (DR).txt",
+    "format": "Text",
+    "source": "original",
+    "size": "1940",
+    "length": null
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].accurip",
+    "format": "Unknown",
+    "source": "original",
+    "size": "9280",
+    "length": null
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt",
+    "format": "Text",
+    "source": "original",
+    "size": "7722",
+    "length": null
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].cue",
+    "format": "Cue Sheet",
+    "source": "original",
+    "size": "2823",
+    "length": null
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].log",
+    "format": "Log",
+    "source": "original",
+    "size": "9224",
+    "length": null
+   },
+   {
+    "name": "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].sfv",
+    "format": "Simple File Verification",
+    "source": "original",
+    "size": "2486",
+    "length": null
+   },
+   {
+    "name": "Disc 3/01. The Spy.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "25481548",
+    "length": "226.69"
+   },
+   {
+    "name": "Disc 3/02. Retaliation.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "4447210",
+    "length": "45.0"
+   },
+   {
+    "name": "Disc 3/03. Movin'.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "31417291",
+    "length": "318.0"
+   },
+   {
+    "name": "Disc 3/04. Blue Sky.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "4299128",
+    "length": "44.77"
+   },
+   {
+    "name": "Disc 3/05. Drifting.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "14935122",
+    "length": "176.89"
+   },
+   {
+    "name": "Disc 3/06. Heresy.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "25359254",
+    "length": "250.67"
+   },
+   {
+    "name": "Disc 3/07. Fisherman's Horizon.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "19619909",
+    "length": "215.84"
+   },
+   {
+    "name": "Disc 3/08. ODEKA ke Chocobo.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "5636615",
+    "length": "75.89"
+   },
+   {
+    "name": "Disc 3/09. Where I Belong.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "18094373",
+    "length": "220.4"
+   },
+   {
+    "name": "Disc 3/10. The Oath.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "20209076",
+    "length": "205.6"
+   },
+   {
+    "name": "Disc 3/11. Slide Show Part 1.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "8005093",
+    "length": "83.31"
+   },
+   {
+    "name": "Disc 3/12. Slide Show Part 2.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "8994397",
+    "length": "107.4"
+   },
+   {
+    "name": "Disc 3/13. Love Grows.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "23901263",
+    "length": "268.83"
+   },
+   {
+    "name": "Disc 3/14. The Salt Flats.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21538175",
+    "length": "216.53"
+   },
+   {
+    "name": "Disc 3/15. Trust Me.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "16892633",
+    "length": "193.07"
+   },
+   {
+    "name": "Disc 3/16. Silence And Motion.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "31236994",
+    "length": "347.64"
+   },
+   {
+    "name": "Disc 3/17. Dance With The Balamb-Fish.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21082600",
+    "length": "219.56"
+   },
+   {
+    "name": "Disc 3/18. Tears Of The Moon.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "7039850",
+    "length": "72.64"
+   },
+   {
+    "name": "Disc 3/19. Residents.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "18052426",
+    "length": "188.67"
+   },
+   {
+    "name": "Disc 3/20. Eyes On Me.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "39680100",
+    "length": "338.13"
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC] (DR).txt",
+    "format": "Text",
+    "source": "original",
+    "size": "1962",
+    "length": null
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].accurip",
+    "format": "Unknown",
+    "source": "original",
+    "size": "11633",
+    "length": null
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt",
+    "format": "Text",
+    "source": "original",
+    "size": "8006",
+    "length": null
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].cue",
+    "format": "Cue Sheet",
+    "source": "original",
+    "size": "2862",
+    "length": null
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].log",
+    "format": "Log",
+    "source": "original",
+    "size": "9561",
+    "length": null
+   },
+   {
+    "name": "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].sfv",
+    "format": "Simple File Verification",
+    "source": "original",
+    "size": "2507",
+    "length": null
+   },
+   {
+    "name": "Disc 4/01. Mods De Chocobo (Featuring N's Telecaster).flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "16340400",
+    "length": "144.73"
+   },
+   {
+    "name": "Disc 4/02. Ride On.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21198312",
+    "length": "183.0"
+   },
+   {
+    "name": "Disc 4/03. Truth.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21001797",
+    "length": "220.83"
+   },
+   {
+    "name": "Disc 4/04. Lunatic Pandora.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "21493168",
+    "length": "208.24"
+   },
+   {
+    "name": "Disc 4/05. Compression Of Time.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "25248743",
+    "length": "274.2"
+   },
+   {
+    "name": "Disc 4/06. The Castle.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "34672292",
+    "length": "319.27"
+   },
+   {
+    "name": "Disc 4/07. The Legendary Beast.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "38696489",
+    "length": "350.23"
+   },
+   {
+    "name": "Disc 4/08. Maybe I'm A Lion.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "34751247",
+    "length": "335.0"
+   },
+   {
+    "name": "Disc 4/09. The Extreme.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "44841897",
+    "length": "404.93"
+   },
+   {
+    "name": "Disc 4/10. The Successor.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "15528661",
+    "length": "217.64"
+   },
+   {
+    "name": "Disc 4/11. Ending Theme.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "82584313",
+    "length": "800.13"
+   },
+   {
+    "name": "Disc 4/12. Overture.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "22297662",
+    "length": "216.03"
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC] (DR).txt",
+    "format": "Text",
+    "source": "original",
+    "size": "1522",
+    "length": null
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].accurip",
+    "format": "Unknown",
+    "source": "original",
+    "size": "7344",
+    "length": null
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt",
+    "format": "Text",
+    "source": "original",
+    "size": "5202",
+    "length": null
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].cue",
+    "format": "Cue Sheet",
+    "source": "original",
+    "size": "1877",
+    "length": null
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].log",
+    "format": "Log",
+    "source": "original",
+    "size": "6398",
+    "length": null
+   },
+   {
+    "name": "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].sfv",
+    "format": "Simple File Verification",
+    "source": "original",
+    "size": "1974",
+    "length": null
+   }
+  ],
+  "item_size": 1883524713
+ },
+ "probes": {
+  "Disc 1/01. Liberi Fatali.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 14,
+    "max_framesize": 14055,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8289036,
+    "md5": "df8579babd79851658af262ddcd2237c"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     2574
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     342
+    ],
+    [
+     1,
+     1875
+    ]
+   ],
+   "audio_offset": 94200,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/02. Balamb Garden.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 14,
+    "max_framesize": 11944,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9228660,
+    "md5": "bfecb64f7a25fad58cbdd1cdf135b424"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     388
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     378
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92175,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/04. Don't Be Afraid.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 956,
+    "max_framesize": 13066,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7586964,
+    "md5": "45a062a77372545e46b557b34da9827d"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     434
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     324
+    ],
+    [
+     1,
+     1955
+    ]
+   ],
+   "audio_offset": 92122,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack",
+    "COMMENT": "Battle Theme｜Final Fantasy VIII"
+   },
+   "warnings": []
+  },
+  "Disc 1/05. The Winner.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2837,
+    "max_framesize": 12868,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 2969400,
+    "md5": "b1f124a271c053de8fdf6b3fa3266b07"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     432
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     126
+    ],
+    [
+     1,
+     1952
+    ]
+   ],
+   "audio_offset": 91919,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack",
+    "COMMENT": "Victory Fanfare｜Final Fantasy VIII"
+   },
+   "warnings": []
+  },
+  "Disc 1/07. SeeD.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1620,
+    "max_framesize": 12186,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 11323704,
+    "md5": "667a04b8c25f615a8fb28594992bfa3f"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     378
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     468
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92255,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/08. The Landing.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1423,
+    "max_framesize": 11293,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 12183360,
+    "md5": "c7142527fd97b141ed278d92091b2460"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     386
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     504
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92299,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/10. Force Your Way.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 793,
+    "max_framesize": 13186,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 10290000,
+    "md5": "0e4499a04ae883a53a8d9777d4ac8904"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     438
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     432
+    ],
+    [
+     1,
+     1950
+    ]
+   ],
+   "audio_offset": 92229,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack",
+    "COMMENT": "Boss Battle Theme｜Final Fantasy VIII"
+   },
+   "warnings": []
+  },
+  "Disc 1/11. The Loser.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2733,
+    "max_framesize": 10645,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 3833760,
+    "md5": "3a3df372bdda2b824af7151df3ffd8f8"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     384
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     162
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91955,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/13. Dead End.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1432,
+    "max_framesize": 12696,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 3135216,
+    "md5": "77f595725440096cf066adfc872a5bbe"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     383
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     144
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91936,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/14. Breezy.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 447,
+    "max_framesize": 7635,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7217700,
+    "md5": "8cfac798bf917d7a34f4df33c330abd3"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     381
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     306
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92096,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/16. Waltz For The Moon.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1390,
+    "max_framesize": 12798,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7960344,
+    "md5": "56fec7e8c20ef4580a8c0d1d60df03af"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     392
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     342
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92143,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/17. Tell Me.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2269,
+    "max_framesize": 11090,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9034620,
+    "md5": "7e4adae0d00b77f5e039ec15becdb214"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     378
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92169,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/19. The Man With The Machine Gun.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2186,
+    "max_framesize": 12725,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7478184,
+    "md5": "83fdc8925c76a147652b8814577ba757"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     402
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     306
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92117,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/21. Roses And Wine.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 794,
+    "max_framesize": 8836,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 6112260,
+    "md5": "9303a47f33c0242c28ac27d4dcdf3e47"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     389
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     252
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92050,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 1/22. Junction.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2676,
+    "max_framesize": 9257,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 4317096,
+    "md5": "518d30165cdabd0506ba3f6c6515cea2"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     180
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91971,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/01. My Mind.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 14,
+    "max_framesize": 10061,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8484840,
+    "md5": "ebb1f8c4ade044399d6af94d7bd64c8a"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     360
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92151,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/02. The Mission.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 226,
+    "max_framesize": 12833,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9556176,
+    "md5": "f9c95673ce09a89c3a2e5680146cb18a"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     385
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92190,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/04. Cactus Jack (Galbadian Anthem).flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2178,
+    "max_framesize": 12514,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 3971940,
+    "md5": "682ce8ce9a625112e2e1d02685f47b30"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     404
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     180
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91993,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/05. Only A Plank Between One And Perdition.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 849,
+    "max_framesize": 12869,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 6362160,
+    "md5": "669ac654710b1b72dcc750abb73aa40c"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     412
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     270
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92091,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/07. Galbadia Garden.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 833,
+    "max_framesize": 11201,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9581460,
+    "md5": "962598246ce46da9b0572fc47a1ff073"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     389
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92194,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/08. Unrest.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2252,
+    "max_framesize": 9220,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 6913116,
+    "md5": "df893adc9feaef88f4cc5fa02cadf7e7"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     381
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     288
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92078,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/10. The Stage Is Set.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1175,
+    "max_framesize": 12739,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9700824,
+    "md5": "13bb8a2b2c6cd2f735e1a5e1a38db16e"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     390
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92195,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/11. A Sacrifice.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 798,
+    "max_framesize": 11927,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9122820,
+    "md5": "72b11f0742d65e2e0883afea80af0ce3"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     386
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     378
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92173,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/13. Intruders.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2516,
+    "max_framesize": 11978,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 6700260,
+    "md5": "322d1366fb256fd20bebfa275ac61d47"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     384
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     288
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92081,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/15. Wounded.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2410,
+    "max_framesize": 11370,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 2346120,
+    "md5": "cdd77fe91e02422506f2f7ea7463cb40"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     108
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91899,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/16. Fragments Of Memories.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 941,
+    "max_framesize": 9582,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8553636,
+    "md5": "17fb5ce93672128fe3ad73164d30c0d6"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     396
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     360
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92165,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/18. Rivals.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 160,
+    "max_framesize": 9830,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9302160,
+    "md5": "6e3899abbec136a26c4fb9fe51de5078"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     380
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92185,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 2/19. Ami.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2427,
+    "max_framesize": 9593,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 12230400,
+    "md5": "29f5cb33bf591e2330f6be0567d192a1"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     585
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     504
+    ],
+    [
+     1,
+     1793
+    ]
+   ],
+   "audio_offset": 92291,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack",
+    "COMMENT": "The composition \"Ami\" derives from the French word ami for \"friend\". The song's naming was also inspired by 1986 novel by Chilean writer Enrique Barrios, entitled \"Ami, el niño de las estrellas\""
+   },
+   "warnings": []
+  },
+  "Disc 3/02. Retaliation.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1494,
+    "max_framesize": 11953,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 1984500,
+    "md5": "1b5af6b481f4200d304b1cc26862df0f"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     384
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     90
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91883,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/03. Movin'.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2210,
+    "max_framesize": 11598,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 14023800,
+    "md5": "dbba06bb179fae81954055ed83db3024"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     379
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     576
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92364,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/05. Drifting.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1716,
+    "max_framesize": 9273,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7800996,
+    "md5": "9608c43ec9fc81144356551015ae2390"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     324
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92115,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/06. Heresy.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2576,
+    "max_framesize": 11197,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 11054400,
+    "md5": "459c8e217592a98bd3cfca67d982bc11"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     380
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     468
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92257,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/08. ODEKA ke Chocobo.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 459,
+    "max_framesize": 8567,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 3346896,
+    "md5": "75cb3f201a6ac00a6796c12264dcfb91"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     612
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     144
+    ],
+    [
+     1,
+     1777
+    ]
+   ],
+   "audio_offset": 91942,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack",
+    "COMMENT": "The theme of Chocobo World, also plays on a road in Winhill where the chicobo appears.\r\nThe title is a pun on the traditional \"de\" used in Chocobo Theme titles, and \"odekake\" which means \"going out\" in Japanese."
+   },
+   "warnings": []
+  },
+  "Disc 3/09. Where I Belong.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2593,
+    "max_framesize": 9329,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9719640,
+    "md5": "dc9264bb7bdeb7f216d4f51dd0a7adb1"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     388
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     414
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92211,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/11. Slide Show Part 1.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 3033,
+    "max_framesize": 9643,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 3673824,
+    "md5": "4736dddf7028b90c7ae0c4e6cffbf71c"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     391
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     162
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91962,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/12. Slide Show Part 2.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1051,
+    "max_framesize": 9387,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 4736340,
+    "md5": "70460ba109223df8ddc50141db4eb3c0"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     391
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     198
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 91998,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/14. The Salt Flats.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1208,
+    "max_framesize": 12256,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9549120,
+    "md5": "e356799735f3c81972c49d6baa78ad09"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     387
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92192,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/16. Silence And Motion.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2630,
+    "max_framesize": 10573,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 15330924,
+    "md5": "b93031c68a2bd34738f8d85cf16b4703"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     391
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     630
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92430,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/17. Dance With The Balamb-Fish.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2773,
+    "max_framesize": 12239,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9682596,
+    "md5": "f1af9af0915b6832407a14cbb0f4b654"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     400
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     396
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92205,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/19. Residents.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 15,
+    "max_framesize": 12083,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8320200,
+    "md5": "edb8693c831e11182f7307f4d253d449"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     382
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     342
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92133,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 3/20. Eyes On Me.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 14,
+    "max_framesize": 14298,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 14911680,
+    "md5": "38016dbc673eec5a354e8d7d02011642"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     1936
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     612
+    ],
+    [
+     1,
+     1980
+    ]
+   ],
+   "audio_offset": 93937,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Faye Wong",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/02. Ride On.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 900,
+    "max_framesize": 12860,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8070300,
+    "md5": "bee85e882d9eca430338bcc39d66cd56"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     380
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     342
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92131,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/03. Truth.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1735,
+    "max_framesize": 11328,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9738456,
+    "md5": "65c8ab1d00184ed88def8435dc404830"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     378
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     414
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92201,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/05. Compression Of Time.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 754,
+    "max_framesize": 10241,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 12092220,
+    "md5": "0f1fa466438abce0ee8527f4659e8f50"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     392
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     504
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92305,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/06. The Castle.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 1304,
+    "max_framesize": 12565,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 14079660,
+    "md5": "c966599f38b8e55e5d8f60002232a965"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     384
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     576
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92369,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/08. Maybe I'm A Lion.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2531,
+    "max_framesize": 11970,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 14773500,
+    "md5": "400bd13f912b870d90a17670e5547f65"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     389
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     612
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92410,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/09. The Extreme.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 2231,
+    "max_framesize": 13775,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 17857560,
+    "md5": "1a3cacab5b295dfc93e23f9835aa9271"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     384
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     738
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 92531,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  },
+  "Disc 4/11. Ending Theme.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4096,
+    "max_blocksize": 4096,
+    "min_framesize": 14,
+    "max_framesize": 13685,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 35285880,
+    "md5": "6a632cf140de5b5698c990549a94f81d"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     385
+    ],
+    [
+     6,
+     89351
+    ],
+    [
+     3,
+     1458
+    ],
+    [
+     1,
+     2000
+    ]
+   ],
+   "audio_offset": 93252,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Final Fantasy VIII Original Soundtrack",
+    "ALBUMARTIST": "Nobuo Uematsu",
+    "ARTIST": "Nobuo Uematsu",
+    "DATE": "1999",
+    "GENRE": "Video Game Soundtrack"
+   },
+   "warnings": []
+  }
+ },
+ "logs": {
+  "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].log": "Exact Audio Copy V0.99 prebeta 5 from 4. May 2009\nUtilize accurate stream : Yes\nCommand line compressor         : C:\\Program Files\\Exact Audio Copy\\FLAC\\FLAC.EXE\nTrack quality 99.9 %\nTest CRC BAB6BC1C\nCopy CRC BAB6BC1C\nAccurately ripped (confidence 5)  [35BAAB27]\nCopy OK\nTrack quality 100.0 %\nTest CRC D88109BE\nCopy CRC D88109BE\nAccurately ripped (confidence 5)  [773A189D]\nCopy OK\nTrack quality 100.0 %\nTest CRC 77A025A9\nCopy CRC 77A025A9\nAccurately ripped (confidence 5)  [08F1A9FA]\nCopy OK\nTrack quality 100.0 %\nTest CRC 25FAA18B\nCopy CRC 25FAA18B\nAccurately ripped (confidence 5)  [E6B9B278]\nCopy OK\nTrack quality 100.0 %\nTest CRC 896CC14C\nCopy CRC 896CC14C\nAccurately ripped (confidence 5)  [5D0C5FF0]\nCopy OK\nTrack quality 100.0 %\nTest CRC 4A801F4E\nCopy CRC 4A801F4E\nAccurately ripped (confidence 5)  [B22ADA05]\nCopy OK\nTrack quality 100.0 %\nTest CRC 88BFFEB4\nCopy CRC 88BFFEB4\nAccurately ripped (confidence 5)  [C3C9D2F1]\nCopy OK\nTrack quality 99.9 %\nTest CRC C1F1C7DF\nCopy CRC C1F1C7DF\nAccurately ripped (confidence 5)  [67599AA0]\nCopy OK\nTrack quality 100.0 %\nTest CRC E9949877\nCopy CRC E9949877\nAccurately ripped (confidence 5)  [4A8753C4]\nCopy OK\nTrack quality 100.0 %\nTest CRC 400A43D7\nCopy CRC 400A43D7\nAccurately ripped (confidence 5)  [FFE2B02F]\nCopy OK\nTrack quality 100.0 %\nTest CRC A240265F\nCopy CRC A240265F\nAccurately ripped (confidence 5)  [C1C8A3E9]\nCopy OK\nTrack quality 100.0 %\nTest CRC 2C9CBAB6\nCopy CRC 2C9CBAB6\nAccurately ripped (confidence 5)  [92194E6E]\nCopy OK\nTrack quality 100.0 %\nTest CRC 80CA0ACF\nCopy CRC 80CA0ACF\nAccurately ripped (confidence 5)  [271D987B]\nCopy OK\nTrack quality 100.0 %\nTest CRC 1DFED55F\nCopy CRC 1DFED55F\nAccurately ripped (confidence 5)  [533FC58E]\nCopy OK\nTrack quality 100.0 %\nTest CRC EE4D5C99\nCopy CRC EE4D5C99\nAccurately ripped (confidence 5)  [B0178146]\nCopy OK\nTrack quality 100.0 %\nTest CRC 5ADEA8AE\nCopy CRC 5ADEA8AE\nAccurately ripped (confidence 5)  [C603ACB9]\nCopy OK\nTrack quality 99.9 %\nTest CRC EDB059B2\nCopy CRC EDB059B2\nAccurately ripped (confidence 5)  [E27B7343]\nCopy OK\nTrack quality 99.9 %\nTest CRC CD7B3946\nCopy CRC CD7B3946\nAccurately ripped (confidence 5)  [FE490FC7]\nCopy OK\nTrack quality 100.0 %\nTest CRC DA912F87\nCopy CRC DA912F87\nAccurately ripped (confidence 5)  [4F2E6C82]\nCopy OK\nTrack quality 100.0 %\nTest CRC 5F786295\nCopy CRC 5F786295\nAccurately ripped (confidence 5)  [0932CC9E]\nCopy OK\nTrack quality 100.0 %\nTest CRC 52AE73B4\nCopy CRC 52AE73B4\nAccurately ripped (confidence 5)  [1827D926]\nCopy OK\nTrack quality 100.0 %\nTest CRC 435321A9\nCopy CRC 435321A9\nAccurately ripped (confidence 5)  [CCD4B48C]\nCopy OK\nTrack quality 100.0 %\nTest CRC E2948309\nCopy CRC E2948309\nAccurately ripped (confidence 5)  [7D71F3F1]\nCopy OK\nAll tracks accurately ripped\nNo errors occurred",
+  "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].log": "Exact Audio Copy V0.99 prebeta 5 from 4. May 2009\nUtilize accurate stream : Yes\nCommand line compressor         : C:\\Program Files\\Exact Audio Copy\\FLAC\\FLAC.EXE\nTrack quality 100.0 %\nTest CRC D9C4BEEE\nCopy CRC D9C4BEEE\nAccurately ripped (confidence 6)  [B6E2D34A]\nCopy OK\nTrack quality 100.0 %\nTest CRC 9E3391A2\nCopy CRC 9E3391A2\nAccurately ripped (confidence 6)  [043F20FF]\nCopy OK\nTrack quality 100.0 %\nTest CRC 3FD8FBF4\nCopy CRC 3FD8FBF4\nAccurately ripped (confidence 6)  [A1B74CF1]\nCopy OK\nTrack quality 100.0 %\nTest CRC 28554287\nCopy CRC 28554287\nAccurately ripped (confidence 6)  [AFC3C44D]\nCopy OK\nTrack quality 100.0 %\nTest CRC EC94EEA0\nCopy CRC EC94EEA0\nAccurately ripped (confidence 6)  [118F2E14]\nCopy OK\nTrack quality 100.0 %\nTest CRC B13040C9\nCopy CRC B13040C9\nAccurately ripped (confidence 6)  [EEF62ACC]\nCopy OK\nTrack quality 100.0 %\nTest CRC 6D608FFF\nCopy CRC 6D608FFF\nAccurately ripped (confidence 6)  [5FE4E9FF]\nCopy OK\nTrack quality 100.0 %\nTest CRC 8BC5C85F\nCopy CRC 8BC5C85F\nAccurately ripped (confidence 6)  [A52EC05C]\nCopy OK\nTrack quality 99.9 %\nTest CRC A9A1179C\nCopy CRC A9A1179C\nAccurately ripped (confidence 6)  [FD512B14]\nCopy OK\nTrack quality 100.0 %\nTest CRC 1CA27439\nCopy CRC 1CA27439\nAccurately ripped (confidence 6)  [2CE767B6]\nCopy OK\nTrack quality 99.9 %\nTest CRC C1467F1F\nCopy CRC C1467F1F\nAccurately ripped (confidence 6)  [21756444]\nCopy OK\nTrack quality 100.0 %\nTest CRC 4CF90C91\nCopy CRC 4CF90C91\nAccurately ripped (confidence 6)  [4AD4FCC2]\nCopy OK\nTrack quality 100.0 %\nTest CRC 0CAD7589\nCopy CRC 0CAD7589\nAccurately ripped (confidence 6)  [ACE05EAF]\nCopy OK\nTrack quality 100.0 %\nTest CRC 2A90CCD0\nCopy CRC 2A90CCD0\nAccurately ripped (confidence 6)  [8705869C]\nCopy OK\nTrack quality 100.0 %\nTest CRC 2CBC8AD2\nCopy CRC 2CBC8AD2\nAccurately ripped (confidence 6)  [3B7CE7F3]\nCopy OK\nTrack quality 100.0 %\nTest CRC 1354B1FB\nCopy CRC 1354B1FB\nAccurately ripped (confidence 6)  [F00256CE]\nCopy OK\nTrack quality 100.0 %\nTest CRC 7B07503E\nCopy CRC 7B07503E\nAccurately ripped (confidence 6)  [5AF6F046]\nCopy OK\nTrack quality 100.0 %\nTest CRC AC0A5147\nCopy CRC AC0A5147\nAccurately ripped (confidence 6)  [167C2435]\nCopy OK\nTrack quality 100.0 %\nTest CRC B6101B33\nCopy CRC B6101B33\nAccurately ripped (confidence 6)  [CB90D38C]\nCopy OK\nAll tracks accurately ripped\nNo errors occurred",
+  "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].log": "Exact Audio Copy V0.99 prebeta 5 from 4. May 2009\nUtilize accurate stream : Yes\nCommand line compressor         : C:\\Program Files\\Exact Audio Copy\\FLAC\\FLAC.EXE\nTrack quality 100.0 %\nTest CRC 6C843520\nCopy CRC 6C843520\nAccurately ripped (confidence 8)  [1C1D86B9]\nCopy OK\nTrack quality 100.0 %\nTest CRC 17F5C3E0\nCopy CRC 17F5C3E0\nAccurately ripped (confidence 8)  [503A79F6]\nCopy OK\nTrack quality 100.0 %\nTest CRC A84CEBFE\nCopy CRC A84CEBFE\nAccurately ripped (confidence 7)  [9F206159]\nCopy OK\nTrack quality 100.0 %\nTest CRC 2126CD9B\nCopy CRC 2126CD9B\nAccurately ripped (confidence 8)  [F9F76445]\nCopy OK\nTrack quality 100.0 %\nTest CRC CAC50CED\nCopy CRC CAC50CED\nAccurately ripped (confidence 8)  [EC38476D]\nCopy OK\nTrack quality 100.0 %\nTest CRC E34C73C0\nCopy CRC E34C73C0\nAccurately ripped (confidence 8)  [B5A05867]\nCopy OK\nTrack quality 99.9 %\nTest CRC 1F3B2A55\nCopy CRC 1F3B2A55\nAccurately ripped (confidence 8)  [B67BBF4A]\nCopy OK\nTrack quality 100.0 %\nTest CRC BC1C7EE8\nCopy CRC BC1C7EE8\nAccurately ripped (confidence 8)  [B93E253B]\nCopy OK\nTrack quality 100.0 %\nTest CRC F1E3893D\nCopy CRC F1E3893D\nAccurately ripped (confidence 8)  [985C283F]\nCopy OK\nTrack quality 100.0 %\nTest CRC A185589F\nCopy CRC A185589F\nAccurately ripped (confidence 7)  [3DC8FFA2]\nCopy OK\nTrack quality 100.0 %\nTest CRC DA6074AB\nCopy CRC DA6074AB\nAccurately ripped (confidence 7)  [9DA79687]\nCopy OK\nTrack quality 100.0 %\nTest CRC E379E377\nCopy CRC E379E377\nAccurately ripped (confidence 8)  [F8C0163D]\nCopy OK\nTrack quality 100.0 %\nTest CRC 783BE4CE\nCopy CRC 783BE4CE\nAccurately ripped (confidence 8)  [ADFE7A7D]\nCopy OK\nTrack quality 99.9 %\nTest CRC 5255B061\nCopy CRC 5255B061\nAccurately ripped (confidence 7)  [D956D386]\nCopy OK\nTrack quality 100.0 %\nTest CRC EC9FD9DD\nCopy CRC EC9FD9DD\nAccurately ripped (confidence 8)  [7AD35C95]\nCopy OK\nTrack quality 100.0 %\nTest CRC 70FAA6F3\nCopy CRC 70FAA6F3\nAccurately ripped (confidence 7)  [615EF8DC]\nCopy OK\nTrack quality 100.0 %\nTest CRC 88DAB9CD\nCopy CRC 88DAB9CD\nAccurately ripped (confidence 8)  [D8C603E6]\nCopy OK\nTrack quality 100.0 %\nTest CRC 8C70EA8F\nCopy CRC 8C70EA8F\nAccurately ripped (confidence 8)  [40CA5B86]\nCopy OK\nTrack quality 100.0 %\nTest CRC F160B785\nCopy CRC F160B785\nAccurately ripped (confidence 8)  [486E0258]\nCopy OK\nTrack quality 100.0 %\nTest CRC 6B8C1081\nCopy CRC 6B8C1081\nAccurately ripped (confidence 8)  [A06A66DA]\nCopy OK\nAll tracks accurately ripped\nNo errors occurred",
+  "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].log": "Exact Audio Copy V0.99 prebeta 5 from 4. May 2009\nUtilize accurate stream : Yes\nCommand line compressor         : C:\\Program Files\\Exact Audio Copy\\FLAC\\FLAC.EXE\nTrack quality 100.0 %\nTest CRC D0B0612F\nCopy CRC D0B0612F\nAccurately ripped (confidence 6)  [A66C3708]\nCopy OK\nTrack quality 100.0 %\nTest CRC B271ED9A\nCopy CRC B271ED9A\nAccurately ripped (confidence 6)  [32F94375]\nCopy OK\nTrack quality 99.9 %\nTest CRC 254B1395\nCopy CRC 254B1395\nAccurately ripped (confidence 6)  [0A7035CB]\nCopy OK\nTrack quality 100.0 %\nTest CRC 7264E7D5\nCopy CRC 7264E7D5\nAccurately ripped (confidence 6)  [82D5F78B]\nCopy OK\nTrack quality 100.0 %\nTest CRC 48150369\nCopy CRC 48150369\nAccurately ripped (confidence 6)  [5D6D7CD8]\nCopy OK\nTrack quality 100.0 %\nTest CRC 855589BD\nCopy CRC 855589BD\nAccurately ripped (confidence 6)  [77424F18]\nCopy OK\nTrack quality 100.0 %\nTest CRC BA021EF9\nCopy CRC BA021EF9\nAccurately ripped (confidence 6)  [9039C495]\nCopy OK\nTrack quality 100.0 %\nTest CRC E534B565\nCopy CRC E534B565\nAccurately ripped (confidence 6)  [CDC22961]\nCopy OK\nTrack quality 100.0 %\nTest CRC A6D98D1E\nCopy CRC A6D98D1E\nAccurately ripped (confidence 7)  [0B3F1901]\nCopy OK\nTrack quality 100.0 %\nTest CRC 4602E56C\nCopy CRC 4602E56C\nAccurately ripped (confidence 7)  [5B2DD47F]\nCopy OK\nTrack quality 100.0 %\nTest CRC 0321F18E\nCopy CRC 0321F18E\nAccurately ripped (confidence 6)  [0FBC9C35]\nCopy OK\nTrack quality 100.0 %\nTest CRC BF3D9812\nCopy CRC BF3D9812\nAccurately ripped (confidence 6)  [D4341A50]\nCopy OK\nAll tracks accurately ripped\nNo errors occurred"
+ },
+ "aucdtect": {
+  "Disc 1/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt": "-----------------------\r\n\r\nDON'T MODIFY THIS FILE\r\n\r\n-----------------------\r\n\r\nPERFORMER: auCDtect Task Manager, ver. 1.5.1RC6 build 1.5.1.7\r\nCopyright (c) 2008-2010 y-soft. All rights reserved\r\nhttp://y-soft.org\r\n\r\nANALYZER: auCDtect: CD records authenticity detector, version 0.8.2\r\nCopyright (c) 2004 Oleg Berngardt. All rights reserved.\r\nCopyright (c) 2004 Alexander Djourik. All rights reserved.\r\n\r\n\r\nFILE: 01. Liberi Fatali.flac\r\n  Size: 20383310 Hash: 85695F60121A549F25EDAB2C2ED8849A Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 9A71F678E5D33322ED7BB4CCD7637787D3808010\r\nFILE: 02. Balamb Garden.flac\r\n  Size: 17957365 Hash: 57E21AAA2A87EA9C03C3B99787B25644 Accuracy: -m0\r\n  Conclusion: CDDA 87%\r\n  Signature: CA052BF853D490BC339F4378AF74D27AA6F11389\r\nFILE: 03. Blue Fields.flac\r\n  Size: 14769685 Hash: BBA961DA6465E892BEC1213412CAB8DB Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: F8CB334E24BA527EFBDC1A385371A0657394FB04\r\nFILE: 04. Don't Be Afraid.flac\r\n  Size: 19908756 Hash: DB11B1C55777591C6E4E1516E55FDA4E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 29142E00CA2FF56B2A10674A17A1D4EE32684859\r\nFILE: 05. The Winner.flac\r\n  Size: 7219412 Hash: F50FA9979E4D03CE2E0038C307D40E33 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 26910D556E27304DA47638EABEF95E9D65C1C8DF\r\nFILE: 06. Find Your Way.flac\r\n  Size: 19509007 Hash: 9AA259F7EFFB60D4851B1B3FBD35C2E8 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: EF746C9B8E64BADB8A1E0D7CEB94834CF4FBD074\r\nFILE: 07. SeeD.flac\r\n  Size: 23034016 Hash: 7E4B07E352C5108F7EDBACD7E3ADED53 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 553886EAD2053C6DFEF99B6A609A497C75936C43\r\nFILE: 08. The Landing.flac\r\n  Size: 26578271 Hash: BB1AEBD34135919AAB2809957DCADBC4 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: B3779D7FD021A879B165AF882CB91A35EA1A23AF\r\nFILE: 09. Starting Up.flac\r\n  Size: 7721678 Hash: BEC2D9C5415D8A8713B0F8418E520383 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 04C5A37E35E86F1256E722ED9C28F2F37313F8A0\r\nFILE: 10. Force Your Way.flac\r\n  Size: 26775941 Hash: EF1707084DEE5270F9BC87ED1B34779E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 372C6D98095A3BFD859AF6F9274FA5B0A6B0090B\r\nFILE: 11. The Loser.flac\r\n  Size: 7370363 Hash: C26B13FD89E9EC5FE323271B63316055 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 4FF0ACE28FE83483A973499C2A1F6084B12EA891\r\nFILE: 12. Never Look Back.flac\r\n  Size: 22077200 Hash: 349C31FD18CA284B3E96546957125FE4 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 3269889B6BAE6D9581997B710246A54A0338945E\r\nFILE: 13. Dead End.flac\r\n  Size: 7935277 Hash: 69D852996ED81412D80210ECFCBFF39A Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 886AAA6DFDCA5851AA5025A359B3629CEEA36060\r\nFILE: 14. Breezy.flac\r\n  Size: 11576591 Hash: 8A5FCBC84B47BE0DEACC15945F184BF4 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 11C525F6EF4DC2C5D8A261B8E4535B786BDA89B4\r\nFILE: 15. Shuffle Or Boogie.flac\r\n  Size: 11740016 Hash: 3E09F18C794DD114731A06B4CB3EE795 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 4B7020F14754B12B4BFD8560BF54E52612B4C8B1\r\nFILE: 16. Waltz For The Moon.flac\r\n  Size: 17635499 Hash: 59B582ABA44AD22D32900476503953EC Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 40CC9EF0E917DFCCB72F323310DEB4B256CD0E1C\r\nFILE: 17. Tell Me.flac\r\n  Size: 19039591 Hash: 9D58780A13A5DD0B4FC2AF98B7451274 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 5FEF9BB8B5889FCA9EA00827DFA8B8BBCE1E3208\r\nFILE: 18. Fear.flac\r\n  Size: 13533045 Hash: 58FEFB957566DBD5B5D1A74835FB2778 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 95F36EB4153501F1F0B13A476D8C0FCFBDC72A10\r\nFILE: 19. The Man With The Machine Gun.flac\r\n  Size: 20766527 Hash: EAEF68690FB568E81A99ED5DDAA3FB0D Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 9FD97BB10AE37D0E94752FA4B63C3550DC99328F\r\nFILE: 20. Julia.flac\r\n  Size: 5509416 Hash: 2C983182B39AD1540FC709399950350E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 0DF9AEF106CFF339929199E8553831CCA50C6228\r\nFILE: 2",
+  "Disc 2/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt": "-----------------------\r\n\r\nDON'T MODIFY THIS FILE\r\n\r\n-----------------------\r\n\r\nPERFORMER: auCDtect Task Manager, ver. 1.5.1RC6 build 1.5.1.7\r\nCopyright (c) 2008-2010 y-soft. All rights reserved\r\nhttp://y-soft.org\r\n\r\nANALYZER: auCDtect: CD records authenticity detector, version 0.8.2\r\nCopyright (c) 2004 Oleg Berngardt. All rights reserved.\r\nCopyright (c) 2004 Alexander Djourik. All rights reserved.\r\n\r\n\r\nFILE: 01. My Mind.flac\r\n  Size: 15168607 Hash: 19E6D28AEE1B145DF362CC6A2C4D0A8D Accuracy: -m0\r\n  Conclusion: CDDA 92%\r\n  Signature: 3B28AF984BC99CFE0C450BA0D108B41A335F5602\r\nFILE: 02. The Mission.flac\r\n  Size: 24471670 Hash: 15AC698063DB8E524C8C74431BEDCF10 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: A8E9046D7E1722F1DE90DB8A9FEE0C0C4731228F\r\nFILE: 03. Martial Law.flac\r\n  Size: 23137919 Hash: 5DB6A73E49FB3ED19154152A7B0B4B10 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 61209CDB7D01D898D876D76C615B94D7AD19CE7A\r\nFILE: 04. Cactus Jack (Galbadian Anthem).flac\r\n  Size: 9348465 Hash: 29F39941ABED4A4D8688383AD8309971 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: FFC9E20AE08C3A78D499917124AF772E6A148EAA\r\nFILE: 05. Only A Plank Between One And Perdition.flac\r\n  Size: 15719616 Hash: 63A8F63B8D5B5B67A23EC59F6F6F1DA7 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: F7D8F0BEDC02EDFBFFA4F236202755BCC8285088\r\nFILE: 06. Succession Of Witches.flac\r\n  Size: 18151252 Hash: B7853FB731DFF4ED047D4A07DB6217C9 Accuracy: -m0\r\n  Conclusion: CDDA 86%\r\n  Signature: 9E672852DBF4197C1677E2436BB94058CC6B8F10\r\nFILE: 07. Galbadia Garden.flac\r\n  Size: 21743254 Hash: A2D2F9775524165AD6DCEDDC0C94BAEB Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 6C3ADAA627FEF8D87ECEBB7EDD689FBB2DCE41B9\r\nFILE: 08. Unrest.flac\r\n  Size: 13430504 Hash: B1CB1ECD8AF39ADA8D52250C98F9C0AE Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: A413EDD04785B8D8BF48B0D3E3ABB2C3679831FE\r\nFILE: 09. Under Her Control.flac\r\n  Size: 21841522 Hash: ECC51564D91E5BB11EC8E8E3EB3022B9 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 686582BC024E1023C74963E60D840DB846AEB851\r\nFILE: 10. The Stage Is Set.flac\r\n  Size: 23853969 Hash: F1DB1257E8FF164157338C6E2262EFF5 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: C9575A46ACE7218E5B57E9AB8C5BD2F413160322\r\nFILE: 11. A Sacrifice.flac\r\n  Size: 21471088 Hash: E365DAE58A5B1F16BA07347E96CBC038 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 212CB3C031FD8285CBCFA38F37F526E7A348E10C\r\nFILE: 12. Fithos Lusec Wecos Vinosec.flac\r\n  Size: 26067174 Hash: 66710446F5A1124E9A0235F433DA8FB9 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: C6132DD419F9720B16639570E0F8D9F5CB5243C5\r\nFILE: 13. Intruders.flac\r\n  Size: 14346947 Hash: 5C7A1851D86C35642F1E6B2DCD1484AE Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: E5FB0644A0F7E7F38EFC59B3940A6C03A5AB3C06\r\nFILE: 14. Premonition.flac\r\n  Size: 30722209 Hash: 1BC4F59371DAC04F0B27EF5797ECF7EC Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 2A622E6E639D1DB61EAD039A8D4E36A854884123\r\nFILE: 15. Wounded.flac\r\n  Size: 5842556 Hash: 5CC9FEEB970EA27E9E553E2E24357300 Accuracy: -m0\r\n  Conclusion: CDDA 99%\r\n  Signature: E5203B91F3530281B7E36F0FA3A0D5A0908E50F4\r\nFILE: 16. Fragments Of Memories.flac\r\n  Size: 15775349 Hash: 3F05A4893304B87627B2A101FBAC519F Accuracy: -m0\r\n  Conclusion: ???\r\n  Signature: 389BFBB4A8DA3C2CCF97D1D9A1C579118BA3E89E\r\nFILE: 17. Jailed.flac\r\n  Size: 20729829 Hash: D5B076C2A948A972C431449620F0E427 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: E4743FF60FF809DC4E0ABF96F3B362E2F88A62C9\r\nFILE: 18. Rivals.flac\r\n  Size: 18486347 Hash: C4F3CAD8FE4FF29D6FF607F1FDEBDCE8 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 480C593B6D6D9300665353030988FB825091C720\r\nFILE: 19. Ami.flac\r\n  Size: 23171659 Hash: 79238932253BDEFC839157834EB5E963 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: F8F248504FC20C20B0C8769AD56A947A07E1F488\r\n",
+  "Disc 3/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt": "-----------------------\r\n\r\nDON'T MODIFY THIS FILE\r\n\r\n-----------------------\r\n\r\nPERFORMER: auCDtect Task Manager, ver. 1.5.1RC6 build 1.5.1.7\r\nCopyright (c) 2008-2010 y-soft. All rights reserved\r\nhttp://y-soft.org\r\n\r\nANALYZER: auCDtect: CD records authenticity detector, version 0.8.2\r\nCopyright (c) 2004 Oleg Berngardt. All rights reserved.\r\nCopyright (c) 2004 Alexander Djourik. All rights reserved.\r\n\r\n\r\nFILE: 01. The Spy.flac\r\n  Size: 25463012 Hash: CFCEF8B075F5068F736CDD1223030E57 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 35EE899041C3BA9283E80AAED30C5DE1185F5A98\r\nFILE: 02. Retaliation.flac\r\n  Size: 4428675 Hash: B1388A74D55808B6E7C99586EBCA8AD3 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 447A75660652F14527D90DD0D0B94672A21B6782\r\nFILE: 03. Movin'.flac\r\n  Size: 31398756 Hash: FE0480AA850E9692513BC2741DA7EB02 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 9A9F3BAD9C63E6430816A7A3CEA6E4A10FC0D9A4\r\nFILE: 04. Blue Sky.flac\r\n  Size: 4280593 Hash: CAC64A5712BA29EDFC3BBCABC6B873B1 Accuracy: -m0\r\n  Conclusion: CDDA 99%\r\n  Signature: 75D665184D1F555C58BF89D36922C8C7B4A101D7\r\nFILE: 05. Drifting.flac\r\n  Size: 14916586 Hash: AD1DF8F2910F6B712E33FD8130292FE6 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 912112324275B456DD25B34C6C0A48EACE0044E1\r\nFILE: 06. Heresy.flac\r\n  Size: 25340718 Hash: 75D6A17EAFFC799685AD85302B857897 Accuracy: -m0\r\n  Conclusion: CDDA 76%\r\n  Signature: 2CFB814B6D79BCA19DF5C9AF668D3F87FA4AA956\r\nFILE: 07. Fisherman's Horizon.flac\r\n  Size: 19601374 Hash: 60BEC48B3D9ACE212D3C89A2FB27BA9E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 5D15CD5572A38AE81933174E249B4573A81C0687\r\nFILE: 08. Odeka De Chocobo.flac\r\n  Size: 5618080 Hash: 164AF2D0ABEF3933D20E464D08DE556F Accuracy: -m0\r\n  Conclusion: ???\r\n  Signature: D6BC7CA7C83D1139ED2472261494BC21E7E5DD8C\r\nFILE: 09. Where I Belong.flac\r\n  Size: 18075837 Hash: C639874179BAED23F7BFC9A6690B6E91 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: AF28CCAEE4C11CAF72547C435DBBBAE177E6F224\r\nFILE: 10. The Oath.flac\r\n  Size: 20190540 Hash: 4FA6CE5BFB92B1E03E4D91D0170F7B3C Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 37C6D991323CF13090A3C93A1856E4D00BECA936\r\nFILE: 11. Slide Show Part 1.flac\r\n  Size: 7986557 Hash: 918954D19648ACDACFE570B94111693E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 7309E6DD427CD1805E5C038DCDB4791CEB800790\r\nFILE: 12. Slide Show Part 2.flac\r\n  Size: 8975861 Hash: D0ED18E4C9F5AE08F14C28E4956B1D2B Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 6EBAF710EA75D7F4D3CABE1393D7B25185F48BAA\r\nFILE: 13. Love Grows.flac\r\n  Size: 23882727 Hash: 5DA16DF5D8160092D0F99C9CFADEC07F Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: F490627992627EBDEAA6EDE299DB9DD636B0EA08\r\nFILE: 14. The Salt Flats.flac\r\n  Size: 21519640 Hash: 75D05163E9FE1F6969B3C2F176754D1C Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: C1E5ACB3E172B04E61785031C18A1A5E722CFFA1\r\nFILE: 15. Trust Me.flac\r\n  Size: 16874098 Hash: 6FCC3B4C59B4617FDBFAC04CA14F1B3D Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 7CD43892BC01DC8599CFA0C2CAB82935BEB679C0\r\nFILE: 16. Silence And Motion.flac\r\n  Size: 31218459 Hash: D954B6226C25C496C3896738834C95DB Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 3ED694CB7A20F772D180216DFB81E136463F4A60\r\nFILE: 17. Dance With The Balamb-Fish.flac\r\n  Size: 21064064 Hash: B7809B349432641A0659D6654DAF043B Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 8BF25627251020D77474931A270B6C254F77F942\r\nFILE: 18. Tears Of The Moon.flac\r\n  Size: 7021315 Hash: A072EF93E26A0E433BA53A1AE9385FFA Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 2D06FE093D101A563EFB8C2C1590A52B72A35B40\r\nFILE: 19. Residents.flac\r\n  Size: 18033891 Hash: D373620736489FD21C2C4FB3278CCBA2 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: F2B7BA253DAE5A83A6C68E8549C198D19B59F6DF\r\nFILE: 20. Eyes On Me.flac\r\n  Size: 39660032 Hash: 8B2F736A49A224222A88A69CC927B182 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 33DDF53F586E0FAC0A1697B6428D5C4961DC9EEF",
+  "Disc 4/FF VIII Original Soundtrack [1999] [FLAC].auCDtect.txt": "-----------------------\r\n\r\nDON'T MODIFY THIS FILE\r\n\r\n-----------------------\r\n\r\nPERFORMER: auCDtect Task Manager, ver. 1.5.1RC6 build 1.5.1.7\r\nCopyright (c) 2008-2010 y-soft. All rights reserved\r\nhttp://y-soft.org\r\n\r\nANALYZER: auCDtect: CD records authenticity detector, version 0.8.2\r\nCopyright (c) 2004 Oleg Berngardt. All rights reserved.\r\nCopyright (c) 2004 Alexander Djourik. All rights reserved.\r\n\r\n\r\nFILE: 01. Mods De Chocobo (Featuring N's Telecaster).flac\r\n  Size: 16321865 Hash: DB7461D84F2D4A489C23EE1A53C659E3 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: A1356DB24C16562B807CBB6A5AFA170055A884F8\r\nFILE: 02. Ride On.flac\r\n  Size: 21179777 Hash: B9F0D42FC1DB07E0770FCF3CB1A8F22E Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: C234E9D846762FE964BF658EF027B2A0C5078F30\r\nFILE: 03. Truth.flac\r\n  Size: 20983262 Hash: 01D7EEDC9FA0783EA7E992EE43239A43 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 34610BBDCEB83120D750650AAD25439B81630E58\r\nFILE: 04. Lunatic Pandora.flac\r\n  Size: 21474633 Hash: FCF4C5A6823477AA79B039C321CA154F Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 1E6381DE84B0BC37C164BC7DCA97A4F2E6D5E05B\r\nFILE: 05. Compression Of Time.flac\r\n  Size: 25230208 Hash: A8F90CB34BD8E926886EF25FEF839B8F Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 13FC4A88ED033C0503B6D3B2973A7E4823B324FB\r\nFILE: 06. The Castle.flac\r\n  Size: 34653756 Hash: F0D62ED450FE434450111039A50E24F4 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 6E0D215DAF2C817F6A10EB85D845890FF18AF84C\r\nFILE: 07. The Legendary Beast.flac\r\n  Size: 38677954 Hash: E15F902CD703A3334729570E0388E9B0 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 78892D8BC77E1ABF1C946A1E3BBFDFF4C866628D\r\nFILE: 08. Maybe I'm A Lion.flac\r\n  Size: 34732712 Hash: A39E0FD926831B22035C8416C55B9EDB Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: 6F27F0BDAC75091202696DCD0C96D9EC922C5A23\r\nFILE: 09. The Extreme.flac\r\n  Size: 44823362 Hash: 088191F5D48B737118FC48D045419256 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: D2211FBA6011A950E3E1E57242BC1240A5217032\r\nFILE: 10. The Successor.flac\r\n  Size: 15510125 Hash: FAFDD8495569EEB4447CFFD60A923EBF Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: E69EBCB3824557A50514D68B8AE22EBC818246E2\r\nFILE: 11. Ending Theme.flac\r\n  Size: 82565778 Hash: 4867A3185D90978584B024A94782284D Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: B173D9A2BD492CEECC0F840D86EE2CEA4C1C54FD\r\nFILE: 12. Overture.flac\r\n  Size: 22279127 Hash: CC4BD7D4AB7E340AAEC66BB2B8FC4000 Accuracy: -m0\r\n  Conclusion: CDDA 100%\r\n  Signature: ED6FB1C082ECE14B39A12A3C83D38B3C48301BB3\r\n"
+ }
+}

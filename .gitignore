@@ -1,0 +1,15 @@
+# archive.org response cache and generated reports/spectrograms
+.cache/
+runs/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# never commit a real inventory workbook, its backups or the editor's temp files
+*.backup-*.xlsx
+.*.iaflac-tmp.xlsx

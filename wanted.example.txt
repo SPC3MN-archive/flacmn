@@ -1,0 +1,7 @@
+# One request per line.
+#   "Artist - Album"  finds that album
+#   "Artist"          lists that artist's album-shaped FLAC items
+# Lines starting with # are ignored. A .csv file (artist,album) works too.
+The Mars Volta - Frances the Mute
+Miles Davis - Kind of Blue
+Boards of Canada

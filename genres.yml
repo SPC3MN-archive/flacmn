@@ -1,0 +1,76 @@
+# Genre -> search terms for `iaflac genre <name>`.
+#
+# archive.org has no genre field: uploaders type free-form tags into `subject` and put genre words in
+# titles and descriptions. Each entry lists the tags/phrases worth matching (all are OR-ed) and words
+# that mean "wrong kind of thing" (excluded from subject/title). Names not listed here still work:
+# `iaflac genre "math rock"` searches for exactly that phrase, and `--terms` / `--exclude` add to
+# (or stand in for) an entry.
+
+shoegaze:
+  terms: [shoegaze, shoegazing, dream pop, noise pop]
+ambient:
+  terms: [ambient, dark ambient, drone, space music]
+  exclude: [ambient noise, asmr, white noise, rain sounds, sleep sounds, nature sounds]
+jazz:
+  terms: [jazz, bebop, hard bop, cool jazz, modal jazz, free jazz, post-bop, jazz fusion]
+  exclude: [karaoke, backing tracks, jazz piano bar]
+post-rock:
+  terms: [post-rock, post rock, instrumental rock, math rock]
+post-punk:
+  terms: [post-punk, post punk, coldwave, gothic rock, darkwave]
+krautrock:
+  terms: [krautrock, kosmische, motorik]
+psychedelic:
+  terms: [psychedelic rock, psychedelia, psych rock, acid rock, neo-psychedelia]
+progressive rock:
+  terms: [progressive rock, prog rock, art rock, symphonic rock, canterbury scene]
+electronic:
+  terms: [electronic, idm, intelligent dance music, electronica, downtempo, glitch]
+  exclude: [dj mix, radio show, podcast]
+techno:
+  terms: [techno, minimal techno, detroit techno, dub techno]
+  exclude: [dj mix, radio show, podcast]
+house:
+  terms: [deep house, house music, chicago house, acid house]
+  exclude: [dj mix, radio show, podcast]
+drum and bass:
+  terms: [drum and bass, drum & bass, jungle, liquid funk]
+  exclude: [dj mix, radio show, podcast]
+hip hop:
+  terms: [hip hop, hip-hop, rap, boom bap, underground hip hop]
+  exclude: [karaoke, instrumentals only]
+folk:
+  terms: [folk, freak folk, psych folk, folk rock, singer-songwriter, americana]
+country:
+  terms: [country, outlaw country, alt-country, bluegrass, honky tonk]
+blues:
+  terms: [blues, delta blues, chicago blues, electric blues, blues rock]
+soul:
+  terms: [soul, northern soul, deep soul, funk, neo soul, rhythm and blues]
+reggae:
+  terms: [reggae, dub, roots reggae, rocksteady, ska]
+metal:
+  terms: [metal, heavy metal, doom metal, black metal, death metal, thrash metal, sludge, stoner metal]
+punk:
+  terms: [punk, hardcore punk, punk rock, pop punk, oi, crust punk]
+indie:
+  terms: [indie rock, indie pop, lo-fi, jangle pop, twee, slowcore, emo]
+classical:
+  terms: [classical, baroque, symphony, chamber music, string quartet, piano sonata, opera]
+  exclude: [ringtone, karaoke]
+minimalism:
+  terms: [minimalism, minimal music, contemporary classical, new music, modern composition]
+soundtrack:
+  terms: [soundtrack, ost, film score, video game music, original score]
+world:
+  terms: [world music, afrobeat, highlife, gamelan, flamenco, fado, samba, bossa nova, tropicalia, cumbia]
+new wave:
+  terms: [new wave, synth-pop, synthpop, synth pop, new romantic, italo disco]
+industrial:
+  terms: [industrial, ebm, power electronics, noise, dark electro]
+trip hop:
+  terms: [trip hop, trip-hop, downtempo, illbient]
+lounge:
+  terms: [lounge, exotica, easy listening, space age pop, library music]
+chiptune:
+  terms: [chiptune, 8-bit, tracker music, bitpop]

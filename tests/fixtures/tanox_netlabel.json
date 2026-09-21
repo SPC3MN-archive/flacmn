@@ -1,0 +1,290 @@
+{
+ "identifier": "pn026",
+ "metadata": {
+  "metadata": {
+   "identifier": "pn026",
+   "title": "Astronomia de Balcon [PN026]",
+   "creator": "Tanox",
+   "date": "2008-02-25",
+   "description": "For all info please (y en castellano), visit: pueblonuevo.cl/astronomia-de-balcon/",
+   "collection": [
+    "pueblo_nuevo",
+    "netlabels"
+   ],
+   "subject": [
+    "tanox",
+    "argentina",
+    "pueblo",
+    "nuevo",
+    "electronic",
+    "dub",
+    "experimental",
+    "dubgaze",
+    "altocamet",
+    "run run",
+    "dj camet",
+    "minimal",
+    "dream pop",
+    "guitar",
+    "rock",
+    "shoegaze",
+    "bass",
+    "barcelona",
+    "mar del plata",
+    "españa",
+    "chile",
+    "sudamerica"
+   ],
+   "licenseurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/"
+  },
+  "files": [
+   {
+    "name": "pn026_01_tanox_autsaidnait.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "15781984",
+    "length": "170.25"
+   },
+   {
+    "name": "pn026_02_tanox_autsaidbeat.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "48581959",
+    "length": "477.0"
+   },
+   {
+    "name": "pn026_03_tanox_flecha.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "24498593",
+    "length": "291.0"
+   },
+   {
+    "name": "pn026_04_tanox_autsaidub.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "31986571",
+    "length": "280.0"
+   },
+   {
+    "name": "pn026_05_tanox_llegada.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "20008438",
+    "length": "215.06"
+   },
+   {
+    "name": "pn026_info.txt",
+    "format": "Text",
+    "source": "original",
+    "size": "10022",
+    "length": null
+   }
+  ],
+  "item_size": 437573335
+ },
+ "probes": {
+  "pn026_01_tanox_autsaidnait.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 15,
+    "max_framesize": 13894,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 7508025,
+    "md5": "2f85108bde9197fe2c699059e04c2f6e"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     540
+    ],
+    [
+     1,
+     16349
+    ]
+   ],
+   "audio_offset": 16939,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Astronomía de Balcón [pn026]",
+    "ARTIST": "Tanox",
+    "DATE": "2008",
+    "GENRE": "Electronic"
+   },
+   "warnings": []
+  },
+  "pn026_02_tanox_autsaidbeat.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 16,
+    "max_framesize": 13617,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 21035700,
+    "md5": "7e55206e5dc6f4e2c30a677fb69d806a"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     540
+    ],
+    [
+     1,
+     16349
+    ]
+   ],
+   "audio_offset": 16939,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Astronomía de Balcón [pn026]",
+    "ARTIST": "Tanox",
+    "DATE": "2008",
+    "GENRE": "Electronic"
+   },
+   "warnings": []
+  },
+  "pn026_03_tanox_flecha.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 1184,
+    "max_framesize": 13214,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 12833100,
+    "md5": "4f62dd26739171ada53b6ab9877fdc58"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     535
+    ],
+    [
+     1,
+     16349
+    ]
+   ],
+   "audio_offset": 16934,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Astronomía de Balcón [pn026]",
+    "ARTIST": "Tanox",
+    "DATE": "2008",
+    "GENRE": "Electronic"
+   },
+   "warnings": []
+  },
+  "pn026_04_tanox_autsaidub.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 16,
+    "max_framesize": 14373,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 12348087,
+    "md5": "403c78ad7efaa46bbd905a8b19f18af6"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     539
+    ],
+    [
+     1,
+     16349
+    ]
+   ],
+   "audio_offset": 16938,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Astronomía de Balcón [pn026]",
+    "ARTIST": "Tanox",
+    "DATE": "2008",
+    "GENRE": "Electronic"
+   },
+   "warnings": []
+  },
+  "pn026_05_tanox_llegada.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 14,
+    "max_framesize": 13774,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9484364,
+    "md5": "a7698f4855d4a0ac07884b42615379d4"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     536
+    ],
+    [
+     1,
+     16349
+    ]
+   ],
+   "audio_offset": 16935,
+   "vendor": "reference libFLAC 1.2.1 20070917",
+   "tags": {
+    "ALBUM": "Astronomía de Balcón [pn026]",
+    "ARTIST": "Tanox",
+    "DATE": "2008",
+    "GENRE": "Electronic"
+   },
+   "warnings": []
+  }
+ },
+ "logs": {},
+ "aucdtect": {}
+}

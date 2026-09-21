@@ -1,0 +1,618 @@
+{
+ "identifier": "thehuntingpartflac",
+ "metadata": {
+  "metadata": {
+   "identifier": "thehuntingpartflac",
+   "title": "Linkin Park -- The Hunting Party (FLAC)",
+   "creator": "Linkin Park",
+   "date": "2014",
+   "description": "Linkin Park -- The Hunting Party cd rip (FLAC)",
+   "collection": [
+    "opensource_audio",
+    "community"
+   ],
+   "subject": [
+    "Linkin Park",
+    "Hunting Party",
+    "cd rip",
+    "flac"
+   ],
+   "licenseurl": ""
+  },
+  "files": [
+   {
+    "name": "FLAC/01 Keys To The Kingdom.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "29134039",
+    "length": "218.64"
+   },
+   {
+    "name": "FLAC/02 All For Nothing.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "28503831",
+    "length": "213.72"
+   },
+   {
+    "name": "FLAC/03 Guilty All The Same.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "48765855",
+    "length": "353.59"
+   },
+   {
+    "name": "FLAC/04 The Summoning.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "6336902",
+    "length": "60.46"
+   },
+   {
+    "name": "FLAC/05 War.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "18011967",
+    "length": "131.24"
+   },
+   {
+    "name": "FLAC/06 Wastelands.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "26943646",
+    "length": "195.98"
+   },
+   {
+    "name": "FLAC/07 Until It's Gone.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "31036324",
+    "length": "233.31"
+   },
+   {
+    "name": "FLAC/08 Rebellion.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "32072603",
+    "length": "224.21"
+   },
+   {
+    "name": "FLAC/09 Mark The Graves.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "38699637",
+    "length": "305.02"
+   },
+   {
+    "name": "FLAC/10 Drawbar.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "14910883",
+    "length": "167.0"
+   },
+   {
+    "name": "FLAC/11 Final Masquerade.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "29109817",
+    "length": "217.62"
+   },
+   {
+    "name": "FLAC/12 A Line In The Sand.flac",
+    "format": "Flac",
+    "source": "original",
+    "size": "48372749",
+    "length": "395.11"
+   }
+  ],
+  "item_size": 470396192
+ },
+ "probes": {
+  "FLAC/01 Keys To The Kingdom.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 14,
+    "max_framesize": 15837,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 10494677,
+    "md5": "d9f8731601b877495fb31366c2316424"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     208
+    ],
+    [
+     1,
+     8030
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/02 All For Nothing.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 18,
+    "max_framesize": 15833,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 10258391,
+    "md5": "3f787ca5a27329c440ae5422995feaea"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     224
+    ],
+    [
+     1,
+     8014
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park Feat. Page Hamilton",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/03 Guilty All The Same.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 2533,
+    "max_framesize": 16152,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 16972487,
+    "md5": "93ebb0f70cfbcdabeed503377cc27ac2"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     220
+    ],
+    [
+     1,
+     8018
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park Feat. Rakim",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/04 The Summoning.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 5410,
+    "max_framesize": 14146,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 2902309,
+    "md5": "1d374e7463519dc1771deae3ade67124"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     202
+    ],
+    [
+     1,
+     8036
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/05 War.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 17,
+    "max_framesize": 15258,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 6299481,
+    "md5": "34df723a141d160bc245f9e196cdb1b5"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     192
+    ],
+    [
+     1,
+     8046
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/06 Wastelands.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 17,
+    "max_framesize": 15421,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 9406869,
+    "md5": "02424c2e653d54fe59b0d5001b0cd8f8"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     199
+    ],
+    [
+     1,
+     8039
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/07 Until It's Gone.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 18,
+    "max_framesize": 16789,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 11199078,
+    "md5": "10e8e96db193e4e1dbec9259c594e91f"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     204
+    ],
+    [
+     1,
+     8034
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/08 Rebellion.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 675,
+    "max_framesize": 15977,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 10762171,
+    "md5": "209b7bfa51c0ea4349b346925d24dde0"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     219
+    ],
+    [
+     1,
+     8019
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park Feat. Daron Malakian",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/09 Mark The Graves.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 951,
+    "max_framesize": 15533,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 14640832,
+    "md5": "556249f79b9140e143878beabc9b7538"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     204
+    ],
+    [
+     1,
+     8034
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/10 Drawbar.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 17,
+    "max_framesize": 14755,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 8015900,
+    "md5": "1268b3ac70247bf1ec9fd9561bf18738"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     215
+    ],
+    [
+     1,
+     8023
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park Feat. Tom Morello",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/11 Final Masquerade.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 3759,
+    "max_framesize": 16013,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 10445636,
+    "md5": "8ee93df548bd0e49e724d8c7b1f561c1"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     206
+    ],
+    [
+     1,
+     8032
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  },
+  "FLAC/12 A Line In The Sand.flac": {
+   "kind": "flac",
+   "ok": true,
+   "detail": "",
+   "id3_prefix": 0,
+   "streaminfo": {
+    "min_blocksize": 4608,
+    "max_blocksize": 4608,
+    "min_framesize": 16,
+    "max_framesize": 16172,
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits_per_sample": 16,
+    "total_samples": 18965316,
+    "md5": "618089a1983333839447813dff392104"
+   },
+   "blocks": [
+    [
+     0,
+     34
+    ],
+    [
+     4,
+     208
+    ],
+    [
+     1,
+     8030
+    ]
+   ],
+   "audio_offset": 8288,
+   "vendor": "Lavf58.29.100",
+   "tags": {
+    "ALBUM": "The Hunting Party",
+    "ALBUMARTIST": "Linkin Park",
+    "ARTIST": "Linkin Park",
+    "DATE": "2014",
+    "ENCODER": "Lavf58.29.100",
+    "GENRE": "Metal & Hard Rock"
+   },
+   "warnings": []
+  }
+ },
+ "logs": {},
+ "aucdtect": {}
+}

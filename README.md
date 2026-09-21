@@ -16,6 +16,112 @@ Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,
 `candidates.json`, `spectrograms/`). `SKILL.md` teaches Claude to drive it.
 
+## Walkthrough: from a wish list to a verified album in your library
+
+This takes one album from a search to your library and inventory. Every step that changes something on disk is a
+preview until you add `--yes`. Run everything from this folder.
+
+**1. Check the setup (once).**
+
+```bash
+python3 --version                       # 3.10 or newer
+python3 -c "import requests, numpy, scipy, matplotlib, yaml"   # no output means the packages are there
+flac --version && ffmpeg -version | head -1
+```
+
+If an import fails, `pip install requests numpy scipy matplotlib pyyaml`. If `flac` or `ffmpeg` is missing on a Mac,
+`brew install flac ffmpeg`.
+
+**2. Say what you want.** Pass requests on the command line, or put one per line in a text file (`Artist - Album`, or
+just `Artist`; lines starting with `#` are comments; `.csv` with `artist,album` also works). See `wanted.example.txt`.
+An album request finds far better matches than an artist-only one, which returns whatever uploads mention the name.
+
+**3. Search, and read the list. Nothing is tested yet.**
+
+```bash
+python3 -m iaflac find "Miles Davis - Kind of Blue"
+```
+
+You get a numbered list of everything archive.org has for the request. Each entry shows the FLAC count, runtime, size,
+year, downloads, which rip files it ships (`log`, `cue`, `.accurip`), cover art, licence, track names, and what the
+uploader's description claims. Read it for the signs of a real CD rip: a `log` and a `cue`, a track count and runtime
+that match the album, and a name that matches ("exact match", not "weak match"). Entries marked "another upload or
+edition of #1" are duplicates of the same album. To stop here, add `--search-only`.
+
+**4. Choose what to test.** At the prompt, press Enter to test the top entry, type numbers such as `1,3` or `2-4`,
+`a` for all, `s` to skip this request, or `q` to quit. The tests read the files, so pick the entries you would
+actually keep. The best pick also gets a full decode test and a spectrum check, which streams that album's whole
+FLAC set (the size is in the listing). Add `--deep none` to skip that and only read headers and the rip log.
+
+**5. Read the report.** The run writes a folder under `runs/` and prints a summary. Open `report.md` in it. Each
+tested item has a tier and the evidence behind it:
+
+| Tier | Meaning |
+|---|---|
+| **A** | CD rip, strong evidence: rip log plus CD-format, sector-aligned tracks |
+| **B** | CD rip, likely |
+| **C** | Real lossless, but not shown to come from a CD (48 kHz, 24-bit, no rip log) |
+| **D** | Failed or suspect: not FLAC, failed the decode test, or a lossy spectrum |
+
+Tiers describe how sure the tool is that the source was a CD, not how good the audio is. A tier C item can be a
+perfectly good lossless file. Also look for `V2 ✓ n/n files decode cleanly` (every file passed `flac -t` and matched archive.org's
+checksum) and the spectrum verdict; open the PNG in `spectrograms/` if it says `SUSPECT`.
+
+**6. Look before you download.**
+
+```bash
+python3 -m iaflac get <identifier> --library ~/Music --as "<identifier>=Miles Davis | Kind of Blue"
+```
+
+Without `--yes` this only prints the plan: the files, their sizes, and the folder they would go to
+(`~/Music/Miles Davis/Kind of Blue/`). `--as` names the album explicitly; without it the name is guessed and shown so
+you can check it. Nothing is written yet.
+
+**7. Download, verify and file it.**
+
+```bash
+python3 -m iaflac get <identifier> --library ~/Music --as "<identifier>=Miles Davis | Kind of Blue" --yes
+```
+
+Files download to `.part` names and are renamed only once they match archive.org's checksums. You end up with the
+audio, `cover.jpg`, and the rip `.log/.cue/.accurip` (add `--rip-files skip` to leave those out). It refuses to merge
+into a folder holding other files and never overwrites a file that differs.
+
+**8. Add it to your inventory (optional).** Add `--inventory` to step 6 and 7's command to record the album in your
+workbook:
+
+```bash
+python3 -m iaflac get <identifier> --library ~/Music --inventory ~/Music/Inventory.xlsx \
+    --as "<identifier>=Miles Davis | Kind of Blue"           # preview: shows where the rows would go and the new totals
+python3 -m iaflac get <identifier> --library ~/Music --inventory ~/Music/Inventory.xlsx \
+    --as "<identifier>=Miles Davis | Kind of Blue" --yes     # download and write
+```
+
+Close the workbook in Excel first, since an open file stops the write. A timestamped backup is made before the
+workbook is replaced. For albums you got some other way:
+`python3 -m iaflac inventory add "~/Music/Artist/Album" --xlsx ~/Music/Inventory.xlsx --yes`.
+
+**9. Check the result (optional).**
+
+```bash
+python3 -m iaflac inventory check --xlsx ~/Music/Inventory.xlsx    # Summary matches Library
+python3 -m iaflac verify <identifier> --deep --spectral            # re-test one item as hard as possible
+```
+
+**Discovering by genre instead.** When you don't have a specific album in mind:
+
+```bash
+python3 -m iaflac genre shoegaze --years 1988-1996
+```
+
+You get a table of album-shaped hits with rip files, size and popularity. Pick which to inspect at the prompt (Enter
+inspects the first 30), read the report the same way as in step 5, then continue from step 6 with the identifier of an
+album you like. `--terms "dream pop"` adds search words and `--exclude` removes some.
+
+**Running it unattended.** With no terminal (a script or a pipe) and no `--select`, `find` lists and tests nothing.
+Use `--select 1` to answer the prompt in advance, for example
+`python3 -m iaflac find -f wanted.txt --select 1`.
+
 ## Search first, then test what you choose
 
 `find` and `genre` work in two phases, and the tests never start until you say so.

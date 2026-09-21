@@ -8,7 +8,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import download, genre as genre_mod, inventory as inv, names as names_mod, queries, report
+from . import download, genre as genre_mod, inventory as inv, names as names_mod, preview, queries, report
 from .genre import GenreSpec
 from .ia_client import IAClient, IAError
 from .pipeline import Candidate, Options, Pipeline
@@ -84,6 +84,61 @@ def options_from(args, run_dir: Path) -> Options:
                    spectrogram_dir=run_dir / "spectrograms")
 
 
+SEARCH_ONLY_HINT = """Nothing was tested. To test some of these, either:
+  - run the same command in a terminal without --search-only, and you will be asked which to test, or
+  - add --select 1 (the top listed item of every request), --select 1,3, --select 2-4 or --select a (all listed), or
+  - check one item as thoroughly as possible:  python3 -m iaflac verify <identifier> --deep --spectral"""
+
+
+def is_interactive() -> bool:
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def ask(prompt: str) -> str:
+    return input(prompt)
+
+
+def choose(prompt: str, n: int, default: str) -> "preview.Selection":
+    """Ask which listed candidates to test, re-asking until the answer makes sense. EOF or Ctrl-C means quit."""
+    while True:
+        try:
+            answer = ask(prompt)
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return preview.Selection("quit")
+        try:
+            return preview.parse_selection(answer, n, default)
+        except preview.SelectionError as exc:
+            print(f"  {exc}. Try again.")
+
+
+def run_mode(args) -> str:
+    """search-only: list and stop. select: --select decides. prompt: ask in the terminal.
+    Without a terminal and without --select nothing is tested: the tests never start unasked."""
+    if args.search_only or (not args.select and not is_interactive()):
+        return "search-only"
+    return "select" if args.select else "prompt"
+
+
+def check_select(args) -> bool:
+    if args.search_only and args.select:
+        say("error: --search-only and --select contradict each other")
+        return False
+    if args.select:
+        try:
+            preview.parse_selection(args.select, 1, strict=False)
+        except preview.SelectionError as exc:
+            say(f"error: --select {args.select!r}: {exc}")
+            return False
+    return True
+
+
+def search_only_footer(args) -> None:
+    print("\n" + SEARCH_ONLY_HINT)
+    if not args.search_only:
+        print("(This is not an interactive terminal, so I did not ask which to test.)")
+
+
 def cmd_find(args, client: IAClient) -> int:
     wants = list(queries.read_wanted(args.file)) if args.file else []
     for raw in args.items:
@@ -91,15 +146,63 @@ def cmd_find(args, client: IAClient) -> int:
     if not wants:
         say("error: give at least one request, e.g.  find \"Miles Davis - Kind of Blue\"  or  find -f wanted.txt")
         return 2
+    if not check_select(args):
+        return 2
     name = Path(args.file).stem if args.file else wants[0].label
     run_dir = run_dir_for(args.out, name)
-    pipe = Pipeline(client, log=say)
-    say(f"{len(wants)} request(s); report will be written to {run_dir}")
+    opts, mode, pipe = options_from(args, run_dir), run_mode(args), Pipeline(client, log=say)
+    print(preview.HEADER)
+    if mode == "prompt":
+        print(preview.TEST_NOTE)
+    results, chosen, default_for_rest = [], [], False
     try:
-        results = pipe.find(wants, options_from(args, run_dir))
+        for i, want in enumerate(wants, 1):
+            res = pipe.search_one(want, opts)
+            results.append(res)
+            print(preview.format_find_preview(res, i, len(wants)))
+            picks = []
+            if mode != "search-only" and res.found:
+                n = len(res.found)
+                if mode == "select":
+                    sel = preview.parse_selection(args.select, n, strict=False)
+                    if sel.dropped:
+                        say(f"  --select: {sel.dropped} is outside 1-{n} for this request; ignored")
+                elif default_for_rest:
+                    sel = preview.parse_selection("", n)
+                else:
+                    print()
+                    sel = choose(preview.find_prompt(), n, "1")
+                    default_for_rest = default_for_rest or sel.default_for_rest
+                if sel.action == "quit":
+                    print("Stopped. Nothing was tested.")
+                    return 0
+                if sel.action == "test":
+                    picks = sel.indexes
+            chosen.append(picks)
     except IAError as exc:
         say(f"error: {exc}")
         return 2
+    if mode == "search-only":
+        search_only_footer(args)
+        say(f"\n[{client.stats()}]")
+        return 0
+    total = sum(len(p) for p in chosen)
+    if total == 0:
+        print("\nNothing was selected, so nothing was tested.")
+        return 0
+    biggest = max(res.found[k].item.flac_bytes for res, picks in zip(results, chosen) for k in picks) // 1_000_000
+    say(f"\nTesting {total} candidate(s): header reads and rip logs"
+        + ("" if opts.deep == "none" else f", then a full decode test and spectrum check of the best pick (streams up to {biggest:,} MB)")
+        + ". Ctrl-C stops it.")
+    try:
+        for res, picks in zip(results, chosen):
+            pipe.verify_selected(res, [res.found[k] for k in picks], opts)
+    except IAError as exc:
+        say(f"error: {exc}")
+        return 2
+    except KeyboardInterrupt:
+        say("\nInterrupted; no report was written.")
+        return 130
     paths = report.write_run(run_dir, f"find: {name}", results,
                              {"stats": client.stats(), "command": "find " + " ".join(args.items or [args.file])})
     print(report.terminal_summary(results))
@@ -113,26 +216,57 @@ def cmd_genre(args, client: IAClient) -> int:
     except ValueError as exc:
         say(f"error: {exc}")
         return 2
+    if not check_select(args):
+        return 2
     terms, exclude = genre_mod.resolve(args.genre, genre_mod.split_csv(args.terms), genre_mod.split_csv(args.exclude))
     spec = GenreSpec(genre=args.genre, terms=terms, exclude=exclude, years=years, cd_only=not args.any_flac,
                      min_tracks=args.min_tracks, per_artist=args.per_artist, top=args.top, probe_n=args.probe,
                      collections=tuple(genre_mod.split_csv(args.collections)), include_live=args.include_live,
                      free_only=args.free_only)
     run_dir = run_dir_for(args.out, f"genre-{args.genre}")
-    say(f"genre '{args.genre}' -> terms: {', '.join(terms)}" + (f"  (excluding: {', '.join(exclude)})" if exclude else ""))
-    say(f"report will be written to {run_dir}")
+    opts, mode, pipe = options_from(args, run_dir), run_mode(args), Pipeline(client, log=say)
+    print(preview.HEADER)
     try:
-        res = Pipeline(client, log=say).genre(spec, options_from(args, run_dir))
+        res = pipe.genre_search(spec, opts)
     except IAError as exc:
         say(f"error: {exc}")
         return 2
+    print(preview.format_genre_preview(res))
+    found = len(res.found)
+    if mode == "search-only":
+        search_only_footer(args)
+        say(f"\n[{client.stats()}]")
+        return 0
+    if found == 0:
+        return 0
+    default_n = min(spec.probe_n, found)
+    if mode == "select":
+        sel = preview.parse_selection(args.select, found, default=f"1-{default_n}", strict=False)
+        if sel.dropped:
+            say(f"  --select: {sel.dropped} is outside 1-{found}; ignored")
+    else:
+        print()
+        sel = choose(preview.genre_prompt(default_n), found, f"1-{default_n}")
+    if sel.action != "test":
+        print("Nothing was tested.")
+        return 0
+    selected = [res.found[k] for k in sel.indexes]
+    say(f"\nInspecting {len(selected)} candidate(s): header reads and rip logs, about ten small reads each. Ctrl-C stops it.")
+    try:
+        pipe.genre_inspect(res, selected, opts)
+    except IAError as exc:
+        say(f"error: {exc}")
+        return 2
+    except KeyboardInterrupt:
+        say("\nInterrupted; no report was written.")
+        return 130
     notes = list(res.notes) + [f"Excluded {n}: {reason}" for reason, n in res.excluded.items()]
     paths = report.write_run(run_dir, f"genre: {args.genre}", res.candidates,
                              {"stats": client.stats(), "notes": notes, "searched": res.searched,
                               "command": f"genre {args.genre}"})
     print(report.terminal_summary(res.candidates))
-    for n in notes:
-        say(f"  note: {n}")
+    for note in notes:
+        say(f"  note: {note}")
     say(f"\n[{client.stats()}]\nReport: {paths['markdown']}")
     return 0
 
@@ -371,6 +505,10 @@ def add_common(p: argparse.ArgumentParser, deep_default: str = "top") -> None:
                    help=f"full integrity + spectral checks: none, the top pick, or all candidates (default {deep_default})")
     p.add_argument("--no-spectral", action="store_true", help="skip the spectral (fake-lossless) check")
     p.add_argument("--max-deep-mb", type=int, default=1500, help="skip full integrity check above this size (default 1500)")
+    p.add_argument("--search-only", action="store_true",
+                   help="list what was found and stop: nothing is tested (this is also what happens without a terminal)")
+    p.add_argument("--select", metavar="SPEC",
+                   help="skip the prompt and test these listed candidates: 1, 1,3, 2-4 or a (all); numbers are per request")
     p.add_argument("-o", "--out", default=str(PROJECT_ROOT / "runs"), help="where run folders are written")
 
 

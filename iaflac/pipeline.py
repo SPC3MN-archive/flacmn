@@ -93,6 +93,10 @@ class WantResult:
     lossless_other: list = field(default_factory=list)
     excluded: dict = field(default_factory=dict)       # reason -> count
     notes: list = field(default_factory=list)
+    found: list = field(default_factory=list)          # search results (metadata only), listed before any testing
+    untested: list = field(default_factory=list)       # found but not chosen for testing
+    tested: bool = False
+    fallback_done: bool = False
 
 
 def first(value) -> str:
@@ -225,7 +229,9 @@ class Pipeline:
                 break
         return pool
 
-    def find_one(self, want: Want, opts: Options) -> WantResult:
+    def search_one(self, want: Want, opts: Options) -> WantResult:
+        """The search phase: queries plus item metadata. No file is opened; nothing is tested. The result's `found`
+        list is what the user gets to look at (and choose from) before `verify_selected` does any testing."""
         res = WantResult(want=want)
         pool = self._search_pool(want, opts, res)
         ranked_docs = sorted(pool.values(), key=lambda h: (-round(h.quick.score, 1), not h.rip_shaped,
@@ -235,6 +241,7 @@ class Pipeline:
                             "creator": first(h.doc.get("creator")), "downloads": int(h.doc.get("downloads") or 0)}
                            for h in ranked_docs if h.quick.bucket == 2][:8]
         selected = plausible[: opts.max_candidates]
+        self.log(f"  [{want.label}] reading the item records of {len(selected)} candidate(s) (about 3 s each when not cached)")
 
         def load_one(h):
             try:
@@ -247,7 +254,6 @@ class Pipeline:
             loaded = [c for c in ex.map(load_one, selected) if c]
 
         wants_live = bool(WANTS_LIVE.search(want.raw))
-        kept = []
         for cand in loaded:
             reason = ""
             if not cand.item.flacs:
@@ -261,32 +267,51 @@ class Pipeline:
             if reason:
                 res.excluded[reason] = res.excluded.get(reason, 0) + 1
             else:
-                kept.append(cand)
+                cand.match = matching.match_fields(want.artist, want.album, cand.item.title, cand.item.creator)
+                res.found.append(cand)
+        if not res.found:
+            self._fallback(res)
+        return res
 
-        self.inspect_all(kept, want.label, want)
+    def _fallback(self, res: WantResult) -> None:
+        """Nothing matched: say so, and show what does exist (the artist's other FLAC items, other lossless formats)."""
+        want = res.want
+        res.fallback_done = True
+        res.notes.append("no FLAC candidate matched this request")
+        if not res.near_misses:
+            near = queries.near_miss_rung(want.artist)
+            res.near_misses = [{"identifier": d["identifier"], "title": first(d.get("title")),
+                                "creator": first(d.get("creator")), "downloads": int(d.get("downloads") or 0)}
+                               for d in self.client.search_iter(near.query, max_hits=near.rows)][:8]
+        other = queries.other_lossless_rung(want.artist, want.album)
+        res.lossless_other = [{"identifier": d["identifier"], "title": first(d.get("title")),
+                               "creator": first(d.get("creator"))}
+                              for d in self.client.search_iter(other.query, max_hits=other.rows)][:5]
 
-        for cand in [c for c in kept if c.match.bucket == 2]:
+    def verify_selected(self, res: WantResult, selected: list, opts: Options) -> WantResult:
+        """The test phase, for the candidates the user picked from `res.found`: header reads and rip logs, tiering,
+        ranking and duplicate grouping, then (per opts.deep) the full decode and spectral checks of the best pick."""
+        want = res.want
+        chosen = {id(c) for c in selected}
+        res.untested = [c for c in res.found if id(c) not in chosen]
+        res.tested = bool(selected)
+        self.inspect_all(selected, want.label, want)
+        for cand in [c for c in selected if c.match.bucket == 2]:
             res.near_misses.insert(0, {"identifier": cand.identifier, "title": cand.item.title,
                                        "creator": cand.item.creator, "downloads": cand.item.downloads})
-        matches = [c for c in kept if c.match.bucket < 2]
+        matches = [c for c in selected if c.match.bucket < 2]
         res.candidates = self.cluster(sorted(matches, key=Candidate.rank_key))
-
-        if not res.candidates:
-            res.notes.append("no FLAC candidate matched this request")
-            if not res.near_misses:
-                near = queries.near_miss_rung(want.artist)
-                res.near_misses = [{"identifier": d["identifier"], "title": first(d.get("title")),
-                                    "creator": first(d.get("creator")), "downloads": int(d.get("downloads") or 0)}
-                                   for d in self.client.search_iter(near.query, max_hits=near.rows)][:8]
-            other = queries.other_lossless_rung(want.artist, want.album)
-            res.lossless_other = [{"identifier": d["identifier"], "title": first(d.get("title")),
-                                   "creator": first(d.get("creator"))}
-                                  for d in self.client.search_iter(other.query, max_hits=other.rows)][:5]
-
+        if not res.candidates and selected and not res.fallback_done:
+            self._fallback(res)                       # what was chosen did not hold up once its tags were read
         if opts.deep != "none" and res.candidates:
             self.deep_stage(res, opts)
         res.candidates = res.candidates[: max(opts.top, 1)] if opts.deep != "all" else res.candidates
         return res
+
+    def find_one(self, want: Want, opts: Options) -> WantResult:
+        """Search, then test everything that was found (the behaviour before search and test were separated)."""
+        res = self.search_one(want, opts)
+        return self.verify_selected(res, list(res.found), opts)
 
     @staticmethod
     def cluster(ranked: list) -> list:
@@ -381,7 +406,8 @@ class Pipeline:
             return f"fewer than {min_tracks} FLAC files (single or EP; see --min-tracks)"
         return ""
 
-    def genre(self, spec: GenreSpec, opts: Options) -> GenreResult:
+    def genre_search(self, spec: GenreSpec, opts: Options) -> GenreResult:
+        """The search phase: queries plus item metadata. Nothing is tested; `found` is what the user gets to look at."""
         res = GenreResult(spec=spec)
         pool: dict = {}
 
@@ -412,7 +438,7 @@ class Pipeline:
                 res.excluded[reason] = res.excluded.get(reason, 0) + 1
             elif len(hits) < spec.enrich_n:
                 hits.append(h)
-        self.log(f"  [{spec.genre}] fetching metadata for {len(hits)} candidate(s) (cold metadata takes ~3 s each)")
+        self.log(f"  [{spec.genre}] reading the item records of {len(hits)} candidate(s) (about 3 s each when not cached)")
 
         def load_one(h):
             try:
@@ -445,13 +471,26 @@ class Pipeline:
             tags = genre_mod.matched_subjects(item.subjects, spec.terms)
             cand.notes.append(f"genre match via {h.conf}" + (f" ({', '.join(tags)})" if tags else ""))
             kept.append(cand)
-        if len(kept) > spec.probe_n:
-            res.notes.append(f"{len(kept) - spec.probe_n} more candidate(s) were left uninspected (see --probe)")
-            kept = kept[: spec.probe_n]
-        self.inspect_all(kept, spec.genre)
-        ranked = genre_mod.diversify(self.cluster(sorted(kept, key=self.genre_key)), spec.per_artist)[: spec.top]
+        res.found = kept
+        return res
+
+    def genre_inspect(self, res: GenreResult, selected: list, opts: Options) -> GenreResult:
+        """The test phase, for the candidates the user picked from `res.found`."""
+        spec = res.spec
+        chosen = {id(c) for c in selected}
+        res.untested = [c for c in res.found if id(c) not in chosen]
+        res.tested = bool(selected)
+        if res.untested:
+            res.notes.append(f"{len(res.untested)} more candidate(s) were listed but not inspected (see --probe / --select)")
+        self.inspect_all(selected, spec.genre)
+        ranked = genre_mod.diversify(self.cluster(sorted(selected, key=self.genre_key)), spec.per_artist)[: spec.top]
         if opts.deep != "none" and ranked:
             self.deep_candidates(ranked, opts, spec.genre)
             ranked.sort(key=self.genre_key)
         res.candidates = ranked
         return res
+
+    def genre(self, spec: GenreSpec, opts: Options) -> GenreResult:
+        """Search, then inspect the best `spec.probe_n` found (the behaviour before search and test were separated)."""
+        res = self.genre_search(spec, opts)
+        return self.genre_inspect(res, res.found[: spec.probe_n], opts)

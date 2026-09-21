@@ -71,6 +71,7 @@ class FakeIA:
         self.items = {i.doc["identifier"]: i for i in items}
         self.corrupt_stream = corrupt_stream or {}
         self.queries, self.bytes_read = [], 0
+        self.calls = []          # (kind, ...) in the order they happened: search / metadata / range / stream
 
     def stats(self):
         return "fake"
@@ -81,6 +82,7 @@ class FakeIA:
 
     def search_iter(self, q, *, fields=None, sort=None, max_hits=100, page_size=100):
         self.queries.append(q)
+        self.calls.append(("search",))
         want_rip = queries.RIP_SHAPED in q
         phrases = self.phrases(q)
         count = 0
@@ -103,15 +105,18 @@ class FakeIA:
                     return
 
     def metadata(self, identifier):
+        self.calls.append(("metadata", identifier))
         return copy.deepcopy(self.items[identifier].metadata)
 
     def range_get(self, identifier, name, start, length):
+        self.calls.append(("range", identifier, name))
         return self.items[identifier].files[name][start:start + length]
 
     def get_bytes(self, identifier, name, max_bytes=1 << 20):
         return self.range_get(identifier, name, 0, max_bytes)
 
     def open_stream(self, identifier, name, start=0):
+        self.calls.append(("stream", identifier, name))
         data = self.items[identifier].files[name]
         if self.corrupt_stream.get(identifier) == name:
             damaged = bytearray(data)

@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from . import preview
 from .pipeline import Candidate, WantResult
 
 
@@ -112,6 +113,8 @@ def render_markdown(title: str, results: list, meta: dict) -> str:
                 c = r.candidates[0]
                 out.append(f"| {i} | {r.want.label} | [{c.identifier}]({c.item.url}) | {c.tier} | "
                            f"{c.stats.format_label() if c.stats else ''} | {' '.join(c.levels)} |")
+            elif r.found and not r.tested:
+                out.append(f"| {i} | {r.want.label} | *not tested* ({len(r.found)} found) | — | — | — |")
             else:
                 out.append(f"| {i} | {r.want.label} | *no FLAC match* | — | — | — |")
         out.append("")
@@ -122,6 +125,8 @@ def render_markdown(title: str, results: list, meta: dict) -> str:
                 out.append(f"- Excluded {n}: {reason}")
             for note in r.notes:
                 out.append(f"- {note}")
+            if r.found and not r.tested:
+                out.append("- Nothing was tested for this request (skipped).")
             if r.candidates:
                 out += [""] + _candidate_md(r.candidates[0], "###")
                 if len(r.candidates) > 1:
@@ -129,6 +134,13 @@ def render_markdown(title: str, results: list, meta: dict) -> str:
                     for c in r.candidates[1:]:
                         out.append(f"| {c.tier} | [{c.identifier}]({c.item.url}) {c.item.title[:60]} | {facts(c)} | {short_evidence(c)} |")
                     out.append("")
+            if r.untested:
+                out += ["### Found but not tested", "", "| Item | Files / format | Rip files | Downloads |", "|---|---|---|---|"]
+                for c in r.untested:
+                    f = preview.facts(c, r.want.artist)
+                    out.append(f"| [{c.identifier}]({c.item.url}) {c.item.title[:60]} | {f['flac_files']} FLAC ({f['format']}) \u00b7 "
+                               f"{f['runtime_min'] or '?'} min \u00b7 {f['flac_mb']:,} MB | {', '.join(f['rip_files']) or 'none'} | {f['downloads']:,} |")
+                out.append("")
             if r.near_misses:
                 out += ["### Near misses (FLAC items that did not match well enough)", ""]
                 out += [f"- [`{n['identifier']}`](https://archive.org/details/{n['identifier']}) — {n['title']}" for n in r.near_misses[:6]]
@@ -173,8 +185,9 @@ def write_run(run_dir: Path, title: str, results: list, meta: dict) -> dict:
                         d["downloads"], ";".join(d["collections"][:4]), (d["match"] or {}).get("score", "")])
     payload = {"meta": meta, "title": title, "results": [
         {"want": {"artist": r.want.artist, "album": r.want.album}, "rungs": r.rungs, "excluded": r.excluded,
-         "notes": r.notes, "near_misses": r.near_misses, "lossless_other": r.lossless_other,
-         "candidates": [candidate_dict(c) for c in r.candidates]} if isinstance(r, WantResult)
+         "notes": r.notes, "near_misses": r.near_misses, "lossless_other": r.lossless_other, "tested": r.tested,
+         "candidates": [candidate_dict(c) for c in r.candidates],
+         "untested": [preview.facts(c, r.want.artist) for c in r.untested]} if isinstance(r, WantResult)
         else candidate_dict(r) for r in results]}
     (run_dir / "candidates.json").write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
     return {"markdown": run_dir / "report.md", "csv": run_dir / "report.csv", "json": run_dir / "candidates.json"}
@@ -185,7 +198,9 @@ def terminal_summary(results: list) -> str:
     for i, r in enumerate(results, 1):
         if isinstance(r, WantResult):
             lines.append(f"\n[{i}/{len(results)}] {r.want.label}")
-            if not r.candidates:
+            if not r.candidates and r.found and not r.tested:
+                lines.append(f"    not tested (skipped); {len(r.found)} found")
+            elif not r.candidates:
                 lines.append("    no FLAC match" + (f"  (near misses: {', '.join(n['identifier'] for n in r.near_misses[:3])})" if r.near_misses else ""))
             for c in r.candidates:
                 lines.append(f"    {c.tier}  {c.identifier[:46]:46}  {facts(c)}")

@@ -50,7 +50,10 @@ class GenreHit:
 class GenreResult:
     spec: GenreSpec
     searched: list = field(default_factory=list)    # [(label, hits, query)]
-    candidates: list = field(default_factory=list)
+    found: list = field(default_factory=list)       # everything the search turned up and kept: metadata only, not tested
+    candidates: list = field(default_factory=list)  # the inspected, tiered and ranked subset
+    untested: list = field(default_factory=list)    # found but not chosen for inspection
+    tested: bool = False
     excluded: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
 

@@ -7,6 +7,7 @@ really are FLAC. Give it a list of artists/albums, or a genre.
 python3 -m iaflac find -f wanted.example.txt          # look up a list (one "Artist - Album" or "Artist" per line)
 python3 -m iaflac find "Miles Davis - Kind of Blue"   # or pass requests directly
 python3 -m iaflac genre shoegaze --years 1988-1996    # discover by genre
+python3 -m iaflac find "Miles Davis - Kind of Blue" --search-only   # just list what was found: test nothing
 python3 -m iaflac verify <identifier> --deep --spectral   # check one item as hard as possible
 python3 -m iaflac get <identifier> --dest ~/Music/IA      # lists files and sizes; add --yes to download
 ```
@@ -14,6 +15,24 @@ python3 -m iaflac get <identifier> --dest ~/Music/IA      # lists files and size
 Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac` and `ffmpeg` binaries.
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,
 `candidates.json`, `spectrograms/`). `SKILL.md` teaches Claude to drive it.
+
+## Search first, then test what you choose
+
+`find` and `genre` work in two phases, and the tests never start until you say so.
+
+1. **Search results.** Each request is searched and every match is listed with what archive.org itself says about it:
+   title, number of FLAC files, runtime, size, year, downloads, which rip files it ships (log, cue, `.accurip`),
+   whether it has cover art, licence, collections, track names, and what the uploader's description claims. No file is
+   opened and there are no verdicts yet.
+2. **Tests, for what you pick.** In a terminal you are asked which listed items to test (`Enter` = the top one,
+   `1,3`, `2-4`, `a` = all, `s` = skip this request, `d` = `Enter` for all remaining requests, `q` = quit). Only then are
+   headers and rip logs read, tiers assigned and, unless `--deep none`, the best pick decoded end to end and
+   spectrum-checked (which streams its whole FLAC set; the size is in the listing).
+
+`--search-only` lists and stops. `--select 1` (or `1,3`, `2-4`, `a`) answers the prompt in advance, per request. Without
+a terminal (a pipe, a script) and without `--select`, nothing is tested, so nothing expensive can start unasked. Found
+items you didn't pick are recorded under "Found but not tested" in the report. `genre` works the same way: it lists
+every album-shaped hit in a table and asks which to inspect (`Enter` = the first `--probe`, default 30).
 
 ## How a candidate is judged
 

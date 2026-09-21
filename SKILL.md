@@ -15,17 +15,20 @@ the `flac` and `ffmpeg` binaries (all present on this Mac when it was built).
 
 1. Turn what the user pasted into lines: `Artist - Album`, or just `Artist` to list their albums. Put them in a text
    file (or pass them as arguments). A `.csv` with `artist,album` also works.
-2. Run `python3 -m iaflac find -f list.txt`. This searches (CD-rip-shaped items first), inspects the best
-   candidates, and deep-checks the top pick per request: every file is streamed through `flac -t` (nothing is
-   saved) and three slices get a spectral check. It writes `runs/<timestamp>-<name>/report.md`, `report.csv`,
-   `candidates.json` and `spectrograms/*.png`.
-3. Read `report.md`. Summarise per request: best item, tier, format, what evidence backs it, and anything odd
+2. Search first: run `python3 -m iaflac find -f list.txt --search-only`. It lists every match with what archive.org says
+   about it (files, runtime, size, year, downloads, rip files, cover art, licence, track names, description claims) and
+   tests nothing. Show the user that information and ask which items to test.
+3. Then test only what they chose: `python3 -m iaflac find -f list.txt --select 1` (or `1,3`, `2-4`, `a`; numbers are per
+   request). That reads headers and rip logs, assigns tiers and, unless `--deep none`, decodes the best pick end to end
+   (streams its whole FLAC set, nothing is saved) and spectrum-checks it. It writes `runs/<timestamp>-<name>/report.md`,
+   `report.csv`, `candidates.json` and `spectrograms/*.png`. Without a terminal and without `--select` it tests nothing.
+4. Read `report.md`. Summarise per request: best item, tier, format, what evidence backs it, and anything odd
    (warnings, near misses, "no match"). Say plainly when nothing was found.
-4. **Look at the spectrogram PNG** for anything you recommend (open it with the Read tool). Real music fades toward
+5. **Look at the spectrogram PNG** for anything you recommend (open it with the Read tool). Real music fades toward
    the top of the chart; a transcode has a hard horizontal cutoff (often at 16 or 19-20 kHz).
-5. Offer downloads; do not start them (see "Downloading").
+6. Offer downloads; do not start them (see "Downloading").
 
-Useful flags: `--rip-only` (only items shipping a rip log or cue sheet), `--include-live`, `--free-only`
+In a terminal the user can just run `find` and will be asked which listed items to test. Useful flags: `--rip-only` (only items shipping a rip log or cue sheet), `--include-live`, `--free-only`
 (Creative Commons / public domain / netlabel items), `--deep none|top|all`, `--no-spectral`, `--top N`.
 Check one item on its own: `python3 -m iaflac verify <identifier> --deep --spectral`.
 
@@ -35,9 +38,9 @@ Check one item on its own: `python3 -m iaflac verify <identifier> --deep --spect
 
 archive.org has no genre field; uploaders type free-form tags. Before running, think about which tags and
 subgenres uploaders actually use and pass extras with `--terms` (for example `genre "post-rock" --terms "instrumental,math rock"`).
-`genres.yml` already has about 30 genres; names not in it search the literal phrase. Default is `--cd-only`
+The run lists every album-shaped hit in a table first (`--search-only` stops there); then inspect a chosen subset with `--select 1-10`, or `a` for all. `genres.yml` already has about 30 genres; names not in it search the literal phrase. Default is `--cd-only`
 (items shipping a log or cue sheet), widening automatically with a note when there are too few. Live tapes,
-singles and huge discography dumps are excluded by default. Genre runs do no deep checks; run `verify --deep
+singles and huge discography dumps are excluded by default. Genre runs do no deep checks by default; run `verify --deep
 --spectral` on the picks the user cares about. A cold run takes about 2 minutes (archive.org is slow; results are
 cached for 24 h).
 

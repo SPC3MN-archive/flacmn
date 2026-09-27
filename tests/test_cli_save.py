@@ -272,3 +272,61 @@ class FindThenSave(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ListedAlbumNames(unittest.TestCase):
+    book = Namespace(library_rows=[("Madvillain", "Madvillainy 2", "a", "", ""), ("Madvillain", "Album (Deluxe)", "b", "", ""),
+                                   ("Cities Aviv", "Working Title For The Album Secret Waters", "c", "", "")])
+
+    def test_the_inventory_spelling_is_used_only_for_the_same_album(self):
+        self.assertEqual(cli.listed_album(self.book, "Cities Aviv", "Working Title for the Album: Secret Waters"),
+                         "Working Title For The Album Secret Waters")
+        self.assertIsNone(cli.listed_album(self.book, "Madvillain", "Madvillainy"), "a number must agree both ways")
+        self.assertIsNone(cli.listed_album(self.book, "Madvillain", "Album"), "an edition is a different album")
+        self.assertIsNone(cli.listed_album(self.book, "Someone Else", "Madvillainy 2"))
+
+
+@unittest.skipUnless(HAVE_FLAC and HAVE_FFMPEG, "flac and ffmpeg required")
+class SaveAnyTestedResult(unittest.TestCase):
+    """Every tested result can be saved: past the few the report lists, duplicate uploads, and albums the inventory
+    already lists (a library being rebuilt)."""
+    setUp, tearDown, args, rows = FindThenSave.setUp, FindThenSave.tearDown, FindThenSave.args, FindThenSave.rows
+
+    @classmethod
+    def setUpClass(cls):
+        cls.items = [
+            make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=4, rip=True, downloads=50, seed=1),
+            make_item("ta-dup", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=4, rip=False, downloads=20, seed=2),
+        ] + [make_item(f"ta-{n}", f"Test Artist - Record {n}", "Test Artist", tracks=4, rip=True, downloads=10 - i,
+                       seed=10 + i, album_tag=f"Record {n}") for i, n in enumerate(["Two", "Three", "Four"])]
+
+    def saved_list(self, asked):
+        return asked[1]["shown"].split("Tested albums you can save")[1]
+
+    def test_more_than_the_top_three_and_duplicate_uploads_are_offered(self):
+        _, _, _, asked = run_cli(cli.cmd_find, self.args("Test Artist"), self.client, answers=["a", ""], interactive=True)
+        listed = self.saved_list(asked)
+        for ident in ("ta-log", "ta-dup", "ta-Two", "ta-Three", "ta-Four"):
+            self.assertIn(f"/{ident}\n", listed + "\n")
+        self.assertRegex(listed, r"Test Album\s+\(another upload of #1\)")
+
+    def test_a_duplicate_upload_can_be_saved(self):
+        _, out, _, asked = run_cli(cli.cmd_find, self.args("Test Artist - Test Album", no_inventory=True), self.client,
+                                   answers=["a", "2", "y"], interactive=True)
+        listed = self.saved_list(asked)
+        self.assertIn("/ta-dup", listed.split("  2. ")[1], "#2 is the duplicate upload")
+        self.assertTrue((self.lib / "Test Artist" / "Test Album" / "01 Track 1.flac").exists(), out)
+
+    def test_an_album_the_inventory_already_lists_downloads_again_without_duplicate_rows(self):
+        from tests.test_inventory import DATA
+        at = next(i for i, r in enumerate(DATA) if r[0] == "The Marias")
+        listed = [("Test Artist", "Record Two", f"Track {k}", "FLAC (16-bit/44.1kHz)", "FLAC") for k in range(1, 5)]
+        build_workbook(self.xlsx, rows=DATA[:at] + listed + DATA[at:])
+        before = self.rows()
+        code, out, _, asked = run_cli(cli.cmd_find, self.args("Test Artist - Record Two"), self.client,
+                                      answers=["1", "y"], interactive=True)
+        self.assertEqual(code, 0, out)
+        self.assertIn("(in your inventory: downloads again, no rows added)", asked[1]["shown"])
+        self.assertIn("ALREADY in the inventory: the files are downloaded", asked[1]["shown"])
+        self.assertEqual(sorted(os.listdir(self.lib / "Test Artist" / "Record Two"))[:1], ["01 Track 1.flac"])
+        self.assertEqual(self.rows(), before, "no duplicate rows")

@@ -334,7 +334,7 @@ def print_plan(plan: "inv.Plan", indent: str = "  ") -> None:
             print(f"{indent}inventory: {pl.status}: {a.artist} / {a.album}: {len(a.rows)} row(s) -> Library rows "
                   f"{pl.library_row}-{pl.library_row + len(a.rows) - 1}, Summary row {pl.summary_row}")
         else:
-            print(f"{indent}inventory: {a.artist} / {a.album} is ALREADY in the inventory, so nothing will be added for it")
+            print(f"{indent}inventory: {a.artist} / {a.album} is ALREADY in the inventory, so no rows are added for it")
     if plan.changes:
         print(f"{indent}totals: {plan.totals_before[0]} albums / {plan.totals_before[1]} songs -> "
               f"{plan.totals_after[0]} albums / {plan.totals_after[1]} songs")
@@ -380,11 +380,30 @@ def inventory_album_for(book, artist: str, folder_name: str) -> Optional[str]:
     return best[1] if best[0] >= 0.85 else None
 
 
-def guess_names(cand, known: list) -> tuple:
-    """(artist, album, source) for filing a candidate: FLAC tags, then the item's creator, then its title."""
+def listed_album(book, artist: str, album: str) -> Optional[str]:
+    """The inventory's spelling of this artist's album when the guessed name differs from it only in case, spacing or
+    punctuation ("Mm.. Food" / "MM...FOOD"), or None. Deliberately strict: "Madvillainy" is not "Madvillainy 2" and
+    "Album" is not "Album (Deluxe)"."""
+    def bare(text) -> str:
+        return re.sub(r"[\W_]+", "", str(text).casefold())
+    return next((str(r[1]) for r in book.library_rows if r[0] == artist and bare(r[1]) == bare(album)), None)
+
+
+def in_inventory(book, artist: str, album: str) -> bool:
+    return bool(book) and any(r[0] == artist and str(r[1]).casefold() == album.casefold() for r in book.library_rows)
+
+
+def guess_names(cand, known: list, book=None) -> tuple:
+    """(artist, album, source) for filing a candidate: FLAC tags, then the item's creator, then its title. With the
+    inventory, an album it already lists keeps the inventory's name, so a re-download lands under the same name."""
     st = cand.stats
     nm = names_mod.derive_names(cand.item.title, cand.item.creator, st.tag_artist if st else "", st.tag_album if st else "")
-    return names_mod.canonical_artist(nm.artist, known), nm.album, f"GUESSED from the {nm.source}; check it, or pass --as"
+    artist, album = names_mod.canonical_artist(nm.artist, known), nm.album
+    source = f"GUESSED from the {nm.source}; check it, or pass --as"
+    listed = listed_album(book, artist, album) if book else None
+    if listed and listed != album:
+        album, source = listed, f"GUESSED from the {nm.source}, spelled as in your inventory; check it, or pass --as"
+    return artist, album, source
 
 
 def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs: list, *, yes: bool, art: str,
@@ -434,7 +453,7 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
             artist, album = override
             source = named_by
         else:
-            artist, album, source = guess_names(cand, known)
+            artist, album, source = guess_names(cand, known, book)
         artist = artist if job.replace else names_mod.canonical_artist(artist, known)
         try:
             res = download.library_get(client, cand.item, library, artist, album, yes=yes, art=art,
@@ -478,7 +497,7 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
                 status = book.plan([preview]).placements[0].status
                 if status == "already in inventory":
                     if show_plan:
-                        print("  inventory: this album is ALREADY in the inventory, so nothing will be added for it")
+                        print("  inventory: this album is ALREADY in the inventory: the files are downloaded, and no rows are added")
                 else:
                     previews.append(preview)
                     if show_plan:
@@ -621,10 +640,11 @@ def inventory_from(args, library: Path) -> tuple:
 
 def savable(results: list) -> tuple:
     """Tested candidates that may be saved (tier A-C, or L for lossy MP3 when no lossless copy exists), and the ones that may not (tier D or unknown), by identifier.
-    Each candidate remembers the request it came from (`cand.request`)."""
+    Every tested match is offered, not only the few the report lists: the best copy of each album first, then the other
+    uploads and editions. Each candidate remembers the request it came from (`cand.request`)."""
     ok, blocked, seen = [], [], set()
     for res in results:
-        for cand in getattr(res, "candidates", []):
+        for cand in getattr(res, "candidates", []) + getattr(res, "matched", []):
             if cand.identifier in seen:
                 continue
             seen.add(cand.identifier)
@@ -678,12 +698,12 @@ def confirm_save(n: int, size_mb: int, replacing: int = 0) -> str:
         print("  Answer y, e or n.")
 
 
-def edit_names(picked: list, overrides: dict, known: list, replacing: Optional[dict] = None) -> None:
+def edit_names(picked: list, overrides: dict, known: list, replacing: Optional[dict] = None, book=None) -> None:
     for cand in picked:
         if replacing and cand.identifier in replacing:
             print(f"  {cand.identifier}: keeps the names of your existing album ({replacing[cand.identifier].name})")
             continue
-        artist, album, _ = guess_names(cand, known)
+        artist, album, _ = guess_names(cand, known, book)
         artist, album = overrides.get(cand.identifier, (artist, album))
         try:
             answer = ask(f"  {cand.identifier}\n  Artist | Album   Enter keeps [{artist} | {album}]\n> ").strip()
@@ -722,11 +742,21 @@ def save_phase(args, client: IAClient, results: list) -> int:
     inventory, note = inventory_from(args, library)
     print(f"  library:   {library}\n  inventory: {inventory or 'none (nothing will be added to a workbook)'}{note}")
     known = [d.name for d in library.iterdir() if d.is_dir()] if library.is_dir() else []
+    try:
+        book = inv.Inventory(inventory) if inventory else None
+    except inv.InventoryError:
+        book = None                                    # library_flow reports the problem when it opens it
+    if book:
+        known = list(book.artists()) + known
     replacing = existing_albums(args, library, cands, known)
     print("\n  Tested albums you can save:")
+    clusters: dict = {}
     for i, cand in enumerate(cands, 1):
-        artist, album, _ = guess_names(cand, known)
+        artist, album, _ = guess_names(cand, known, book)
         spectral = f" · spectrum {cand.spectral.verdict}" if cand.spectral else ""
+        first = clusters.setdefault(matching.cluster_key(*cand.artist_album), i)
+        extra = (f"   (another upload of #{first})" if first != i else "") \
+            + ("   (in your inventory: downloads again, no rows added)" if in_inventory(book, artist, album) else "")
         if cand.identifier in replacing:
             now = replace_mod.survey(replacing[cand.identifier])
             artist, album = replacing[cand.identifier].parent.name, replace_mod.album_name_from_folder(replacing[cand.identifier].name, replacing[cand.identifier].parent.name)
@@ -735,7 +765,7 @@ def save_phase(args, client: IAClient, results: list) -> int:
                   f"       {cand.item.url}")
             continue
         print(f"  {i:>3}. {cand.tier}  {artist} / {album}"
-              + ({"wav": "   (WAV, will be converted to FLAC)", "mp3": "   ** LOSSY: VBR MP3 **"}.get(cand.item.media, ""))
+              + ({"wav": "   (WAV, will be converted to FLAC)", "mp3": "   ** LOSSY: VBR MP3 **"}.get(cand.item.media, "")) + extra
               + f"\n       {len(cand.item.flacs)} {MEDIA_WORD[cand.item.media]} · "
               f"{round(cand.item.flac_bytes / 1e6):,} MB · tests {' '.join(cand.levels)}{spectral} · {report.short_evidence(cand, 2) or 'no rip evidence'}\n"
               f"       {cand.item.url}")
@@ -773,7 +803,7 @@ def save_phase(args, client: IAClient, results: list) -> int:
         else:
             answer = "y" if args.yes else "n"
         if answer == "e":
-            edit_names(picked, overrides, known, replacing)
+            edit_names(picked, overrides, known, replacing, book)
             continue
         break
     if answer != "y":

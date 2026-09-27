@@ -91,6 +91,7 @@ class WantResult:
     want: Want
     rungs: list = field(default_factory=list)          # [(label, hits)]
     candidates: list = field(default_factory=list)     # ranked, one per album cluster
+    matched: list = field(default_factory=list)        # every tested candidate that matched, ranked (duplicates included)
     near_misses: list = field(default_factory=list)    # [{identifier, title, creator, downloads}]
     lossless_other: list = field(default_factory=list)
     excluded: dict = field(default_factory=dict)       # reason -> count
@@ -381,7 +382,8 @@ class Pipeline:
             res.near_misses.insert(0, {"identifier": cand.identifier, "title": cand.item.title,
                                        "creator": cand.item.creator, "downloads": cand.item.downloads})
         matches = [c for c in selected if c.match.bucket < 2]
-        res.candidates = self.cluster(sorted(matches, key=Candidate.rank_key))
+        res.matched = sorted(matches, key=Candidate.rank_key)
+        res.candidates = self.cluster(res.matched)
         if not res.candidates and selected and not res.fallback_done:
             self._fallback(res)                       # what was chosen did not hold up once its tags were read
         if opts.deep != "none" and res.candidates:

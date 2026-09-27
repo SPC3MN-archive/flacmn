@@ -72,7 +72,10 @@ checksum) and the spectrum verdict; open the PNG in `spectrograms/` if it says `
 
 **6. Confirm the save.** After the tests, a **Save** section lists the albums you tested that can be saved (tiers A to
 C; tier D is never offered), each with the artist and album name it would be filed under, size, the tests it passed and
-the evidence. Only albums you tested are listed. If more than one is listed you choose with numbers such as `1,3`,
+the evidence. Only albums you tested are listed, but every one of them is offered, not just the few the report shows:
+other uploads of the same album are marked `(another upload of #1)`, and an album your inventory already lists (say,
+one you lost and are downloading again) is marked `(in your inventory: downloads again, no rows added)` and keeps the
+inventory's spelling of its name, so it goes back under the same name. If more than one is listed you choose with numbers such as `1,3`,
 `2-4` or `a` (Enter saves nothing); if there is one, you go straight to the next step. The first time, it asks where
 your music library is and remembers the answer (`~/.config/iaflac/config.json`), so later runs don't ask.
 

@@ -109,7 +109,8 @@ case-insensitive order, a blank row, TOTAL). Never edit it by hand; use the tool
 3. With `--yes` it downloads to `.part` files, checks each against archive.org's md5/sha1 and `flac -t`, and only
    for albums that verified cleanly rewrites the workbook: lock-file check, temp file, structural + content
    verification, timestamped backup next to it, atomic replace. Re-running is safe (verified files are "already had";
-   an album already in the inventory is skipped). It refuses to merge into a folder holding other files or overwrite a
+   an album already in the inventory is still downloaded, but gets no new rows; a guessed name that differs from the
+   inventory's only in case or punctuation takes the inventory's spelling). It refuses to merge into a folder holding other files or overwrite a
    same-named file that differs from the archive's copy.
 4. If Excel or LibreOffice has the workbook open, the download still happens but the workbook is left alone; tell the
    user to close it, then `python3 -m iaflac inventory add "<album folder>" --xlsx <workbook> --yes`.

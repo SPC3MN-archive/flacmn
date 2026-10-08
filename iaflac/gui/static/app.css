@@ -281,12 +281,17 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
                   background: none; text-align: left; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
 .mb-menu button:hover { background: var(--primary-tint); }
 .mb-menu .s { font-weight: 700; color: var(--primary-text); }
-.tag-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin: 12px 0; flex: none; }
+.tag-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; margin: 10px 0; flex: none; }
 .tag-fields label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--text-2); min-width: 0; }
 .tag-fields .field { height: 26px; padding: 0 6px 0 10px; font-size: 12px; }
 .tag-fields .field input[readonly] { cursor: default; }
 .tag-tracks { flex: 1 1 auto; }
-.tag-tracks td { height: 26px; font-size: 12px; }
+.tag-tracks td { height: 26px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.tag-tracks table { table-layout: fixed; }
+.tag-tracks th:nth-child(1) { width: 44px; } .tag-tracks th:nth-child(2) { width: 40px; }
+.tag-tracks th:nth-child(4) { width: 28%; } .tag-tracks th:nth-child(5) { width: 64px; }
+.tag-tracks td .row { min-width: 0; }
+.tag-tracks td .row > .ellipsis { min-width: 0; }
 .tag-tracks input { border: 1px solid var(--border); border-radius: 5px; height: 22px; padding: 0 6px; width: 100%; font-size: 12px; }
 .folder-line { font-size: 11.5px; color: var(--text-3); margin-top: 8px; flex: none; display: flex; gap: 6px; align-items: center; }
 .issue-line { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; flex: none; }
@@ -395,8 +400,8 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 
 /* narrower windows: stack the bottom row of Album Search, and the CD Art preview */
 @media (max-width: 1180px) {
-  #view-search { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(300px, auto) minmax(420px, auto) minmax(420px, auto); }
+  #view-search { grid-template-columns: minmax(0, 1fr); grid-template-rows: 440px minmax(480px, auto) minmax(460px, auto); }
   #view-cdart { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(500px, auto) minmax(600px, auto); }
-  #view-settings { grid-template-columns: minmax(0, 1fr); }
+  #view-settings { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
   .deep-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(240px, 1fr) auto; }
 }

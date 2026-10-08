@@ -11,7 +11,21 @@ python -m iaflac.gui              # window
 python -m iaflac.gui --browser    # in your browser instead (easier for UI work: dev tools, reload)
 ```
 
-`flac` and `ffmpeg` must be on PATH (or in `packaging/bin`, or `$IAFLAC_BIN`).
+`flac` and `ffmpeg` must be on PATH, or in `packaging/bin` (where the fetch/build scripts put them), or `$IAFLAC_BIN`.
+
+**macOS, from a checkout, no installer**
+
+```bash
+git clone https://github.com/SPC3MN/iaflac && cd iaflac && git checkout gui
+bash packaging/macos/dev_setup.sh            # .venv, packages, flac + ffmpeg (Homebrew), tests, then opens the app
+bash packaging/macos/dev_setup.sh --app      # also builds dist/iaflac.app (self-contained tools via build_macos.sh)
+bash packaging/macos/dev_setup.sh --no-run   # set up and test only
+```
+
+Afterwards `.venv/bin/python -m iaflac.gui.app` starts it again (`--browser` opens it in a browser instead, handy
+with the web inspector). The UI is plain HTML/CSS/JS in `iaflac/gui/static/` (no build step); the design it follows
+is `design/iaflac-mockups-v3.svg`. A checkout keeps its settings in `~/.config/iaflac/config.json` (shared with the
+CLI) and its download queue and caches next to the code (`.gui/`, `.library-index/`, `.cache/`; all git-ignored).
 
 ## Build an installer locally
 

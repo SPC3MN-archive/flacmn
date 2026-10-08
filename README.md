@@ -14,10 +14,12 @@ python3 -m iaflac get <identifier> --dest ~/Music/IA      # lists files and size
 python3 -m iaflac replace --scan                      # albums you have only as MP3 (then: replace "Artist/Album")
 ```
 
-**Desktop app (in progress).** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
-same engine: every format ranked together, playback with waveform and spectrogram, MusicBrainz-checked tags, and a
-download queue that saves albums as `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. Installers are
-built by `.github/workflows/release.yml`; see `packaging/README.md`.
+**Desktop app: flacmn.** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
+same engine: Album Search (every format ranked together, playback, deep test with a 3D spectrogram, MusicBrainz-checked
+tags), CD Art (case scans and true-size print sheets) and Library, with a download queue that saves albums as
+`Artist/Album (Year)/NN - Title.flac` for players such as Volumio. On a Mac, `bash packaging/macos/dev_setup.sh` does
+the whole setup from a checkout and opens it (`--app` also builds `dist/iaflac.app`). Installers are built by
+`.github/workflows/release.yml`; see `packaging/README.md`.
 
 Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac` and `ffmpeg` binaries.
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,

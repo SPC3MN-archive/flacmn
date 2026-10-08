@@ -9,9 +9,8 @@
 <header>
   <h1>iaflac</h1>
   <nav>
-    <a href="#search">Album search</a> |
-    <a href="#cdart">CD art</a> |
-    <a href="#queue">Queue</a> |
+    <a href="#search">Album Search</a> |
+    <a href="#cdart">CD Art</a> |
     <a href="#library">Library</a> |
     <a href="#settings">Settings</a>
   </nav>
@@ -20,9 +19,9 @@
 
 <hr>
 
-<!-- ============================== SECTION 1: ALBUM SEARCH ============================== -->
+<!-- ============================== 1. ALBUM SEARCH ============================== -->
 <section id="search">
-  <h2>1. Album search</h2>
+  <h1>1. Album Search</h1>
 
   <fieldset>
     <legend>Search</legend>
@@ -31,16 +30,22 @@
     <button>Search</button>
     <label><input type="radio" name="mode" checked> Album</label>
     <label><input type="radio" name="mode"> Genre</label>
-  </fieldset>
-
-  <fieldset>
-    <legend>Filters</legend>
+    <br>
     <label><input type="checkbox" checked> FLAC</label>
     <label><input type="checkbox" checked> WAV</label>
     <label><input type="checkbox" checked> MP3</label>
     <label><input type="checkbox"> Lossless only</label>
     <label><input type="checkbox"> Hide albums I already have</label>
     <label>Sort <select><option>Quality</option><option>Match</option><option>Popularity</option></select></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Genre Search (shown in Genre mode)</legend>
+    <label>Genre <select><option>shoegaze</option><option>post-rock</option></select></label>
+    <label>Years <input type="text" size="4" placeholder="1988"> – <input type="text" size="4" placeholder="1996"></label>
+    <label>Extra terms <input type="text"></label>
+    <label>Exclude <input type="text"></label>
+    <label><input type="checkbox" checked> CD rips only</label>
   </fieldset>
 
   <table border="1">
@@ -54,24 +59,40 @@
 
   <table border="1" width="100%">
     <tr>
-      <!-- left column: the selected album -->
+      <!-- left column: the selected album and its tests -->
       <td valign="top" width="50%">
         <fieldset>
-          <legend>Album detail</legend>
+          <legend>Album Detail</legend>
           <p>[cover] Title · Year · archive.org link · licence · uploader claims</p>
           <table border="1">
             <caption>Tracks</caption>
-            <tr><th>#</th><th>Title</th><th>Length</th><th>Size</th><th>Rate/Bits</th><th>Decode</th><th>Play</th></tr>
-            <tr><td>1</td><td>So What</td><td>9:25</td><td>62 MB</td><td>44.1/16</td><td>✓</td><td><button>▶</button></td></tr>
-            <tr><td>2</td><td>Freddie Freeloader</td><td>9:49</td><td>64 MB</td><td>44.1/16</td><td>✓</td><td><button>▶</button></td></tr>
+            <tr><th>#</th><th>Title</th><th>Length</th><th>Size</th><th>Rate/Bits</th><th>Decode</th></tr>
+            <tr><td>1</td><td>So What</td><td>9:25</td><td>62 MB</td><td>44.1/16</td><td>✓</td></tr>
+            <tr><td>2</td><td>Freddie Freeloader</td><td>9:49</td><td>64 MB</td><td>44.1/16</td><td>✓</td></tr>
           </table>
-          <fieldset>
-            <legend>Quality verdict</legend>
-            <p>Tier · evidence for/against · rip log summary · tests reached (V0–V3)</p>
-            <button>Quick test</button> <button>Deep test (380 MB)</button> <progress></progress>
-            <p>[album spectrum result image]</p>
-          </fieldset>
+          <p>Quality verdict: tier · evidence for/against · rip log summary</p>
           <p>Other uploads of this album: [list]</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Quick Test</legend>
+          <button>Quick test</button> <progress></progress>
+          <label>Track <select><option>1. So What</option><option>2. Freddie Freeloader</option></select></label>
+          <br>
+          <button>▶</button> <input type="range"> 0:00 / 9:25
+          <p>[waveform – click to seek]</p>
+          <p>44.1 kHz · 16-bit</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Deep Test</legend>
+          <button>Deep test (380 MB)</button> <progress></progress>
+          <label>Track <select><option>1. So What</option><option>2. Freddie Freeloader</option></select></label>
+          <br>
+          <button>▶</button> <input type="range"> 0:00 / 9:25
+          <p>[spectrogram with playhead and cutoff line]</p>
+          <p>Verdict: PASS · cutoff – kHz</p>
+          <p>[album spectrum result image]</p>
         </fieldset>
       </td>
 
@@ -90,43 +111,42 @@
             <tr><th>Disc</th><th>#</th><th>Title</th><th>Track artist</th><th>From</th></tr>
             <tr><td><input size="2"></td><td><input size="2"></td><td><input></td><td><input></td><td>MusicBrainz</td></tr>
           </table>
-        </fieldset>
-        <fieldset>
-          <legend>MusicBrainz matches</legend>
           <table border="1">
+            <caption>MusicBrainz matches</caption>
             <tr><th>Score</th><th>Release</th><th>Date</th><th>Country</th><th>Format</th><th>Length diff</th><th></th></tr>
             <tr><td>1.00</td><td>Kind of Blue</td><td>1997</td><td>AU</td><td>CD</td><td>0.0 s</td><td><button>Apply</button></td></tr>
           </table>
           <p>Tag changes: [before → after]</p>
           <p>Cover: [upload's cover] / [Cover Art Archive]</p>
         </fieldset>
+
         <fieldset>
-          <legend>Save preview</legend>
+          <legend>Save</legend>
           <p>Folder: Music/Miles Davis/Kind of Blue (1959)/</p>
           <p>01 - So What.flac · 02 - Freddie Freeloader.flac · … · cover.jpg</p>
-          <p>Warnings: [lossy / folder exists / no cover]</p>
+          <p>380 MB · Warnings: [lossy / folder exists / no cover]</p>
           <button>Add to queue</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Download Queue</legend>
+          <table border="1">
+            <tr><th>Album</th><th>State</th><th>Progress</th><th></th></tr>
+            <tr><td>Miles Davis / Kind of Blue</td><td>downloading</td><td><progress value="40" max="100"></progress> 152/380 MB · file 3/6</td>
+                <td><button>Pause</button> <button>Cancel</button></td></tr>
+          </table>
+          <button>Clear finished</button>
         </fieldset>
       </td>
     </tr>
   </table>
-
-  <fieldset>
-    <legend>Player</legend>
-    <button>⏮</button> <button>▶</button> <button>⏭</button>
-    <input type="range"> Volume <input type="range">
-    <span>Now playing: So What – Miles Davis</span>
-    <p>[waveform – click to seek]</p>
-    <p>[spectrogram with playhead and cutoff line]</p>
-    <p>44.1 kHz · 16-bit · cutoff – · verdict PASS</p>
-  </fieldset>
 </section>
 
 <hr>
 
-<!-- ============================== SECTION 2: CD ART ============================== -->
+<!-- ============================== 2. CD ART ============================== -->
 <section id="cdart">
-  <h2>2. CD art</h2>
+  <h1>2. CD Art</h1>
 
   <fieldset>
     <legend>Album</legend>
@@ -137,10 +157,9 @@
 
   <table border="1" width="100%">
     <tr>
-      <!-- left: found scans per part -->
       <td valign="top" width="50%">
         <fieldset>
-          <legend>Found scans (click to choose)</legend>
+          <legend>Found Scans (click to choose)</legend>
           <table border="1">
             <tr><th>Part</th><th>Chosen</th><th>Alternatives</th></tr>
             <tr><td>Front cover</td><td>[img] XE CD · 595 dpi</td><td>[img] [img] [img]</td></tr>
@@ -151,11 +170,9 @@
           </table>
         </fieldset>
       </td>
-
-      <!-- right: preview and print -->
       <td valign="top" width="50%">
         <fieldset>
-          <legend>Case preview</legend>
+          <legend>Case Preview</legend>
           <table border="1">
             <tr><th>Outside (page 1)</th><th>Inside (page 2)</th><th>Disc (page 3)</th></tr>
             <tr>
@@ -175,7 +192,7 @@
   </table>
 
   <table border="1" width="100%">
-    <caption>Library art checklist <button>Find art for whole library</button></caption>
+    <caption>Library Art Checklist <button>Find art for whole library</button></caption>
     <tr><th>Album</th><th>Front</th><th>Back</th><th>Inside</th><th>Under-tray</th><th>Disc</th><th>Missing</th></tr>
     <tr><td>Miles Davis / Kind of Blue</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td></td></tr>
     <tr><td>Tanox / Astronomía de Balcón</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>–</td><td>back, inside, under-tray, disc</td></tr>
@@ -184,26 +201,40 @@
 
 <hr>
 
-<!-- ============================== SHARED ============================== -->
-<section id="queue">
-  <h2>Download queue</h2>
-  <table border="1">
-    <tr><th>Album</th><th>State</th><th>Progress</th><th></th></tr>
-    <tr><td>Miles Davis / Kind of Blue</td><td>downloading</td><td><progress value="40" max="100"></progress> 152/380 MB · file 3/6</td>
-        <td><button>Pause</button> <button>Cancel</button></td></tr>
-  </table>
-  <button>Clear finished</button>
-</section>
-
+<!-- ============================== 3. LIBRARY ============================== -->
 <section id="library">
-  <h2>Library</h2>
-  <label>Filter <input type="text"></label> <button>Rescan</button>
-  <table border="1">
-    <tr><th>Artist</th><th>Album</th><th>Year</th><th>Format</th><th>Tracks</th><th>Cover</th><th>Tag issues</th></tr>
-    <tr><td>Miles Davis</td><td>Kind of Blue</td><td>1959</td><td>FLAC 16/44.1</td><td>6</td><td>✓</td><td>0</td></tr>
+  <h1>3. Library</h1>
+
+  <table border="1" width="100%">
+    <tr>
+      <td valign="top" width="60%">
+        <fieldset>
+          <legend>Albums</legend>
+          <label>Filter <input type="text"></label> <button>Rescan</button>
+          <table border="1">
+            <tr><th>Artist</th><th>Album</th><th>Year</th><th>Format</th><th>Tracks</th><th>Cover</th><th>Tag issues</th></tr>
+            <tr><td>Miles Davis</td><td>Kind of Blue</td><td>1959</td><td>FLAC 16/44.1</td><td>6</td><td>✓</td><td>0</td></tr>
+            <tr><td>Tanox</td><td>Astronomía de Balcón</td><td>2008</td><td>FLAC 16/44.1</td><td>5</td><td>✓</td><td>0</td></tr>
+          </table>
+        </fieldset>
+      </td>
+      <td valign="top" width="40%">
+        <fieldset>
+          <legend>Album View</legend>
+          <table border="1">
+            <tr><th>#</th><th>Title</th><th>Artist</th><th>Length</th><th>Format</th></tr>
+            <tr><td>1</td><td>So What</td><td>Miles Davis</td><td>9:25</td><td>FLAC 16/44.1</td></tr>
+          </table>
+          <p>Tag issues: [none]</p>
+        </fieldset>
+      </td>
+    </tr>
   </table>
 </section>
 
+<hr>
+
+<!-- ============================== SETTINGS (app-wide) ============================== -->
 <section id="settings">
   <h2>Settings</h2>
   <fieldset>
@@ -216,9 +247,15 @@
     <label><input type="checkbox" checked> All formats</label><br>
     <label>Cover art <select><option>cover</option><option>all</option><option>none</option></select></label>
     <label>Rip files <select><option>skip</option><option>keep</option></select></label>
+    <label><input type="checkbox" checked> Embed art</label>
+    <label><input type="checkbox" checked> Write cover.jpg</label>
+    <label><input type="checkbox" checked> Online cover</label>
+    <label><input type="checkbox" checked> Auto MusicBrainz</label><br>
+    <label>Audio cache <input type="number" value="2048" size="5"> MB</label>
+    <label>Simultaneous downloads <input type="number" value="1" size="2"></label>
   </fieldset>
   <fieldset>
-    <legend>CD art printing</legend>
+    <legend>CD Art printing</legend>
     <label>Paper <select><option>Letter</option><option>A4</option></select></label>
     <label>Bleed <input type="number" value="1.5" size="3"> mm</label>
     <label>Disc hole <input type="number" value="41" size="3"> mm</label>

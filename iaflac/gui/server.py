@@ -56,7 +56,11 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
             return JSONResponse({"error": "bad host"}, status_code=403)
         if request.url.path.startswith("/api/") and not authorised(request):
             return JSONResponse({"error": "missing or wrong token"}, status_code=401)
-        return await call_next(request)
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static/"):
+            # the app window keeps its cache between launches: revalidate so an update shows at once
+            response.headers["Cache-Control"] = "no-cache"
+        return response
 
     @api.exception_handler(NotFound)
     async def not_found(_request, exc):

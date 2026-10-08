@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(HERE, "iaflac-mockups-v3.svg")
 
 TOPBAR = SIDEBAR            # the original dark indigo (#252047), restored
-PIXEL = int(os.environ.get("IAFLAC_PIXEL", "3"))   # block size of the pixelated spectrogram (0 = smooth)
+PIXEL = int(os.environ.get("IAFLAC_PIXEL", "0"))   # block size of the pixelated spectrogram (0 = smooth)
 BAR_Y, BAR_H = 36, 48
 X0, XW = 16, W - 32         # full width under the top bar
 TOP, BOTTOM = BAR_Y + BAR_H + 16, 884
@@ -161,8 +161,8 @@ def screen_A1(d):
             chip(d, X0 + 390, BY + 57, "44.1 kHz · 16-bit · stereo", SURFACE_SUNK, TEXT, h=22, size=11, rx=6)
             SX, SY, SW, SH = X0 + 16, BY + 96, 580, BOTTOM - BY - 112
             d.box(SX, SY, SW, SH, fill=SURFACE_ALT, stroke=None, rx=10)
-            v2.spectrogram_3d(d, SX + 6, SY + 12, SW - 16, SH - 18, pixel=PIXEL, by_freq=True)
-            v2.loudness_legend(d, SX + 16, SY + 14, 130, v2.FREQ, "low", "high freq", "Frequency legend")
+            v2.spectrogram_3d(d, SX + 6, SY + 12, SW - 16, SH - 18, pixel=PIXEL)
+            v2.loudness_legend(d, SX + 16, SY + 14, 130)
             VX, VW = SX + SW + 16, DW - SW - 48
             with d.group("Verdict"):
                 verdict_chip(d, VX, SY, "PASS", "21.8", h=28, size=12.5)

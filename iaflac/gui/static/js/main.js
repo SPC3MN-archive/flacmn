@@ -62,7 +62,7 @@ mountSettings(document.getElementById("view-settings"), {
 // ---- start -----------------------------------------------------------------------------------------------------------
 let wasDown = false;
 on("disconnected", () => { if (!wasDown) { wasDown = true; } });
-on("connected", () => { if (wasDown) { wasDown = false; toast("Reconnected to the iaflac engine"); } });
+on("connected", () => { if (wasDown) { wasDown = false; toast("Reconnected to the flacmn engine"); } });
 connect();
 mountQueue();
 loadSettings().catch(() => {});

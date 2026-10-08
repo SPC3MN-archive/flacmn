@@ -178,6 +178,10 @@ class Api(unittest.TestCase):
         analysis = self.http.get("/api/track/analysis", params=q).json()
         self.assertEqual(analysis["sample_rate"], 44100)
         self.assertIn("verdict", analysis)
+        wf = self.http.get("/api/track/spectrum3d", params={**q, "slices": 12, "bins": 48}).json()
+        self.assertEqual((wf["slices"], wf["bins"], len(wf["levels"]), len(wf["levels"][0])), (12, 48, 12, 48))
+        self.assertTrue(all(0 <= v <= 1 for row in wf["levels"] for v in row))
+        self.assertTrue(max(max(row) for row in wf["levels"]) > 0.3)
         full = self.http.get("/api/audio", params=q)
         self.assertEqual((full.status_code, full.headers["content-type"]), (200, "audio/flac"))
         part = self.http.get("/api/audio", params=q, headers={"range": "bytes=0-99"})
@@ -211,3 +215,17 @@ class Api(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@NEED
+class InLibrary(unittest.TestCase):
+    def test_a_year_in_the_upload_title_still_matches_the_library_album(self):
+        from iaflac.gui import serialize
+        from iaflac.library_index import AlbumEntry, LibraryIndex
+        from iaflac.pipeline import Pipeline
+        item = make_item("kob-1959", "Test Artist - Test Album (2001)", "Test Artist", tracks=2, seed=3)
+        cand = Pipeline(FakeIA([item])).load("kob-1959")
+        lib = LibraryIndex(root="/music", albums=[AlbumEntry(folder="Test Artist/Test Album (2001)", artist="Test Artist",
+                                                             album="Test Album", year="2001")])
+        row = serialize.candidate_summary(cand, None, lib)
+        self.assertEqual(row["in_library"]["folder"], "Test Artist/Test Album (2001)")

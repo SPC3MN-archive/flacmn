@@ -90,6 +90,14 @@ class Applying(unittest.TestCase):
         self.assertEqual(new.tracks[0].mb_recording_id, "r-So What")
         self.assertEqual(new.sources["album"], "musicbrainz")
 
+    def test_a_reissue_keeps_the_albums_original_year(self):
+        reissue = release("r9", date="1997-03-25")
+        reissue["release-group"]["first-release-date"] = "1959-08-17"
+        new, _ = mb.apply_release(ours(), reissue)
+        self.assertEqual(new.date, "1959-08-17")
+        del reissue["release-group"]["first-release-date"]
+        self.assertEqual(mb.apply_release(ours(), reissue)[0].date, "1997-03-25")
+
     def test_disc_layout_follows_musicbrainz(self):
         new, _ = mb.apply_release(ours(), release("r4", discs=[KOB[:3], KOB[3:]]))
         self.assertEqual([(t.disc, t.track) for t in new.tracks], [(1, 1), (1, 2), (1, 3), (2, 1), (2, 2)])

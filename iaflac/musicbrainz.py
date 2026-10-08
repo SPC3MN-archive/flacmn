@@ -359,7 +359,8 @@ def apply_release(meta: AlbumMeta, release: dict) -> tuple:
     label, catno = _label(release)
     new.albumartist = credit_name(release.get("artist-credit") or []) or new.albumartist
     new.album = release.get("title") or new.album
-    new.date = release.get("date") or new.date
+    # the album's own year (Kind of Blue is 1959), not the reissue's: what players show and the folder is named by
+    new.date = (release.get("release-group") or {}).get("first-release-date") or release.get("date") or new.date
     new.label, new.catalog = label or new.label, catno or new.catalog
     new.genre = top_genre(release) or new.genre
     new.mb_release_id = release.get("id", "")

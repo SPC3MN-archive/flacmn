@@ -178,6 +178,61 @@ def spectrogram_png(path: Path, width: int = 1200, height: int = 400, legend: bo
     return out_path.read_bytes()
 
 
+def spectrum3d(path: Path, slices: int = 40, bins: int = 128) -> dict:
+    """The track as a waterfall for the 3D spectrogram: `slices` moments spread over the whole track, each the
+    spectrum (0 Hz to Nyquist, `bins` linear bands) of about 0.2 s of audio, scaled to 0..1 over -90..0 dB.
+    {"duration", "sample_rate", "nyquist_hz", "slices", "bins", "levels": [[...bins] * slices], "times": [...]}"""
+    slices, bins = max(8, min(int(slices), 120)), max(32, min(int(bins), 512))
+    out_path = _derived(path, f"spec3d{slices}x{bins}", "json")
+    if out_path.exists():
+        return json.loads(out_path.read_text(encoding="utf-8"))
+    duration, rate = duration_of(path), sample_rate_of(path)
+    if not duration or not rate:
+        raise AudioError("cannot read the track's length or sample rate")
+    n_fft = 8192
+    hops = 4                                       # averaged FFT frames per slice (~0.2 s at 44.1 kHz)
+    need = n_fft * hops
+    times = [duration * (i + 0.5) / slices for i in range(slices)]
+    starts = [max(0, min(int(t * rate) - need // 2, int(duration * rate) - need)) for t in times]
+    window = np.hanning(n_fft).astype(np.float32)
+    edges = np.linspace(0, n_fft // 2, bins + 1).astype(int)
+    cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-i", str(path), "-ac", "1", "-f", "f32le", "pipe:1"]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    levels, pos, buf = [], 0, np.zeros(0, dtype=np.float32)
+    try:
+        for start in starts:                       # read the decoded stream once, keeping only the bits we need
+            while pos + len(buf) < start + need:
+                chunk = proc.stdout.read(CHUNK * 4)
+                if not chunk:
+                    break
+                buf = np.concatenate([buf, np.frombuffer(chunk, dtype="<f4")])
+                if pos + len(buf) < start:         # skip ahead: drop what lies before this slice
+                    pos += len(buf)
+                    buf = np.zeros(0, dtype=np.float32)
+            lo = max(0, start - pos)
+            seg = buf[lo:lo + need]
+            if len(seg) < need:
+                seg = np.pad(seg, (0, need - len(seg)))
+            power = np.zeros(n_fft // 2 + 1)
+            for h in range(hops):
+                frame = seg[h * n_fft:(h + 1) * n_fft] * window
+                power += np.abs(np.fft.rfft(frame)) ** 2
+            power /= hops
+            band = np.array([power[a:max(a + 1, b)].mean() for a, b in zip(edges[:-1], edges[1:])])
+            db = 10 * np.log10(band / (np.sum(window) ** 2 / 4) + 1e-12)
+            levels.append([round(float(v), 3) for v in np.clip((db + 90) / 90, 0, 1)])
+            drop = max(0, start + need // 2 - pos)          # keep the tail: the next slice may overlap
+            buf, pos = buf[drop:], pos + drop
+    finally:
+        proc.kill()
+        proc.wait()
+    data = {"duration": round(duration, 3), "sample_rate": rate, "nyquist_hz": rate / 2, "slices": slices, "bins": bins,
+            "levels": levels, "times": [round(t, 2) for t in times]}
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data), encoding="utf-8")
+    return data
+
+
 def _decode_window(path: Path, start: float, seconds: float) -> tuple:
     cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-ss", f"{start:.2f}", "-t", f"{seconds:.2f}", "-i", str(path),
            "-ac", "1", "-f", "f32le", "pipe:1"]

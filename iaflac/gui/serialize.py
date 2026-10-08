@@ -6,6 +6,7 @@ from typing import Optional
 
 from .. import preview, quality, report
 from ..download import pick_cover
+from ..library_index import YEAR_SUFFIX
 from ..matching import guess_artist_album
 from ..preview import short_licence
 from ..tagging import title_from_name
@@ -43,7 +44,8 @@ def candidate_summary(cand, want=None, library=None) -> dict:
     q = quality.assess(cand)
     artist, album = guess_artist_album(it.title, it.creator, cand.stats.tag_artist if cand.stats else "",
                                        cand.stats.tag_album if cand.stats else "")
-    owned = library.find(artist, album) if library is not None and artist and album else None
+    bare = YEAR_SUFFIX.sub("", album or "")          # "Kind of Blue (1959)" is the library's "Kind of Blue"
+    owned = library.find(artist, bare or album) if library is not None and artist and album else None
     runtime = it.runtime_seconds
     return {
         "identifier": it.identifier, "url": it.url, "title": it.title, "creator": it.creator, "year": it.year,

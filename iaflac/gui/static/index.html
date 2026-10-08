@@ -4,25 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>iaflac</title>
-<style>
-  :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --ok: #15803d; --bad: #b91c1c; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --ok: #4ade80; --bad: #f87171; } }
-  body { background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 32px; }
-  code { font-size: 13px; } .muted { color: var(--muted); } .ok { color: var(--ok); } .bad { color: var(--bad); }
-</style>
+<link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
-<h1>iaflac</h1>
-<p class="muted">The engine and API are running. The interface is built once the layout is settled.</p>
-<ul id="status"><li class="muted">checking…</li></ul>
-<p><a href="/docs">API reference (try any call from there)</a></p>
-<script>
-  fetch("/api/health").then(r => r.json()).then(h => {
-    const tools = Object.entries(h.tools).map(([k, v]) =>
-      `<li class="${v ? "ok" : "bad"}">${k}: ${v ? "found" : "missing"}</li>`).join("");
-    document.getElementById("status").innerHTML =
-      `<li>version ${h.version}</li>${tools}<li class="${h.library_ok ? "ok" : "bad"}">library: ${h.library || "not set"}</li>`;
-  }).catch(e => { document.getElementById("status").innerHTML = `<li class="bad">${e}</li>`; });
-</script>
+<header class="topbar">
+  <nav class="row" id="tabs">
+    <button class="tab active" data-view="search"><span data-icon="search"></span>Album Search</button>
+    <button class="tab" data-view="cdart"><span data-icon="disc"></span>CD Art</button>
+    <button class="tab" data-view="library"><span data-icon="library"></span>Library<span class="badge" id="lib-badge" hidden></span></button>
+  </nav>
+  <div class="spacer"></div>
+  <button class="queue-chip" id="queue-chip" title="Downloads and background work"><span class="dot"></span><span id="queue-text">Queue · empty</span></button>
+  <button class="icon-btn-dark" id="settings-btn" data-view="settings" title="Settings"><span data-icon="sliders"></span></button>
+</header>
+
+<main>
+  <section class="view active" id="view-search"></section>
+  <section class="view" id="view-cdart"></section>
+  <section class="view" id="view-library"></section>
+  <section class="view" id="view-settings"></section>
+</main>
+
+<div class="popover" id="queue-pop" hidden></div>
+<div class="toasts" id="toasts"></div>
+<audio id="player" preload="none"></audio>
+
+<script type="module" src="/static/js/main.js"></script>
 </body>
 </html>

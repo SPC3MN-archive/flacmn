@@ -40,6 +40,18 @@ def start_server(port: int, token: str) -> uvicorn.Server:
     return server
 
 
+class Bridge:
+    """Called from the page as window.pywebview.api.* (only inside the app window, not in a browser)."""
+
+    def __init__(self):
+        self._window = None
+
+    def choose_folder(self, start: str = ""):
+        import webview
+        picked = self._window.create_file_dialog(webview.FOLDER_DIALOG, directory=start or "")
+        return picked[0] if picked else None
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="iaflac-gui", description="iaflac desktop app")
     p.add_argument("--browser", action="store_true", help="open in the default web browser instead of a window")
@@ -65,7 +77,8 @@ def main(argv=None) -> int:
                 time.sleep(3600)
         else:
             import webview
-            webview.create_window("iaflac", url, width=1360, height=880, min_size=(900, 600))
+            bridge = Bridge()
+            bridge._window = webview.create_window("iaflac", url, width=1440, height=900, min_size=(1000, 680), js_api=bridge)
             webview.start(debug=args.debug)
     except KeyboardInterrupt:
         pass

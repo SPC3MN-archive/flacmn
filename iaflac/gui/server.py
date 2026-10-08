@@ -307,6 +307,10 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def spectrogram(identifier: str = "", file: str = "", path: str = "", w: int = 1200, h: int = 400, legend: bool = False):
         return Response(audio.spectrogram_png(local_path(identifier, file, path), w, h, legend), media_type="image/png")
 
+    @api.get("/api/track/spectrum3d")
+    def spectrum3d(identifier: str = "", file: str = "", path: str = "", slices: int = 40, bins: int = 128):
+        return audio.spectrum3d(local_path(identifier, file, path), slices, bins)
+
     @api.get("/api/track/analysis")
     def analysis(identifier: str = "", file: str = "", path: str = ""):
         return audio.analyze(local_path(identifier, file, path))

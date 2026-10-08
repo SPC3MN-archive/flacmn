@@ -269,7 +269,7 @@ class App:
     def set_meta(self, identifier: str, data: dict) -> dict:
         c = self.cand(identifier)
         m = AlbumMeta.from_dict(data)
-        for f in ("albumartist", "album", "date", "genre"):
+        for f in ("albumartist", "album", "date", "genre", "label", "catalog"):
             old = self.metas.get(identifier)
             if old is None or getattr(old, f) != getattr(m, f):
                 m.sources[f] = "you"
@@ -452,10 +452,17 @@ class App:
             if im is None:
                 continue
             fetcher = cdart.ArtFetcher(self.mb, self.client)
+            data = None
             if preview and im.source.startswith("coverartarchive") and im.preview and im.preview != im.ref:
-                data = self.mb.image(im.preview)
-            else:
-                data = fetcher.get(im)
+                try:
+                    data = self.mb.image(im.preview)
+                except mb.MBError:              # the archive's thumbnails fail now and then; the full image may not
+                    data = None
+            if data is None:
+                try:
+                    data = fetcher.get(im)
+                except (mb.MBError, IAError, OSError) as exc:
+                    raise audio.AudioError(f"could not fetch the image: {exc}") from exc
             mime = "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
             return data, mime
         raise NotFound(f"no image {image_id}")

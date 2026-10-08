@@ -12,12 +12,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from . import download, genre as genre_mod, inventory as inv, matching, names as names_mod, preview, queries, replace as replace_mod, report
+from . import download, genre as genre_mod, inventory as inv, matching, names as names_mod, paths, preview, queries, replace as replace_mod, report
 from .genre import GenreSpec
 from .ia_client import IAClient, IAError
 from .pipeline import Candidate, Options, Pipeline
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = paths.data_dir()
 
 
 def say(msg: str) -> None:
@@ -572,12 +572,12 @@ SAVE_HINT = ("To save an album, add --library <your music folder> to the same co
 
 
 def config_path() -> Path:
-    return Path(os.environ.get("IAFLAC_CONFIG") or "~/.config/iaflac/config.json").expanduser()
+    return paths.config_file()
 
 
 def read_config() -> dict:
     try:
-        data = json.loads(config_path().read_text())
+        data = json.loads(config_path().read_text(encoding="utf-8"))
         return data if isinstance(data, dict) else {}
     except (OSError, ValueError):
         return {}
@@ -588,7 +588,7 @@ def remember(**values) -> bool:
     try:
         path = config_path()
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({**read_config(), **values}, indent=2) + "\n")
+        path.write_text(json.dumps({**read_config(), **values}, indent=2) + "\n", encoding="utf-8")
         return True
     except OSError:
         return False

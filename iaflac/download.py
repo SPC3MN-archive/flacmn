@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import hashlib
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
+from . import binaries
+from .events import CancelCheck, Progress, check
 from .ia_client import IAClient, IAError
 from .model import FileInfo, ItemInfo, file_kind, is_track
 from .names import folder_component
@@ -151,7 +152,7 @@ def matches_manifest(path: Path, f: FileInfo) -> Optional[bool]:
 
 
 def flac_test(path: Path) -> tuple:
-    flac = shutil.which("flac")
+    flac = binaries.flac()
     if not flac:
         return None, "flac not installed, decode test skipped"
     proc = subprocess.run([flac, "-t", "-s", str(path)], capture_output=True)
@@ -161,8 +162,10 @@ def flac_test(path: Path) -> tuple:
     return False, msg
 
 
-def _fetch(client: IAClient, identifier: str, pf: PlannedFile) -> None:
-    """Download to <name>.part (resuming if a partial exists), leaving the finished bytes in place."""
+def _fetch(client: IAClient, identifier: str, pf: PlannedFile, on_bytes: Optional[Callable[[int], None]] = None,
+           cancel: Optional[CancelCheck] = None) -> None:
+    """Download to <name>.part (resuming if a partial exists), leaving the finished bytes in place. `on_bytes(n)` gets
+    this file's bytes on disk so far; `cancel()` is checked per chunk and stops with Cancelled, keeping the .part."""
     part = pf.path.with_name(pf.path.name + ".part")
     pf.path.parent.mkdir(parents=True, exist_ok=True)
     start = part.stat().st_size if part.exists() else 0
@@ -174,10 +177,15 @@ def _fetch(client: IAClient, identifier: str, pf: PlannedFile) -> None:
     resp = client.open_stream(identifier, pf.info.name, start=start)
     try:
         mode = "ab" if start and resp.status_code == 206 else "wb"     # a 200 means the server restarted the file
+        have = start if mode == "ab" else 0
         with open(part, mode) as out:
             for chunk in resp.iter_content(CHUNK):
                 out.write(chunk)
                 client.bytes_read += len(chunk)
+                have += len(chunk)
+                if on_bytes is not None:
+                    on_bytes(have)
+                check(cancel)
     finally:
         resp.close()
 
@@ -186,7 +194,7 @@ def encode_wavs(res: GetResult, log: Callable[[str], None]) -> None:
     """Encode each downloaded WAV to FLAC (lossless, `flac --verify` decodes and compares as it goes), then remove the
     WAV. The FLAC gets ARTIST/ALBUM/TITLE/TRACKNUMBER tags because a WAV carries none. Failures go in res.failures and
     leave the WAV where it is."""
-    flac = shutil.which("flac")
+    flac = binaries.flac()
     if not flac:
         res.failures.append("flac is not installed, so the WAV files cannot be encoded")
         return
@@ -220,21 +228,37 @@ def get_item(client: IAClient, item: ItemInfo, dest: Path, *, yes: bool = False,
     return _execute(client, item.identifier, res, log)
 
 
-def _execute(client: IAClient, identifier: str, res: GetResult, log: Callable[[str], None]) -> GetResult:
+def _execute(client: IAClient, identifier: str, res: GetResult, log: Callable[[str], None],
+             progress: Optional[Progress] = None, cancel: Optional[CancelCheck] = None) -> GetResult:
+    """Fetch every planned file. `progress` gets {"stage": "download", "state", "file", "index", "total", "bytes",
+    "size", "done_bytes", "total_bytes"} events; `cancel` stops between chunks (raising Cancelled, the .part is kept)."""
     res.executed = True
+    total_bytes, done = res.total_bytes, [0]
+
+    def report(i: int, pf: PlannedFile, got: int, state: str = "downloading") -> None:
+        if progress is not None:
+            progress({"stage": "download", "state": state, "identifier": identifier, "file": pf.info.name,
+                      "index": i, "total": len(res.planned), "bytes": got, "size": pf.info.size,
+                      "done_bytes": done[0] + (got if state == "downloading" else 0), "total_bytes": total_bytes})
+
     for i, pf in enumerate(res.planned, 1):
+        check(cancel)
         f, part = pf.info, pf.path.with_name(pf.path.name + ".part")
         if pf.final and pf.final.exists() and not pf.path.exists():          # a WAV that was already encoded to FLAC
             res.already_had += 1
             log(f"  [{i}/{len(res.planned)}] have {pf.final.name}")
+            done[0] += f.size
+            report(i, pf, f.size, "have")
             continue
         if matches_manifest(pf.path, f) is True:
             res.already_had += 1
             log(f"  [{i}/{len(res.planned)}] have {pf.path.name}")
+            done[0] += f.size
+            report(i, pf, f.size, "have")
             continue
         log(f"  [{i}/{len(res.planned)}] {pf.path.name} ({f.size / 1e6:.1f} MB)")
         try:
-            _fetch(client, identifier, pf)
+            _fetch(client, identifier, pf, on_bytes=lambda got, i=i, pf=pf: report(i, pf, got), cancel=cancel)
         except (IAError, OSError) as exc:
             res.failures.append(f"{f.name}: download failed ({exc}); rerun to resume")
             continue
@@ -245,6 +269,8 @@ def _execute(client: IAClient, identifier: str, res: GetResult, log: Callable[[s
             continue
         part.replace(pf.path)
         res.downloaded += 1
+        done[0] += f.size
+        report(i, pf, f.size, "verified")
         if file_kind(f.name) == "flac":
             ok, msg = flac_test(pf.path)
             if ok is False:
@@ -356,7 +382,8 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
 
 def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, album: str, *, yes: bool = False,
                 art: str = "cover", rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
-                media: str = "flac", log: Callable[[str], None] = lambda m: None) -> GetResult:
+                media: str = "flac", log: Callable[[str], None] = lambda m: None,
+                progress: Optional[Progress] = None, cancel: Optional[CancelCheck] = None) -> GetResult:
     res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder, media=media)
     if not yes:
         return res
@@ -378,7 +405,7 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
             raise DownloadError(f"{clashes[0]} already exists and differs from archive.org's copy; not overwriting it")
     folder.mkdir(parents=True, exist_ok=True)
     marker.write_text(f"{item.identifier}\n")
-    _execute(client, item.identifier, res, log)
+    _execute(client, item.identifier, res, log, progress, cancel)
     if media == "wav" and not res.failures:
         encode_wavs(res, log)
     if not res.failures:

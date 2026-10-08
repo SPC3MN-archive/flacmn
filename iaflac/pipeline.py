@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from . import altmedia, genre as genre_mod, integrity, matching, provenance as prov, queries, spectral
+from .events import CancelCheck, Progress, check
 from .flac_probe import FlacProbe, cross_check, probe_header
 from .genre import CONFIDENCE, GenreHit, GenreResult, GenreSpec
 from .ia_client import IAClient, IAError
@@ -33,6 +34,7 @@ class Options:
     max_deep_bytes: int = 1500 * 1024 * 1024
     spectrogram_dir: Optional[Path] = None
     fallback: tuple = ()                # when no FLAC is found, look for these instead: ("wav", "vbr")
+    all_formats: bool = False           # also list WAV and MP3 uploads when FLAC exists (the GUI ranks everything together)
 
 
 @dataclass
@@ -109,10 +111,18 @@ def first(value) -> str:
 
 class Pipeline:
     def __init__(self, client: IAClient, log: Optional[Callable[[str], None]] = None,
-                 max_probe_tracks: int = 10):
+                 max_probe_tracks: int = 10, progress: Optional[Progress] = None,
+                 cancel: Optional[CancelCheck] = None):
         self.client = client
         self.log = log or (lambda msg: None)
         self.max_probe_tracks = max_probe_tracks
+        self.progress = progress
+        self.cancel = cancel
+
+    def emit(self, stage: str, **fields) -> None:
+        """Send a progress event to the front end, if it asked for them (see events.py)."""
+        if self.progress is not None:
+            self.progress({"stage": stage, **fields})
 
     # ---- V0: metadata ---------------------------------------------------------------------
 
@@ -227,10 +237,14 @@ class Pipeline:
         done = [0]
 
         def run(cand):
+            check(self.cancel)
+            self.emit("inspecting", identifier=cand.identifier, label=label)
             self.inspect(cand, want)
             done[0] += 1
             self.log(f"  [{label}] inspected {done[0]}/{len(cands)}: {cand.identifier} "
                      f"({len(cand.item.flacs)} FLAC) -> tier {cand.tier}")
+            self.emit("inspected", identifier=cand.identifier, label=label, tier=cand.tier,
+                      index=done[0], total=len(cands))
 
         with ThreadPoolExecutor(workers) as pool:
             list(pool.map(run, cands))
@@ -250,9 +264,11 @@ class Pipeline:
             # the rest; only the loosest word-matching rung is skipped once there are enough exact matches.
             if want.album and rung.label.startswith("relaxed") and sum(1 for h in pool.values() if h.quick.bucket == 0) >= 3:
                 break
+            check(self.cancel)
             docs = list(self.client.search_iter(rung.query, max_hits=rung.rows))
             res.rungs.append((rung.label, len(docs)))
             self.log(f"  [{want.label}] {rung.label}: {len(docs)} hit(s)")
+            self.emit("search", want=want.label, rung=rung.label, hits=len(docs))
             for d in docs:
                 pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), "rip-shaped" in rung.label))
         return pool
@@ -295,10 +311,19 @@ class Pipeline:
             loaded = [c for c in ex.map(load_one, selected) if c]
 
         self._admit(res, loaded, want, opts)
-        if not res.found and opts.fallback and not opts.rip_only:
+        flac_found = bool(res.found)
+        if opts.all_formats and not opts.rip_only:
+            self._alt_search(res, opts, media=opts.fallback or ("wav", "vbr"), instead=not flac_found)
+        elif not res.found and opts.fallback and not opts.rip_only:
             self._alt_search(res, opts)
         if not res.found:
             self._fallback(res)
+        elif opts.all_formats:
+            other = queries.other_lossless_rung(want.artist, want.album)
+            res.lossless_other = [{"identifier": d["identifier"], "title": first(d.get("title")),
+                                   "creator": first(d.get("creator"))}
+                                  for d in self.client.search_iter(other.query, max_hits=other.rows)][:5]
+        self.emit("found", want=want.label, count=len(res.found))
         return res
 
     def _admit(self, res: WantResult, loaded: list, want: Want, opts: Options) -> None:
@@ -320,17 +345,21 @@ class Pipeline:
                 cand.match = matching.match_fields(want.artist, want.album, cand.item.title, cand.item.creator)
                 res.found.append(cand)
 
-    def _alt_search(self, res: WantResult, opts: Options) -> None:
-        """No FLAC matched: search again for WAV (lossless) and VBR MP3 uploads, WAV listed first."""
+    def _alt_search(self, res: WantResult, opts: Options, media: Optional[tuple] = None, instead: bool = True) -> None:
+        """Search for WAV (lossless) and VBR MP3 uploads, WAV listed first: when no FLAC matched (`instead`), or next
+        to the FLAC results when every format is wanted (Options.all_formats)."""
         want = res.want
-        names = " / ".join(queries.ALT_NAME[m] for m in opts.fallback)
-        self.log(f"  [{want.label}] no FLAC found; searching for {names} instead")
-        for media in opts.fallback:
+        kinds = tuple(media or opts.fallback)
+        names = " / ".join(queries.ALT_NAME[m] for m in kinds)
+        self.log(f"  [{want.label}] " + (f"no FLAC found; searching for {names} instead" if instead else f"also searching for {names}"))
+        for media in kinds:
             pool: dict = {}
             for rung in queries.alt_rungs(want.artist, want.album, media):
+                check(self.cancel)
                 docs = list(self.client.search_iter(rung.query, max_hits=rung.rows))
                 res.rungs.append((rung.label, len(docs)))
                 self.log(f"  [{want.label}] {rung.label}: {len(docs)} hit(s)")
+                self.emit("search", want=want.label, rung=rung.label, hits=len(docs))
                 for d in docs:
                     pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), False))
                 if any(h.quick.bucket == 0 for h in pool.values()):
@@ -351,7 +380,7 @@ class Pipeline:
 
             with ThreadPoolExecutor(self.client.max_concurrency) as ex:
                 self._admit(res, [c for c in ex.map(load_one, hits) if c], want, opts)
-        if res.found:
+        if res.found and instead:
             res.notes.append("no FLAC found for this request: these are " + names + " uploads instead. "
                              "WAV is lossless and is converted to FLAC when saved; VBR MP3 is lossy and stays MP3")
 
@@ -431,13 +460,23 @@ class Pipeline:
                 cand.notes.append(f"full decode test skipped: {total / 1e6:,.0f} MB is over the "
                                   f"{opts.max_deep_bytes // 2**20} MB limit (--max-deep-mb)")
             else:
-                results = []
+                results, done = [], 0
                 for i, f in enumerate(flacs, 1):
+                    check(self.cancel)
                     self.log(f"    [{cand.identifier}] decode test {i}/{len(flacs)}: "
                              f"{f.name.rsplit('/', 1)[-1]} ({f.size / 1e6:.0f} MB)")
                     probe = cand.probes.get(f.name)
                     md5_set = probe.streaminfo.md5_set if probe and probe.streaminfo else None
-                    result = integrity.test_file(self.client, cand.identifier, f, md5_set)
+
+                    def on_bytes(n, i=i, f=f, done=done):
+                        self.emit("decode", identifier=cand.identifier, file=f.name, index=i, total=len(flacs),
+                                  bytes=n, size=f.size, done_bytes=done + n, total_bytes=total)
+
+                    result = integrity.test_file(self.client, cand.identifier, f, md5_set,
+                                                 on_bytes=on_bytes if self.progress else None, cancel=self.cancel)
+                    done += f.size
+                    self.emit("decoded", identifier=cand.identifier, file=f.name, index=i, total=len(flacs),
+                              ok=result.ok, message=result.message)
                     results.append((f.name, result))
                     if not result.ok:
                         cand.notes.append(f"decode testing stopped at the first failure: {f.name.rsplit('/', 1)[-1]}")
@@ -446,6 +485,8 @@ class Pipeline:
                 if len(results) == len(flacs) and all(r.ok for _, r in results):
                     cand.levels.append("V2")
         if spectral_check:
+            check(self.cancel)
+            self.emit("spectral", identifier=cand.identifier)
             png = opts.spectrogram_dir / f"{cand.identifier}.png" if opts.spectrogram_dir else None
             try:
                 cand.spectral = spectral.analyze_item(self.client, item, cand.probes, png, log=self.log)
@@ -455,6 +496,8 @@ class Pipeline:
                 if cand.spectral.verdict in ("PASS", "SUSPECT", "LIKELY_LOSSY", "UPSAMPLED"):
                     cand.levels.append("V3")
         self.assess(cand)
+        self.emit("deep_done", identifier=cand.identifier, tier=cand.tier, levels=list(cand.levels),
+                  spectral=cand.spectral.verdict if cand.spectral else None)
 
     def deep_candidates(self, cands: list, opts: Options, label: str) -> None:
         """Deep-check the top pick; if it fails outright, move on to the next (up to three). deep=all checks every one."""
@@ -500,7 +543,9 @@ class Pipeline:
         pool: dict = {}
 
         def run(label: str, query: str, rip_shaped: bool, default_conf: str, max_hits: int) -> None:
+            check(self.cancel)
             docs = list(self.client.search_iter(query, max_hits=max_hits))
+            self.emit("search", want=spec.genre, rung=label, hits=len(docs))
             res.searched.append((label, len(docs), query))
             self.log(f"  [{spec.genre}] {label}: {len(docs)} hit(s)")
             for d in docs:

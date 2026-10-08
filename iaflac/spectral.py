@@ -15,7 +15,6 @@ cliff (6.6 dB in the same test), and band-limited old masters can look like a tr
 from __future__ import annotations
 
 import math
-import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -24,6 +23,7 @@ from typing import Callable, Optional
 import numpy as np
 from scipy.signal import welch
 
+from . import binaries
 from .flac_probe import FlacProbe, make_stream_header, probe_header
 from .model import ItemInfo
 
@@ -143,7 +143,7 @@ def classify(windows: list, fs: int) -> SpectralResult:
 # ---- fetching and decoding slices -----------------------------------------------------------
 
 def decode_slice(header: bytes, body: bytes) -> np.ndarray:
-    ffmpeg = shutil.which("ffmpeg")
+    ffmpeg = binaries.ffmpeg()
     if not ffmpeg:
         raise SpectralUnavailable("ffmpeg is not installed")
     proc = subprocess.run([ffmpeg, "-nostdin", "-v", "quiet", "-f", "flac", "-i", "pipe:0", "-ac", "1",

@@ -19,7 +19,7 @@ from urllib.parse import quote
 import requests
 from requests.adapters import HTTPAdapter
 
-from . import __version__
+from . import __version__, paths
 
 BASE = "https://archive.org"
 USER_AGENT = f"iaflac/{__version__} (alecsang@yorku.ca)"
@@ -38,10 +38,7 @@ class IAError(RuntimeError):
 
 
 def default_cache_dir() -> Path:
-    env = os.environ.get("IAFLAC_CACHE")
-    if env:
-        return Path(env).expanduser()
-    return Path(__file__).resolve().parents[1] / ".cache"
+    return paths.cache_dir()
 
 
 class IAClient:

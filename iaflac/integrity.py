@@ -8,12 +8,13 @@ transfer and the audio are covered.
 from __future__ import annotations
 
 import hashlib
-import shutil
 import subprocess
 import threading
 from dataclasses import asdict, dataclass
-from typing import Iterable, Optional
+from typing import Callable, Iterable, Optional
 
+from . import binaries
+from .events import Cancelled, CancelCheck
 from .ia_client import IAClient, IAError
 from .model import FileInfo
 
@@ -33,17 +34,20 @@ class IntegrityResult:
 
 
 def decoder_command() -> tuple:
-    flac = shutil.which("flac")
+    flac = binaries.flac()
     if flac:
         return "flac -t", [flac, "-t", "-s", "-"]
-    ffmpeg = shutil.which("ffmpeg")
+    ffmpeg = binaries.ffmpeg()
     if ffmpeg:
         return "ffmpeg", [ffmpeg, "-nostdin", "-v", "error", "-i", "pipe:0", "-f", "null", "-"]
     return "", []
 
 
 def test_stream(chunks: Iterable[bytes], *, expected_size: Optional[int] = None, expected_md5: str = "",
-                expected_sha1: str = "", audio_md5_set: Optional[bool] = None) -> IntegrityResult:
+                expected_sha1: str = "", audio_md5_set: Optional[bool] = None,
+                on_bytes: Optional[Callable[[int], None]] = None, cancel: Optional[CancelCheck] = None) -> IntegrityResult:
+    """Feed `chunks` to the decoder while hashing them. `on_bytes(total so far)` is called per chunk; when `cancel()`
+    turns true the decoder is stopped and Cancelled is raised."""
     method, cmd = decoder_command()
     if not cmd:
         return IntegrityResult(False, "none", 0, message="neither flac nor ffmpeg is installed")
@@ -52,10 +56,15 @@ def test_stream(chunks: Iterable[bytes], *, expected_size: Optional[int] = None,
     reader = threading.Thread(target=lambda: captured.append(proc.stderr.read()), daemon=True)
     reader.start()                       # drain stderr so a chatty decoder can never block on a full pipe
     md5, sha1, total = hashlib.md5(), hashlib.sha1(), 0
-    decoder_gone, transfer_error = False, ""
+    decoder_gone, transfer_error, cancelled = False, "", False
     try:
         for chunk in chunks:
+            if cancel is not None and cancel():
+                cancelled = True
+                break
             total += len(chunk)
+            if on_bytes is not None:
+                on_bytes(total)
             md5.update(chunk)
             sha1.update(chunk)
             if not decoder_gone:
@@ -70,11 +79,13 @@ def test_stream(chunks: Iterable[bytes], *, expected_size: Optional[int] = None,
             proc.stdin.close()
         except (BrokenPipeError, OSError):
             pass
-    if transfer_error:
+    if transfer_error or cancelled:
         proc.kill()
     rc = proc.wait()
     reader.join(timeout=5)
     proc.stderr.close()
+    if cancelled:
+        raise Cancelled()
     stderr = (captured[0] if captured else b"").decode("utf-8", "replace").strip()
 
     complete = not transfer_error and not decoder_gone
@@ -100,14 +111,16 @@ def test_stream(chunks: Iterable[bytes], *, expected_size: Optional[int] = None,
                            audio_md5_checked=audio_md5_set if not problems else None, message=message)
 
 
-def test_file(client: IAClient, identifier: str, f: FileInfo, audio_md5_set: Optional[bool] = None) -> IntegrityResult:
+def test_file(client: IAClient, identifier: str, f: FileInfo, audio_md5_set: Optional[bool] = None,
+              on_bytes: Optional[Callable[[int], None]] = None, cancel: Optional[CancelCheck] = None) -> IntegrityResult:
     try:
         resp = client.open_stream(identifier, f.name)
     except IAError as exc:
         return IntegrityResult(False, "none", 0, message=f"could not download: {exc}")
     try:
         result = test_stream(resp.iter_content(1 << 20), expected_size=f.size or None,
-                             expected_md5=f.md5, expected_sha1=f.sha1, audio_md5_set=audio_md5_set)
+                             expected_md5=f.md5, expected_sha1=f.sha1, audio_md5_set=audio_md5_set,
+                             on_bytes=on_bytes, cancel=cancel)
     finally:
         resp.close()
     client.bytes_read += result.bytes_read

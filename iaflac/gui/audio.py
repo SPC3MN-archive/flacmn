@@ -37,7 +37,8 @@ class AudioError(RuntimeError):
 def _ffmpeg() -> str:
     exe = binaries.ffmpeg()
     if not exe:
-        raise AudioError("ffmpeg is not available")
+        raise AudioError("ffmpeg was not found. Install it (it must be on PATH) or put it in packaging/bin; "
+                         "Settings > Tools shows what the app found")
     return exe
 
 

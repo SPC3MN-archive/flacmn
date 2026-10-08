@@ -20,3 +20,7 @@ packaging/bin/
 build/
 dist/
 preview/
+
+# app data written next to a source checkout (download queue, library index)
+.gui/
+.library-index/

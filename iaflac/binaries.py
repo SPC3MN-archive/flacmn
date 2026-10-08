@@ -1,7 +1,8 @@
 """Where the external tools (flac, metaflac, ffmpeg) live.
 
 A packaged app ships its own copies in a `bin/` folder next to the code (PyInstaller unpacks it under
-`sys._MEIPASS`); a source checkout uses whatever is installed. Order: $IAFLAC_BIN, the bundled `bin/`, then PATH.
+`sys._MEIPASS`). A source checkout uses the copies the packaging scripts fetched into `packaging/bin/`, if any, then
+whatever is installed. Order: $IAFLAC_BIN, the bundled `bin/`, `packaging/bin/`, then PATH.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from pathlib import Path
 from typing import Optional
 
 TOOLS = ("flac", "metaflac", "ffmpeg")
+SOURCE_BIN = Path(__file__).resolve().parent.parent / "packaging" / "bin"
 
 
 def bundled_dirs() -> list:
@@ -24,6 +26,8 @@ def bundled_dirs() -> list:
         dirs.append(Path(base) / "bin")
     if getattr(sys, "frozen", False):
         dirs.append(Path(sys.executable).resolve().parent / "bin")
+    else:                                   # a source checkout: tools fetched by packaging/tools/fetch_*.
+        dirs.append(SOURCE_BIN)
     return dirs
 
 

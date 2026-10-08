@@ -69,6 +69,7 @@ def file_kind(name: str) -> str:
 
 
 VBR_FORMAT = "VBR MP3"
+FILE_TAG_KEYS = ("title", "track", "artist", "creator", "album", "genre", "year", "disc")
 
 
 def is_track(f: "FileInfo", media: str = "flac") -> bool:
@@ -100,6 +101,7 @@ class FileInfo:
     length: Optional[float] = None
     md5: str = ""
     sha1: str = ""
+    tags: dict = field(default_factory=dict)       # what archive.org read from the file: title, track, artist, album, ...
 
     @classmethod
     def from_ia(cls, raw: dict) -> "FileInfo":
@@ -107,9 +109,10 @@ class FileInfo:
             size = int(raw.get("size") or 0)
         except (TypeError, ValueError):
             size = 0
+        tags = {k: str(raw[k]).strip() for k in FILE_TAG_KEYS if raw.get(k) not in (None, "")}
         return cls(name=raw.get("name", ""), format=raw.get("format", ""),
                    source=raw.get("source", ""), size=size, length=parse_length(raw.get("length")),
-                   md5=(raw.get("md5") or "").lower(), sha1=(raw.get("sha1") or "").lower())
+                   md5=(raw.get("md5") or "").lower(), sha1=(raw.get("sha1") or "").lower(), tags=tags)
 
 
 @dataclass

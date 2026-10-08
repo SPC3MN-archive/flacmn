@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iaflac</title>
+<style>
+  :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --ok: #15803d; --bad: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --ok: #4ade80; --bad: #f87171; } }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 32px; }
+  code { font-size: 13px; } .muted { color: var(--muted); } .ok { color: var(--ok); } .bad { color: var(--bad); }
+</style>
+</head>
+<body>
+<h1>iaflac</h1>
+<p class="muted">The engine and API are running. The interface is built once the layout is settled.</p>
+<ul id="status"><li class="muted">checking…</li></ul>
+<p><a href="/docs">API reference (try any call from there)</a></p>
+<script>
+  fetch("/api/health").then(r => r.json()).then(h => {
+    const tools = Object.entries(h.tools).map(([k, v]) =>
+      `<li class="${v ? "ok" : "bad"}">${k}: ${v ? "found" : "missing"}</li>`).join("");
+    document.getElementById("status").innerHTML =
+      `<li>version ${h.version}</li>${tools}<li class="${h.library_ok ? "ok" : "bad"}">library: ${h.library || "not set"}</li>`;
+  }).catch(e => { document.getElementById("status").innerHTML = `<li class="bad">${e}</li>`; });
+</script>
+</body>
+</html>

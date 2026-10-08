@@ -6,8 +6,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["requests", "numpy", "scipy", "matplotlib", "PyYAML", "openpyxl", "mutagen", "platformdirs", "Pillow"]
 
+[project.optional-dependencies]
+gui = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "pywebview>=5"]
+dev = ["httpx", "pyinstaller>=6"]
+
 [project.scripts]
 iaflac = "iaflac.cli:main"
+
+[project.gui-scripts]
+iaflac-gui = "iaflac.gui.app:main"
 
 [build-system]
 requires = ["setuptools>=61"]
@@ -15,3 +22,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["iaflac*"]
+
+[tool.setuptools.package-data]
+"iaflac.gui" = ["static/**/*"]

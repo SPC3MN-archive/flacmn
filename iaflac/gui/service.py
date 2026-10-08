@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .. import __version__, binaries, genre as genre_mod, musicbrainz as mb, paths, quality, queries, save, tagging
-from .. import library_index
+from .. import cdart, jewelcase, library_index
 from ..ia_client import IAClient, IAError
+from ..names import folder_component
 from ..model import track_files
 from ..pipeline import Candidate, Options, Pipeline
 from ..queries import Want
@@ -42,6 +43,18 @@ class SearchSession:
     identifiers: list = field(default_factory=list)
     created: float = field(default_factory=time.time)
     done: bool = False
+
+
+def open_with_system(path: Path) -> None:
+    import os
+    import subprocess
+    import sys
+    if sys.platform == "win32":
+        os.startfile(str(path))                      # noqa: S606 (a file the app itself wrote)
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", str(path)])
+    else:
+        subprocess.Popen(["xdg-open", str(path)])
 
 
 def parse_query(text: str = "", artist: str = "", album: str = "") -> Want:
@@ -76,6 +89,8 @@ class App:
         self.metas: dict = {}                 # identifier -> AlbumMeta being edited
         self.matches: dict = {}               # identifier -> [ReleaseMatch]
         self.library: Optional[library_index.LibraryIndex] = None
+        self.arts: dict = {}                  # library folder -> cdart.ArtSet
+        self.art_selections: dict = {}        # library folder -> {front, back, disc, tray, booklet: [...]}
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
                                    concurrency=self.settings.download_concurrency)
@@ -422,6 +437,167 @@ class App:
         if not audio.inside(path, [root]):
             raise NotFound(rel)
         return path.resolve()
+
+    # ---- CD artwork: find the scans, choose, print, keep -------------------------------------------------------
+    def _album_dir(self, folder: str) -> Path:
+        root = self._library()
+        path = (root / folder).resolve()
+        if not path.is_relative_to(root.resolve()) or not path.is_dir():
+            raise NotFound(f"no album folder {folder!r} in the library")
+        return path
+
+    def _art(self, folder: str) -> cdart.ArtSet:
+        art = self.arts.get(folder)
+        if art is None:
+            raise NotFound(f"no artwork search for {folder!r} yet: run find first")
+        return art
+
+    def art_find(self, folder: str, release_id: str = "") -> dict:
+        path = self._album_dir(folder)
+
+        def run(job: Job):
+            art = cdart.find_art(path, mb_client=self.mb, ia_client=self.client, release_id=release_id,
+                                 search_archive=self.settings.art_search_archive, library_root=self._library(),
+                                 progress=self.jobs.progress(job), cancel=job.cancelled)
+            self.arts[folder] = art
+            self.art_selections[folder] = cdart.default_selection(art)
+            out = self.art_state(folder)
+            self.broadcast({"type": "art", "folder": folder, "completeness": out["completeness"]})
+            return out
+
+        return {"job_id": self.jobs.submit("art", f"artwork: {folder}", run).id}
+
+    def art_state(self, folder: str) -> dict:
+        art = self._art(folder)
+        return {**art.to_dict(), "selection": self.art_selections.get(folder) or cdart.default_selection(art),
+                "pdf": str(self._pdf_path(art)) if self._pdf_path(art).exists() else None}
+
+    def art_select(self, folder: str, selection: dict) -> dict:
+        art = self._art(folder)
+        clean = {}
+        for kind in ("front", "back", "disc", "tray"):
+            iid = selection.get(kind)
+            if iid is not None and art.get(iid) is None:
+                raise ValueError(f"{kind}: unknown image {iid}")
+            clean[kind] = iid
+        pages = selection.get("booklet") or []
+        bad = [i for i in pages if art.get(i) is None]
+        if bad:
+            raise ValueError(f"booklet: unknown image {bad[0]}")
+        clean["booklet"] = list(pages)
+        self.art_selections[folder] = clean
+        return self.art_state(folder)
+
+    def art_image(self, image_id: str, preview: bool = True) -> tuple:
+        """(bytes, mime) of one found image; the Cover Art Archive's 500 px thumbnail when a preview is enough."""
+        for art in self.arts.values():
+            im = art.get(image_id)
+            if im is None:
+                continue
+            fetcher = cdart.ArtFetcher(self.mb, self.client)
+            if preview and im.source.startswith("coverartarchive") and im.preview and im.preview != im.ref:
+                data = self.mb.image(im.preview)
+            else:
+                data = fetcher.get(im)
+            mime = "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
+            return data, mime
+        raise NotFound(f"no image {image_id}")
+
+    def _pdf_path(self, art: cdart.ArtSet) -> Path:
+        name = folder_component(f"{art.artist} - {art.album}" + (f" ({art.year})" if art.year else "")) + " - CD case.pdf"
+        return self.settings.print_path / name
+
+    def art_print(self, folder: str, discs: int = 0) -> dict:
+        art = self._art(folder)
+        sel = dict(self.art_selections.get(folder) or cdart.default_selection(art))
+        s = self.settings
+        opts = jewelcase.PrintOptions(paper=s.paper, bleed=s.bleed_mm, disc_inner=s.disc_hole_mm,
+                                      discs=discs or max([t["disc"] for t in art.tracks] or [1]))
+
+        def run(job: Job):
+            fetcher = cdart.ArtFetcher(self.mb, self.client)
+            emit = self.jobs.progress(job)
+            wanted = [k for k in ("front", "back", "disc", "tray") if sel.get(k)] + list(sel.get("booklet") or [])
+
+            def load(iid):
+                im = art.get(iid)
+                emit({"stage": "art", "step": "fetching", "image": iid, "label": im.label,
+                      "index": wanted.index(iid) + 1 if iid in wanted else 0, "total": len(wanted)})
+                return jewelcase.Art(fetcher.get(im, cancel=job.cancelled), im.label)
+
+            parts = {k: load(sel[k]) if sel.get(k) else None for k in ("front", "back", "disc", "tray")}
+            booklet = [load(i) for i in sel.get("booklet") or []]
+            out = self._pdf_path(art)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            emit({"stage": "art", "step": "rendering"})
+            report = jewelcase.render(out, artist=art.artist, album=art.album, year=art.year, tracks=art.tracks,
+                                      booklet=booklet, opts=opts, **parts)
+            result = {"pdf": str(out), **report.to_dict()}
+            self.broadcast({"type": "art_printed", "folder": folder, "pdf": str(out)})
+            return result
+
+        return {"job_id": self.jobs.submit("print", f"print sheet: {art.artist} / {art.album}", run).id}
+
+    def art_pdf(self, folder: str) -> Path:
+        path = self._pdf_path(self._art(folder))
+        if not path.exists():
+            raise NotFound("no print sheet yet: make one first")
+        return path
+
+    def art_open(self, folder: str) -> dict:
+        """Open the print PDF in the system's PDF viewer (to print it from there)."""
+        path = self.art_pdf(folder)
+        open_with_system(path)
+        return {"opened": str(path)}
+
+    def art_save(self, folder: str) -> dict:
+        art, path = self._art(folder), self._album_dir(folder)
+        sel = self.art_selections.get(folder) or cdart.default_selection(art)
+
+        def run(job: Job):
+            written = cdart.save_to_folder(art, sel, path, cdart.ArtFetcher(self.mb, self.client))
+            self.library = None
+            return {"written": written}
+
+        return {"job_id": self.jobs.submit("art-save", f"save scans: {folder}", run).id}
+
+    def art_scan_all(self) -> dict:
+        """Find artwork for every album in the library: a checklist of what each CD can be rebuilt with."""
+        root = self._library()
+
+        def run(job: Job):
+            index = library_index.scan(root)
+            self.library = index
+            emit = self.jobs.progress(job)
+            rows = []
+            for n, entry in enumerate(index.albums, 1):
+                if job.cancelled():
+                    break
+                emit({"stage": "art-all", "index": n, "total": len(index.albums), "folder": entry.folder})
+                try:
+                    art = cdart.find_art(root / entry.folder, mb_client=self.mb, ia_client=self.client,
+                                         search_archive=self.settings.art_search_archive, library_root=root,
+                                         cancel=job.cancelled)
+                except Exception as exc:                  # one album's trouble never stops the sweep
+                    rows.append({"folder": entry.folder, "error": f"{type(exc).__name__}: {exc}"})
+                    continue
+                self.arts[entry.folder] = art
+                self.art_selections[entry.folder] = cdart.default_selection(art)
+                rows.append(self._art_row(art))
+                self.broadcast({"type": "art", "folder": entry.folder, "completeness": art.completeness()})
+            return {"albums": rows}
+
+        return {"job_id": self.jobs.submit("art-all", f"artwork for the whole library ({root})", run).id}
+
+    @staticmethod
+    def _art_row(art: cdart.ArtSet) -> dict:
+        c = art.completeness()
+        return {"folder": art.folder, "artist": art.artist, "album": art.album, "year": art.year,
+                "completeness": c, "complete": all(c[k] for k in ("front", "back", "disc")) and c["booklet"] > 0,
+                "missing": [k for k in ("front", "back", "booklet", "disc") if not c[k]], "notes": art.notes}
+
+    def art_summary(self) -> dict:
+        return {"albums": [self._art_row(a) for a in sorted(self.arts.values(), key=lambda a: a.folder.casefold())]}
 
     # ---- audio -------------------------------------------------------------------------------------------------
     def remote_file(self, identifier: str, name: str):

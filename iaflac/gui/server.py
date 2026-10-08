@@ -209,6 +209,49 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
         p = core.library_file(path)
         return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"))
 
+    # ---- CD artwork --------------------------------------------------------------------------------------------
+    @api.post("/api/art/find")
+    def art_find(body: dict = Body(...)):
+        return core.art_find(body["folder"], body.get("release_id", ""))
+
+    @api.get("/api/art")
+    def art_state(folder: str):
+        return core.art_state(folder)
+
+    @api.put("/api/art/selection")
+    def art_select(body: dict = Body(...)):
+        return core.art_select(body["folder"], body.get("selection") or {})
+
+    @api.get("/api/art/image/{image_id}")
+    def art_image(image_id: str, full: bool = False):
+        data, mime = core.art_image(image_id, preview=not full)
+        return Response(data, media_type=mime, headers={"Cache-Control": "max-age=86400"})
+
+    @api.post("/api/art/print")
+    def art_print(body: dict = Body(...)):
+        return core.art_print(body["folder"], int(body.get("discs", 0)))
+
+    @api.get("/api/art/pdf")
+    def art_pdf(folder: str):
+        p = core.art_pdf(folder)
+        return FileResponse(p, media_type="application/pdf", filename=p.name, content_disposition_type="inline")
+
+    @api.post("/api/art/open")
+    def art_open(body: dict = Body(...)):
+        return core.art_open(body["folder"])
+
+    @api.post("/api/art/save")
+    def art_save(body: dict = Body(...)):
+        return core.art_save(body["folder"])
+
+    @api.post("/api/art/scan-all")
+    def art_scan_all():
+        return core.art_scan_all()
+
+    @api.get("/api/art/summary")
+    def art_summary():
+        return core.art_summary()
+
     # ---- audio: playback, waveform, spectrogram, analysis ---------------------------------------------------
     def local_path(identifier: str, file: str, path: str) -> Path:
         if path:

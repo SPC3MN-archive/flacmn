@@ -126,6 +126,88 @@ class MBClient:
     def release(self, release_id: str) -> dict:
         return self._get(f"{WS}/release/{release_id}", {"inc": RELEASE_INC})
 
+    def group_releases(self, release_group_id: str, limit: int = 100) -> list:
+        """Every release (pressing) in a release group, with its media track counts and Cover Art Archive counts."""
+        data = self._get(f"{WS}/release", {"release-group": release_group_id, "inc": "media", "limit": limit})
+        return data.get("releases", [])
+
+    def art_listing(self, release_id: str) -> list:
+        """The Cover Art Archive's images for a release: [{"types": ["Back", "Spine"], "image": url, "thumbnails":
+        {...}, "comment", "id"}], or [] when it has none. Cached like the MusicBrainz answers."""
+        key = hashlib.sha1(f"caa\0{release_id}".encode()).hexdigest()
+        path = self.cache_dir / "caa" / key[:2] / f"{key}.json"
+        try:
+            if time.time() - path.stat().st_mtime <= TTL:
+                return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+        try:
+            resp = self.session.get(f"{CAA}/release/{release_id}", timeout=(10, 30), allow_redirects=True)
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            raise MBError(f"Cover Art Archive did not answer: {exc}") from exc
+        if resp.status_code == 404:
+            images = []
+        elif resp.status_code == 200:
+            images = resp.json().get("images", [])
+        else:
+            raise MBError(f"Cover Art Archive: HTTP {resp.status_code}")
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(images), encoding="utf-8")
+        except OSError:
+            pass
+        return images
+
+    def image(self, url: str) -> bytes:
+        """An image from the Cover Art Archive (or any https URL it redirects to), cached on disk for good."""
+        key = hashlib.sha1(url.encode()).hexdigest()
+        path = self.cache_dir / "images" / key[:2] / key
+        if path.exists():
+            return path.read_bytes()
+        try:
+            resp = self.session.get(url, timeout=(10, 120), allow_redirects=True)
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            raise MBError(f"could not fetch {url}: {exc}") from exc
+        if resp.status_code != 200 or not resp.content:
+            raise MBError(f"could not fetch {url}: HTTP {resp.status_code}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_bytes(resp.content)
+        os.replace(tmp, path)
+        return resp.content
+
+    def image_size(self, url: str) -> tuple:
+        """(width, height) of a remote image from its first 64 KB (one ranged request), cached; (0, 0) if unknown."""
+        key = hashlib.sha1(f"size\0{url}".encode()).hexdigest()
+        path = self.cache_dir / "sizes" / key[:2] / f"{key}.json"
+        try:
+            return tuple(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            pass
+        try:
+            resp = self.session.get(url, headers={"Range": "bytes=0-65535"}, timeout=(10, 30), allow_redirects=True,
+                                    stream=True)
+        except (requests.ConnectionError, requests.Timeout):
+            return (0, 0)
+        try:
+            if resp.status_code not in (200, 206):
+                return (0, 0)
+            head = b""
+            for chunk in resp.iter_content(16384):
+                head += chunk
+                if len(head) >= 65536:
+                    break
+        finally:
+            resp.close()
+        size = header_size(head)
+        if size != (0, 0):
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(size), encoding="utf-8")
+            except OSError:
+                pass
+        return size
+
     def cover(self, release_id: str, release_group_id: str = "", size: str = "1200") -> Optional[bytes]:
         """Front cover bytes from the Cover Art Archive (the release's, else its release group's), or None."""
         for base in ([f"{CAA}/release/{release_id}"] + ([f"{CAA}/release-group/{release_group_id}"] if release_group_id else [])):
@@ -136,6 +218,18 @@ class MBClient:
             if resp.status_code == 200 and resp.content:
                 return resp.content
         return None
+
+
+def header_size(head: bytes) -> tuple:
+    """(width, height) from the first bytes of a JPEG/PNG/GIF/WebP, or (0, 0) when they don't say yet."""
+    from PIL import ImageFile
+    parser = ImageFile.Parser()
+    try:
+        parser.feed(head)
+    except Exception:
+        return (0, 0)
+    img = parser.image
+    return tuple(img.size) if img is not None else (0, 0)
 
 
 # ---- reading a release -------------------------------------------------------------------------------------------

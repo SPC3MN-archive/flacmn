@@ -28,6 +28,12 @@ class Settings:
     auto_musicbrainz: bool = True          # look the album up on MusicBrainz when it is opened for saving
     audio_cache_mb: int = 2048
     download_concurrency: int = 1          # albums downloading at once (archive.org is happiest with 1-2)
+    # CD artwork printing
+    paper: str = "letter"                  # letter | a4
+    bleed_mm: float = 1.5
+    disc_hole_mm: float = 41.0             # 41 for most sticker labels; ~23 or less for printable discs
+    print_folder: str = ""                 # where print PDFs go (default: Documents/iaflac CD prints)
+    art_search_archive: bool = True        # also look through other archive.org uploads of the album for scans
 
     @classmethod
     def load(cls) -> "Settings":
@@ -56,6 +62,8 @@ class Settings:
         types = {f.name: type(f.default) for f in fields(self)}
         for k, v in values.items():
             t = types.get(k)
+            if t is float and isinstance(v, int) and not isinstance(v, bool):
+                v = float(v)
             if t is None or (t is int and isinstance(v, bool)) or not isinstance(v, t):
                 rejected.append(k)
                 continue
@@ -64,7 +72,20 @@ class Settings:
             self.art, rejected = "cover", rejected + ["art"]
         if self.rip_files not in ("skip", "keep"):
             self.rip_files, rejected = "skip", rejected + ["rip_files"]
+        if self.paper not in ("letter", "a4"):
+            self.paper, rejected = "letter", rejected + ["paper"]
+        if not 0 <= self.bleed_mm <= 5:
+            self.bleed_mm, rejected = 1.5, rejected + ["bleed_mm"]
+        if not 5 <= self.disc_hole_mm <= 50:
+            self.disc_hole_mm, rejected = 41.0, rejected + ["disc_hole_mm"]
         return rejected
+
+    @property
+    def print_path(self) -> Path:
+        if self.print_folder:
+            return Path(self.print_folder).expanduser()
+        from platformdirs import user_documents_dir
+        return Path(user_documents_dir()) / "iaflac CD prints"
 
     @property
     def library_path(self):

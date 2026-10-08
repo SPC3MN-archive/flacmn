@@ -57,6 +57,7 @@ class AlbumMeta:
     mb_release_id: str = ""
     mb_releasegroup_id: str = ""
     mb_albumartist_id: str = ""
+    source_url: str = ""                # the archive.org item it was saved from (IAFLAC_SOURCE), for finding its scans later
     tracks: list = field(default_factory=list)          # [TrackMeta]
     sources: dict = field(default_factory=dict)         # field -> where the value came from ("tags", "archive.org", "musicbrainz", "you")
 
@@ -126,7 +127,7 @@ def from_candidate(cand) -> AlbumMeta:
     item = cand.item
     st = cand.stats
     nm = derive_names(item.title, item.creator, st.tag_artist if st else "", st.tag_album if st else "")
-    meta = AlbumMeta(albumartist=nm.artist, album=nm.album, date=str(item.year or ""))
+    meta = AlbumMeta(albumartist=nm.artist, album=nm.album, date=str(item.year or ""), source_url=item.url)
     meta.sources = {"albumartist": nm.source, "album": nm.source, "date": "archive.org" if item.year else ""}
     probes = getattr(cand, "probes", {}) or {}
     genres, dates = [], []
@@ -217,7 +218,7 @@ def vorbis_tags(meta: AlbumMeta, t: TrackMeta) -> dict:
         "DATE": meta.date, "GENRE": meta.genre, "LABEL": meta.label, "CATALOGNUMBER": meta.catalog,
         "MUSICBRAINZ_ALBUMID": meta.mb_release_id, "MUSICBRAINZ_RELEASEGROUPID": meta.mb_releasegroup_id,
         "MUSICBRAINZ_ALBUMARTISTID": meta.mb_albumartist_id, "MUSICBRAINZ_RELEASETRACKID": t.mb_track_id,
-        "MUSICBRAINZ_TRACKID": t.mb_recording_id,
+        "MUSICBRAINZ_TRACKID": t.mb_recording_id, "IAFLAC_SOURCE": meta.source_url,
     }
     return {k: v for k, v in tags.items() if v}
 
@@ -225,7 +226,7 @@ def vorbis_tags(meta: AlbumMeta, t: TrackMeta) -> dict:
 MANAGED = ("TITLE", "ARTIST", "ALBUMARTIST", "ALBUM ARTIST", "ALBUM", "TRACKNUMBER", "TRACKTOTAL", "TOTALTRACKS",
            "DISCNUMBER", "DISCTOTAL", "TOTALDISCS", "DATE", "YEAR", "GENRE", "LABEL", "CATALOGNUMBER",
            "MUSICBRAINZ_ALBUMID", "MUSICBRAINZ_RELEASEGROUPID", "MUSICBRAINZ_ALBUMARTISTID",
-           "MUSICBRAINZ_RELEASETRACKID", "MUSICBRAINZ_TRACKID")
+           "MUSICBRAINZ_RELEASETRACKID", "MUSICBRAINZ_TRACKID", "IAFLAC_SOURCE")
 
 
 def prepare_cover(data: bytes, max_px: int = EMBED_MAX_PX) -> tuple:
@@ -275,6 +276,7 @@ def write_mp3(path: Path, tags: dict, cover: Optional[tuple] = None) -> None:
     id3.delall("TXXX:MusicBrainz Album Id")
     id3.delall("TXXX:MusicBrainz Release Group Id")
     id3.delall("TXXX:MusicBrainz Album Artist Id")
+    id3.delall("TXXX:IAFLAC_SOURCE")
     simple = {"TITLE": TIT2, "ARTIST": TPE1, "ALBUMARTIST": TPE2, "ALBUM": TALB, "DATE": TDRC, "GENRE": TCON, "LABEL": TPUB}
     for key, frame in simple.items():
         if tags.get(key):
@@ -284,7 +286,7 @@ def write_mp3(path: Path, tags: dict, cover: Optional[tuple] = None) -> None:
     if tags.get("DISCNUMBER"):
         id3.add(TPOS(encoding=3, text=f"{tags['DISCNUMBER']}/{tags.get('DISCTOTAL', '')}".rstrip("/")))
     for key, desc in (("MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id"), ("MUSICBRAINZ_RELEASEGROUPID", "MusicBrainz Release Group Id"),
-                      ("MUSICBRAINZ_ALBUMARTISTID", "MusicBrainz Album Artist Id")):
+                      ("MUSICBRAINZ_ALBUMARTISTID", "MusicBrainz Album Artist Id"), ("IAFLAC_SOURCE", "IAFLAC_SOURCE")):
         if tags.get(key):
             id3.add(TXXX(encoding=3, desc=desc, text=tags[key]))
     if cover is not None:
@@ -396,7 +398,8 @@ def read_track(path: Path) -> dict:
         out.update(title=get("TITLE", ""), artist=get("ARTIST", ""), albumartist=get("ALBUMARTIST") or get("ALBUM ARTIST", ""),
                    album=get("ALBUM", ""), track=track, tracktotal=int(get("TRACKTOTAL") or get("TOTALTRACKS") or ttotal or 0),
                    disc=disc, disctotal=int(get("DISCTOTAL") or get("TOTALDISCS") or dtotal or 0),
-                   date=get("DATE") or get("YEAR", ""), genre=get("GENRE", ""), mb_release_id=get("MUSICBRAINZ_ALBUMID", ""))
+                   date=get("DATE") or get("YEAR", ""), genre=get("GENRE", ""), mb_release_id=get("MUSICBRAINZ_ALBUMID", ""),
+                   mb_releasegroup_id=get("MUSICBRAINZ_RELEASEGROUPID", ""), source_url=get("IAFLAC_SOURCE", ""))
     else:
         tags = audio.tags or {}
 
@@ -408,7 +411,8 @@ def read_track(path: Path) -> dict:
         out["has_art"] = any(k.startswith("APIC") for k in tags.keys())
         out.update(title=text("TIT2"), artist=text("TPE1"), albumartist=text("TPE2"), album=text("TALB"), track=track,
                    tracktotal=ttotal, disc=disc, disctotal=dtotal, date=text("TDRC"), genre=text("TCON"),
-                   mb_release_id=text("TXXX:MusicBrainz Album Id"))
+                   mb_release_id=text("TXXX:MusicBrainz Album Id"),
+                   mb_releasegroup_id=text("TXXX:MusicBrainz Release Group Id"), source_url=text("TXXX:IAFLAC_SOURCE"))
     return out
 
 

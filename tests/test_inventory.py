@@ -1,3 +1,4 @@
+import os
 import re
 import shutil
 import tempfile
@@ -264,6 +265,7 @@ class WorkbookEditing(unittest.TestCase):
             book.apply(book.plan([album("Miles Davis", "Kind of Blue", ["a"])]))
         self.assertEqual(self.path.read_bytes(), self.original_bytes)
 
+    @unittest.skipIf(os.name == "nt", "POSIX permission bits")
     def test_file_permissions_survive_the_replace(self):
         self.path.chmod(0o640)
         self.add(album("Miles Davis", "Kind of Blue", ["a"]))

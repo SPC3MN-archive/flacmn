@@ -309,7 +309,7 @@ class SaveTheFallback(unittest.TestCase):
         real = download.subprocess.run
 
         def failing(cmd, *a, **k):
-            if cmd and str(cmd[0]).endswith("flac") and "--best" in cmd:
+            if cmd and Path(str(cmd[0])).stem == "flac" and "--best" in cmd:
                 class R:
                     returncode, stderr, stdout = 1, b"ERROR: boom", b""
                 return R()

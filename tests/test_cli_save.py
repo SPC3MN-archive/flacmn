@@ -1,3 +1,4 @@
+import json
 """find -> choose what to test -> choose what to save -> confirm -> saved in the library's own layout, through the
 real CLI handlers against a fake archive and a synthetic library and inventory."""
 
@@ -25,7 +26,7 @@ def info(name):
 
 class LibraryTrackNames(unittest.TestCase):
     def name(self, raw, artist="Miles Davis"):
-        return str(download.library_track_name(Path(raw), artist))
+        return download.library_track_name(Path(raw), artist).as_posix()
 
     def test_archive_names_become_the_librarys_NN_Title(self):
         self.assertEqual(self.name("01 - Miles Davis - So What.flac"), "01 So What.flac")
@@ -212,7 +213,7 @@ class FindThenSave(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("Where is your music library?", asked[1]["prompt"])
         self.assertTrue((self.album_dir() / "01 Track 1.flac").exists(), "saved as soon as you said yes")
-        self.assertIn(str(self.lib), self.config.read_text())
+        self.assertEqual(json.loads(self.config.read_text())["library"], str(self.lib))
         # next time it does not ask again
         (self.lib / "Test Artist").rename(self.lib / "moved-away")
         _, _, _, asked = run_cli(cli.cmd_find, self.args(library=None), self.client, answers=["1", "n"], interactive=True)

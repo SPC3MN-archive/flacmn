@@ -853,7 +853,7 @@ def cmd_replace(args, client: IAClient) -> int:
             return 0
         print(f"{len(found)} album(s) in {library} have audio but no FLAC:\n")
         for info in found:
-            print(f"  {info.path.relative_to(library)}   ({info.describe()})")
+            print(f"  {info.path.relative_to(library).as_posix()}   ({info.describe()})")
         print("\nReplace one with:  python3 -m iaflac replace \"<Artist>/<Album>\"     (or several at once)")
         return 0
     if not args.items and not args.file:

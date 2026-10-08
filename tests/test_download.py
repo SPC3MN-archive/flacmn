@@ -101,19 +101,19 @@ class Planning(unittest.TestCase):
         item = ItemInfo(identifier="x", title="Album", files=[
             finfo("Album Dir/01 One.flac", b"1"), finfo("Album Dir/rip.log", b"2"), finfo("Album Dir/Scans/c.jpg", b"3")])
         res = self.plan(item)
-        rels = sorted(str(pf.path.relative_to(res.folder.resolve())) for pf in res.planned)
+        rels = sorted(pf.path.relative_to(res.folder.resolve()).as_posix() for pf in res.planned)
         self.assertEqual(rels, ["01 One.flac", "Scans/c.jpg", "rip.log"])
 
     def test_multi_disc_layout_is_kept(self):
         item = ItemInfo(identifier="x", title="Box", files=[
             finfo("Disc 1/01.flac", b"1"), finfo("Disc 2/01.flac", b"2"), finfo("Disc 1/rip.log", b"3")])
         res = self.plan(item)
-        rels = sorted(str(pf.path.relative_to(res.folder.resolve())) for pf in res.planned)
+        rels = sorted(pf.path.relative_to(res.folder.resolve()).as_posix() for pf in res.planned)
         self.assertEqual(rels, ["Disc 1/01.flac", "Disc 1/rip.log", "Disc 2/01.flac"])
 
     def test_files_at_the_top_level_are_left_alone(self):
         item = ItemInfo(identifier="x", title="Flat", files=[finfo("01.flac", b"1"), finfo("Dir/02.flac", b"2")])
-        rels = sorted(str(pf.path.relative_to(self.plan(item).folder.resolve())) for pf in self.plan(item).planned)
+        rels = sorted(pf.path.relative_to(self.plan(item).folder.resolve()).as_posix() for pf in self.plan(item).planned)
         self.assertEqual(rels, ["01.flac", "Dir/02.flac"])
 
     def test_a_hostile_title_cannot_move_the_album_folder_outside_the_destination(self):
@@ -282,7 +282,7 @@ class LibraryLayout(unittest.TestCase):
         return download.plan_library(self.item, self.lib, "The Mars Volta", "Frances the Mute", **kw)
 
     def rels(self, res):
-        return sorted(str(pf.path.relative_to(res.folder.resolve())) for pf in res.planned)
+        return sorted(pf.path.relative_to(res.folder.resolve()).as_posix() for pf in res.planned)
 
     def test_default_is_audio_cover_and_rip_evidence_in_artist_album_folders(self):
         res = self.plan()

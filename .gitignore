@@ -13,3 +13,4 @@ __pycache__/
 # never commit a real inventory workbook, its backups or the editor's temp files
 *.backup-*.xlsx
 .*.iaflac-tmp.xlsx
+.venv/

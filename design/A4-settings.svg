@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" width="1440" height="900" viewBox="0 0 1440 900" version="1.1">
+<title>iaflac · Option A · Workspace · Settings</title>
+<sodipodi:namedview id="a4-namedview" pagecolor="#ffffff" bordercolor="#666666" inkscape:document-units="px" inkscape:pagecheckerboard="false"><inkscape:page x="0" y="0" width="1440" height="900" id="a4-page" inkscape:label="Option A · Workspace · Settings"/></sodipodi:namedview>
+<defs></defs>
+<g inkscape:groupmode="layer" id="a4-layer-background" inkscape:label="Background">
+<rect id="a4-app-background" inkscape:label="App background" x="0" y="0" width="1440" height="900" fill="#DFD9E2"/>
+</g>
+<g inkscape:groupmode="layer" id="a4-layer-title-bar" inkscape:label="Title bar">
+<g id="a4-window-title-bar" inkscape:label="Window title bar">
+<rect x="0" y="0" width="1440" height="36" fill="#1A1736"/>
+<path d="M 28 18 A 6 6 0 1 1 16 18 A 6 6 0 1 1 28 18 Z M 24 18 A 2 2 0 1 1 20 18 A 2 2 0 1 1 24 18 Z" fill="none" stroke="#F4B73E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="38" y="23" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" xml:space="preserve">iaflac</text>
+<text x="720" y="23" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#B1AACC" text-anchor="middle" xml:space="preserve">Option A · Workspace · Settings</text>
+<path d="M 1337.5 18 H 1346.5" fill="none" stroke="#B1AACC" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1373.5 13.5 H 1382.5 V 22.5 H 1373.5 Z" fill="none" stroke="#B1AACC" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 1410.5 14.5 L 1417.5 21.5 M 1417.5 14.5 L 1410.5 21.5" fill="none" stroke="#B1AACC" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="a4-layer-navigation" inkscape:label="Navigation">
+<g id="a4-sidebar" inkscape:label="Sidebar">
+<rect x="0" y="36" width="200" height="864" fill="#252047"/>
+<g id="a4-nav-album-search" inkscape:label="Nav · Album Search">
+<path d="M 37.5 75 A 4.5 4.5 0 1 1 28.5 75 A 4.5 4.5 0 1 1 37.5 75 Z M 36.4 78.4 L 40 82" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="81" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Album Search</text>
+<g id="a4-chip-2" inkscape:label="Chip · 2">
+<rect x="157.41" y="67" width="18.59" height="18" rx="9" fill="#322C5C"/>
+<text x="163.41" y="79.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#ECE8EE" xml:space="preserve">2</text>
+</g>
+</g>
+<g id="a4-nav-cd-art" inkscape:label="Nav · CD Art">
+<path d="M 40 120 A 6 6 0 1 1 28 120 A 6 6 0 1 1 40 120 Z M 36 120 A 2 2 0 1 1 32 120 A 2 2 0 1 1 36 120 Z" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="125" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">CD Art</text>
+</g>
+<g id="a4-nav-library" inkscape:label="Nav · Library">
+<path d="M 29 158.5 V 169.5 M 32.5 158.5 V 169.5 M 35.5 159.2 L 39 168.8" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="169" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Library</text>
+<g id="a4-chip-3" inkscape:label="Chip · 3">
+<rect x="157.41" y="155" width="18.59" height="18" rx="9" fill="#322C5C"/>
+<text x="163.41" y="167.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#ECE8EE" xml:space="preserve">3</text>
+</g>
+</g>
+<line x1="24" y1="200.5" x2="176" y2="200.5" stroke="#322C5C" stroke-width="1"/>
+<text x="24" y="226" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#9E96C2" letter-spacing="0.7" xml:space="preserve">LIBRARY</text>
+<text x="24" y="248" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#ECE8EE" xml:space="preserve">5 albums · 2.4 GB</text>
+<text x="24" y="266" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#9E96C2" xml:space="preserve">D:\Music</text>
+<text x="24" y="302" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#9E96C2" letter-spacing="0.7" xml:space="preserve">ART</text>
+<text x="24" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#ECE8EE" xml:space="preserve">2 of 5 cases complete</text>
+<g id="a4-progress-40" inkscape:label="Progress · 40%">
+<rect x="24" y="334" width="152" height="4" rx="2" fill="#322C5C"/>
+<rect x="24" y="334" width="60.8" height="4" rx="2" fill="#20A76B"/>
+</g>
+<g id="a4-nav-settings" inkscape:label="Nav · Settings">
+<rect x="12" y="812" width="176" height="40" rx="10" fill="#5C53A2"/>
+<path d="M 28 828.5 H 30 M 33.2 828.5 H 40 M 28 835.5 H 34.8 M 38 835.5 H 40 M 33.2 828.5 A 1.6 1.6 0 1 1 30 828.5 A 1.6 1.6 0 1 1 33.2 828.5 Z M 38 835.5 A 1.6 1.6 0 1 1 34.8 835.5 A 1.6 1.6 0 1 1 38 835.5 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="837" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Settings</text>
+</g>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="a4-layer-settings" inkscape:label="Settings">
+<text x="232" y="88" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="700" fill="#0F0D1A" xml:space="preserve">Settings</text>
+<text x="232" y="110" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#2C284E" xml:space="preserve">Changes are saved automatically.</text>
+<g id="a4-card-library-files" inkscape:label="Card · Library &amp; files">
+<rect x="216.5" y="132.5" width="391" height="351" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="232" y="160" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Library &amp; files</text>
+<text x="232" y="182" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Library folder</text>
+<g id="a4-field-library-folder" inkscape:label="Field · Library folder">
+<rect x="232.5" y="192.5" width="271" height="33" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 243.88 205.72 A 0.94 0.94 0 0 1 244.81 204.78 H 248.09 L 249.5 206.19 H 254.19 A 0.94 0.94 0 0 1 255.12 207.12 V 212.75 A 0.94 0.94 0 0 1 254.19 213.69 H 244.81 A 0.94 0.94 0 0 1 243.88 212.75 Z" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="264" y="213.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#0F0D1A" xml:space="preserve">D:\Music</text>
+</g>
+<g id="a4-button-browse" inkscape:label="Button · Browse…">
+<rect x="505.75" y="192.5" width="85.75" height="33" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="517.25" y="213.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Browse…</text>
+</g>
+<text x="232" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Layout: Artist/Album (Year)/NN - Title.flac (Volumio)</text>
+<line x1="232" y1="262.5" x2="592" y2="262.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="232" y="288" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Rip files</text>
+<text x="232" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Keep these next to the audio</text>
+<g id="a4-checkbox-keep-log-files" inkscape:label="Checkbox · Keep .log files">
+<rect x="232" y="318" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 236.06 326.44 L 238.69 329.06 L 243.94 322.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="254" y="330.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Keep .log files</text>
+</g>
+<g id="a4-checkbox-keep-cue-files" inkscape:label="Checkbox · Keep .cue files">
+<rect x="232.5" y="346.5" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#B1AACC" stroke-width="1"/>
+<text x="254" y="358.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Keep .cue files</text>
+</g>
+<g id="a4-chip-volumio-may-list-albums-twice" inkscape:label="Chip · Volumio may list albums twice">
+<rect x="366" y="344" width="194.67" height="20" rx="5" fill="#FDF1D8"/>
+<path d="M 379.25 349.7 L 384.09 358.06 H 374.41 Z M 379.25 352.83 V 355.02 M 379.25 356.58 V 356.66" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="388.5" y="357.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#6D5332" xml:space="preserve">Volumio may list albums twice</text>
+</g>
+<g id="a4-checkbox-keep-cd-scans-in-a-scans-folder" inkscape:label="Checkbox · Keep CD scans in a “scans” folder">
+<rect x="232" y="374" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 236.06 382.44 L 238.69 385.06 L 243.94 378.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="254" y="386.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Keep CD scans in a “scans” folder</text>
+</g>
+<line x1="232" y1="404.5" x2="592" y2="404.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="232" y="430" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Cover art</text>
+<text x="232" y="447" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Used when saving an album</text>
+<g id="a4-dropdown-cover-art" inkscape:label="Dropdown · Cover art">
+<rect x="412.5" y="420.5" width="179" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 571.94 433.69 L 575 436.75 L 578.06 433.69" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="422" y="439.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">Prefer Cover Art Archi…</text>
+</g>
+</g>
+<g id="a4-card-downloads-cache" inkscape:label="Card · Downloads &amp; cache">
+<rect x="216.5" y="496.5" width="391" height="355" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="232" y="524" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Downloads &amp; cache</text>
+<text x="232" y="546" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Simultaneous downloads</text>
+<g id="a4-stepper-2" inkscape:label="Stepper · 2">
+<rect x="488.5" y="532.5" width="103" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 499.5 547 H 508.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="540" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">2</text>
+<path d="M 576 542.5 V 551.5 M 571.5 547 H 580.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="520.5" y1="533" x2="520.5" y2="561" stroke="#CFC9DA" stroke-width="1"/>
+<line x1="560.5" y1="533" x2="560.5" y2="561" stroke="#CFC9DA" stroke-width="1"/>
+</g>
+<line x1="232" y1="576.5" x2="592" y2="576.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="232" y="602" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Cache size</text>
+<text x="232" y="619" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Deep-test downloads are reused</text>
+<g id="a4-progress-32" inkscape:label="Progress · 32%">
+<rect x="232" y="640" width="360" height="8" rx="4" fill="#EDEAEF"/>
+<rect x="232" y="640" width="115.2" height="8" rx="4" fill="#5C53A2"/>
+</g>
+<text x="232" y="666" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">3.2 GB used of 10 GB</text>
+<g id="a4-dropdown-cache-limit" inkscape:label="Dropdown · Cache limit">
+<rect x="472.5" y="590.5" width="119" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 571.94 603.69 L 575 606.75 L 578.06 603.69" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="482" y="609.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">10 GB</text>
+</g>
+<g id="a4-button-clear-cache" inkscape:label="Button · Clear cache">
+<rect x="479.4" y="652.5" width="112.1" height="27" rx="8" fill="#FFFFFF" stroke="#E1A5AA" stroke-width="1"/>
+<path d="M 493.53 662.94 H 502.28 M 496.59 662.94 V 661.19 H 499.21 V 662.94 M 494.84 662.94 L 495.28 670.81 H 500.53 L 500.96 662.94" fill="none" stroke="#922E3D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="508.9" y="670.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#922E3D" xml:space="preserve">Clear cache</text>
+</g>
+<line x1="232" y1="700.5" x2="592" y2="700.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="232" y="726" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">When a download finishes</text>
+<g id="a4-checkbox-fix-tags-with-musicbrainz-first" inkscape:label="Checkbox · Fix tags with MusicBrainz first">
+<rect x="232" y="744" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 236.06 752.44 L 238.69 755.06 L 243.94 748.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="254" y="756.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Fix tags with MusicBrainz first</text>
+</g>
+<g id="a4-checkbox-re-scan-the-library" inkscape:label="Checkbox · Re-scan the library">
+<rect x="232" y="772" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 236.06 780.44 L 238.69 783.06 L 243.94 776.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="254" y="784.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Re-scan the library</text>
+</g>
+<g id="a4-checkbox-find-cd-art-automatically" inkscape:label="Checkbox · Find CD art automatically">
+<rect x="232.5" y="800.5" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#B1AACC" stroke-width="1"/>
+<text x="254" y="812.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Find CD art automatically</text>
+</g>
+</g>
+<g id="a4-card-search-tests" inkscape:label="Card · Search &amp; tests">
+<rect x="624.5" y="132.5" width="391" height="419" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="640" y="160" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Search &amp; tests</text>
+<text x="640" y="182" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Quick-test count</text>
+<text x="640" y="199" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Uploads tested after each search</text>
+<g id="a4-stepper-3" inkscape:label="Stepper · 3">
+<rect x="896.5" y="170.5" width="103" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 907.5 185 H 916.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="948" y="190" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">3</text>
+<path d="M 984 180.5 V 189.5 M 979.5 185 H 988.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="928.5" y1="171" x2="928.5" y2="199" stroke="#CFC9DA" stroke-width="1"/>
+<line x1="968.5" y1="171" x2="968.5" y2="199" stroke="#CFC9DA" stroke-width="1"/>
+</g>
+<line x1="640" y1="214.5" x2="1000" y2="214.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="640" y="240" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Search options</text>
+<g id="a4-checkbox-show-near-misses-in-search-notes" inkscape:label="Checkbox · Show near misses in search notes">
+<rect x="640" y="258" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 644.06 266.44 L 646.69 269.06 L 651.94 262.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="662" y="270.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Show near misses in search notes</text>
+</g>
+<g id="a4-checkbox-report-other-lossless-formats-alac-ape" inkscape:label="Checkbox · Report other lossless formats (ALAC, APE)">
+<rect x="640" y="286" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 644.06 294.44 L 646.69 297.06 L 651.94 290.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="662" y="298.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Report other lossless formats (ALAC, APE)</text>
+</g>
+<g id="a4-checkbox-include-uploads-without-a-year" inkscape:label="Checkbox · Include uploads without a year">
+<rect x="640.5" y="314.5" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#B1AACC" stroke-width="1"/>
+<text x="662" y="326.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Include uploads without a year</text>
+</g>
+<g id="a4-dropdown-default-sort" inkscape:label="Dropdown · Default sort">
+<rect x="856.5" y="228.5" width="143" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="866" y="247.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" fill="#7B7782" xml:space="preserve">Sort</text>
+<path d="M 979.94 241.69 L 983 244.75 L 986.06 241.69" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="895.77" y="247.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">Quality</text>
+</g>
+<line x1="640" y1="344.5" x2="1000" y2="344.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="640" y="370" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Auto MusicBrainz</text>
+<text x="640" y="387" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Apply the best match above 95</text>
+<g id="a4-toggle" inkscape:label="Toggle · ">
+<rect x="968" y="360" width="32" height="18" rx="9" fill="#5C53A2"/>
+<circle cx="991" cy="369" r="7" fill="#FFFFFF"/>
+</g>
+<line x1="640" y1="404.5" x2="1000" y2="404.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="640" y="430" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Deep test</text>
+<text x="640" y="447" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Spectrum cutoff thresholds</text>
+<g id="a4-field-suspect-threshold" inkscape:label="Field · Suspect threshold">
+<rect x="856.5" y="420.5" width="143" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="866" y="439.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" fill="#7B7782" xml:space="preserve">Suspect &lt;</text>
+<text x="926.97" y="439.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">19.5 kHz</text>
+</g>
+<g id="a4-field-lossy-threshold" inkscape:label="Field · Lossy threshold">
+<rect x="856.5" y="458.5" width="143" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="866" y="477.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" fill="#7B7782" xml:space="preserve">Lossy &lt;</text>
+<text x="916.73" y="477.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">17 kHz</text>
+</g>
+<text x="640" y="512" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Uploads above 20 kHz are marked PASS.</text>
+</g>
+<g id="a4-card-tools" inkscape:label="Card · Tools">
+<rect x="624.5" y="564.5" width="391" height="287" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="640" y="592" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Tools</text>
+<g id="a4-button-check-again" inkscape:label="Button · Check again">
+<rect x="884.85" y="572.5" width="114.65" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 907.72 586 A 4.38 4.38 0 1 1 906.24 582.67 M 907.72 581.19 V 583.55 H 905.36" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="914.35" y="590.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Check again</text>
+</g>
+<g id="a4-tool-flac" inkscape:label="Tool · flac">
+<circle cx="649" cy="627" r="9" fill="#E2F4EC"/>
+<path d="M 644.5 627.5 L 647.5 630.5 L 653.5 623.5" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="668" y="627" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">flac</text>
+<text x="668" y="644" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">decoding and tag writing</text>
+<g id="a4-chip-1-4-3-found" inkscape:label="Chip · 1.4.3 · found">
+<rect x="914.76" y="616" width="85.24" height="20" rx="10" fill="#E2F4EC"/>
+<text x="922.76" y="629.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">1.4.3 · found</text>
+</g>
+<line x1="640" y1="658.5" x2="1000" y2="658.5" stroke="#E9E4EB" stroke-width="1"/>
+</g>
+<g id="a4-tool-ffmpeg" inkscape:label="Tool · ffmpeg">
+<circle cx="649" cy="683" r="9" fill="#E2F4EC"/>
+<path d="M 644.5 683.5 L 647.5 686.5 L 653.5 679.5" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="668" y="683" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">ffmpeg</text>
+<text x="668" y="700" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">MP3/WAV, spectrum</text>
+<g id="a4-chip-7-1-found" inkscape:label="Chip · 7.1 · found">
+<rect x="924.86" y="672" width="75.14" height="20" rx="10" fill="#E2F4EC"/>
+<text x="932.86" y="685.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">7.1 · found</text>
+</g>
+<line x1="640" y1="714.5" x2="1000" y2="714.5" stroke="#E9E4EB" stroke-width="1"/>
+</g>
+<g id="a4-tool-metaflac" inkscape:label="Tool · metaflac">
+<circle cx="649" cy="739" r="9" fill="#E2F4EC"/>
+<path d="M 644.5 739.5 L 647.5 742.5 L 653.5 735.5" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="668" y="739" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">metaflac</text>
+<text x="668" y="756" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">tags and pictures</text>
+<g id="a4-chip-1-4-3-found-2" inkscape:label="Chip · 1.4.3 · found">
+<rect x="914.76" y="728" width="85.24" height="20" rx="10" fill="#E2F4EC"/>
+<text x="922.76" y="741.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">1.4.3 · found</text>
+</g>
+<line x1="640" y1="770.5" x2="1000" y2="770.5" stroke="#E9E4EB" stroke-width="1"/>
+</g>
+<g id="a4-tool-ghostscript" inkscape:label="Tool · Ghostscript">
+<circle cx="649" cy="795" r="9" fill="#FDF1D8"/>
+<path d="M 649 789.34 L 654.81 799.38 H 643.19 Z M 649 793.09 V 795.72 M 649 797.59 V 797.69" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="668" y="795" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Ghostscript</text>
+<text x="668" y="812" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">optional · PDF preview</text>
+<g id="a4-chip-not-installed" inkscape:label="Chip · not installed">
+<rect x="916.12" y="784" width="83.88" height="20" rx="10" fill="#FDF1D8"/>
+<text x="924.12" y="797.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">not installed</text>
+</g>
+</g>
+</g>
+<g id="a4-card-cd-art-print" inkscape:label="Card · CD art &amp; print">
+<rect x="1032.5" y="132.5" width="391" height="719" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1048" y="160" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">CD art &amp; print</text>
+<text x="1048" y="178" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">ART OPTIONS</text>
+<text x="1048" y="206" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Minimum resolution</text>
+<text x="1048" y="223" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Warn below this</text>
+<g id="a4-dropdown-min-dpi" inkscape:label="Dropdown · Min dpi">
+<rect x="1288.5" y="194.5" width="119" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1387.94 207.69 L 1391 210.75 L 1394.06 207.69" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1298" y="213.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">200 dpi</text>
+</g>
+<text x="1048" y="254" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Search other pressings</text>
+<g id="a4-toggle-2" inkscape:label="Toggle · ">
+<rect x="1376" y="242" width="32" height="18" rx="9" fill="#5C53A2"/>
+<circle cx="1399" cy="251" r="7" fill="#FFFFFF"/>
+</g>
+<text x="1048" y="290" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Allow generated pieces</text>
+<text x="1048" y="307" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">e.g. spines from the front cover</text>
+<g id="a4-toggle-3" inkscape:label="Toggle · ">
+<rect x="1376" y="280" width="32" height="18" rx="9" fill="#5C53A2"/>
+<circle cx="1399" cy="289" r="7" fill="#FFFFFF"/>
+</g>
+<line x1="1048" y1="324.5" x2="1408" y2="324.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="1048" y="350" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">CD PRINT</text>
+<text x="1048" y="382" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Paper</text>
+<g id="a4-paper-a4" inkscape:label="Paper · A4">
+<rect x="1262" y="366" width="146" height="30" rx="9" fill="#EDEAEF"/>
+<rect x="1265.5" y="369.5" width="59" height="23" rx="7" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1295" y="385.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">A4</text>
+<text x="1365" y="385.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Letter</text>
+</g>
+<text x="1048" y="426" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Bleed</text>
+<g id="a4-dropdown-bleed" inkscape:label="Dropdown · Bleed">
+<rect x="1288.5" y="410.5" width="119" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1387.94 423.69 L 1391 426.75 L 1394.06 423.69" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1298" y="429.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">3 mm</text>
+</g>
+<text x="1048" y="470" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Disc hole</text>
+<text x="1048" y="487" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#7B7782" xml:space="preserve">Cut line for the centre hole</text>
+<g id="a4-disc-hole-15-mm" inkscape:label="Disc hole · 15 mm">
+<rect x="1212" y="456" width="196" height="30" rx="9" fill="#EDEAEF"/>
+<rect x="1215.5" y="459.5" width="63" height="23" rx="7" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1247" y="475.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">15 mm</text>
+<text x="1311" y="475.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">41 mm</text>
+<text x="1374" y="475.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">None</text>
+</g>
+<text x="1048" y="518" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Crop marks</text>
+<g id="a4-toggle-4" inkscape:label="Toggle · ">
+<rect x="1376" y="506" width="32" height="18" rx="9" fill="#5C53A2"/>
+<circle cx="1399" cy="515" r="7" fill="#FFFFFF"/>
+</g>
+<line x1="1048" y1="544.5" x2="1408" y2="544.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="1048" y="570" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Output folder</text>
+<g id="a4-field-output-folder" inkscape:label="Field · Output folder">
+<rect x="1048.5" y="582.5" width="359" height="33" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1059.88 595.72 A 0.94 0.94 0 0 1 1060.81 594.78 H 1064.09 L 1065.5 596.19 H 1070.19 A 0.94 0.94 0 0 1 1071.12 597.12 V 602.75 A 0.94 0.94 0 0 1 1070.19 603.69 H 1060.81 A 0.94 0.94 0 0 1 1059.88 602.75 Z" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1080" y="603.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#0F0D1A" xml:space="preserve">D:\Music\_CD prints</text>
+</g>
+<g id="a4-checkbox-also-copy-the-pdf-into-the-album-folder" inkscape:label="Checkbox · Also copy the PDF into the album folder">
+<rect x="1048" y="630" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 1052.06 638.44 L 1054.69 641.06 L 1059.94 634.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1070" y="642.5" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F0D1A" xml:space="preserve">Also copy the PDF into the album folder</text>
+</g>
+<g id="a4-print-size-note" inkscape:label="Print size note">
+<rect x="1048.5" y="668.5" width="359" height="71" rx="10" fill="#F7F6F8" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1073.12 687.5 A 5.62 5.62 0 1 1 1061.88 687.5 A 5.62 5.62 0 1 1 1073.12 687.5 Z M 1067.5 687.03 V 690.31 M 1067.5 684.69 V 684.78" fill="none" stroke="#5C53A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1082" y="692" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Print at 100 % (actual size).</text>
+<text x="1082" y="710" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#2C284E" xml:space="preserve">Front 120 × 120 mm · tray card 151 × 118 mm</text>
+<text x="1082" y="726" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#2C284E" xml:space="preserve">Disc label Ø 117 mm</text>
+</g>
+<g id="a4-button-print-a-test-page" inkscape:label="Button · Print a test page">
+<rect x="1048.5" y="800.5" width="151.49" height="33" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1064.22 815.12 V 811.84 H 1070.78 V 815.12 M 1064.22 820.28 H 1062.34 V 815.12 H 1072.66 V 820.28 H 1070.78 M 1064.22 818.41 H 1070.78 V 822.16 H 1064.22 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1079" y="821.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Print a test page</text>
+</g>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="a4-layer-activity-strip" inkscape:label="Activity strip">
+<g id="a4-activity-strip" inkscape:label="Activity strip">
+<rect x="200" y="868" width="1240" height="32" fill="#FFFFFF"/>
+<line x1="200" y1="868.5" x2="1440" y2="868.5" stroke="#CFC9DA" stroke-width="1"/>
+<text x="216" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">ACTIVITY</text>
+<g id="a4-job-idle" inkscape:label="Job · Idle">
+<circle cx="299" cy="884" r="7" fill="#E2F4EC"/>
+<path d="M 295.62 884.38 L 297.88 886.62 L 302.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="312" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#0F0D1A" xml:space="preserve">Idle</text>
+<line x1="355.31" y1="878" x2="355.31" y2="890" stroke="#CFC9DA" stroke-width="1"/>
+</g>
+<g id="a4-tool-status" inkscape:label="Tool status">
+<circle cx="1313" cy="884" r="7" fill="#E2F4EC"/>
+<path d="M 1309.62 884.38 L 1311.88 886.62 L 1316.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1326" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">flac</text>
+<circle cx="1373" cy="884" r="7" fill="#E2F4EC"/>
+<path d="M 1369.62 884.38 L 1371.88 886.62 L 1376.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1386" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">ffmpeg</text>
+</g>
+</g>
+</g>
+</svg>

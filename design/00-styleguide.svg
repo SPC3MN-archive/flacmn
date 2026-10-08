@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" width="1440" height="900" viewBox="0 0 1440 900" version="1.1">
+<title>iaflac · Cover · Style guide</title>
+<sodipodi:namedview id="00-namedview" pagecolor="#ffffff" bordercolor="#666666" inkscape:document-units="px" inkscape:pagecheckerboard="false"><inkscape:page x="0" y="0" width="1440" height="900" id="00-page" inkscape:label="Cover · Style guide"/></sodipodi:namedview>
+<defs></defs>
+<g inkscape:groupmode="layer" id="00-layer-background" inkscape:label="Background">
+<rect id="00-page-background" inkscape:label="Page background" x="0" y="0" width="1440" height="900" fill="#DFD9E2"/>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-header" inkscape:label="Header">
+<path d="M 64.5 50 A 10.5 10.5 0 1 1 43.5 50 A 10.5 10.5 0 1 1 64.5 50 Z M 57.5 50 A 3.5 3.5 0 1 1 50.5 50 A 3.5 3.5 0 1 1 57.5 50 Z" fill="none" stroke="#5C53A2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80" y="60" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="800" fill="#0F0D1A" xml:space="preserve">iaflac</text>
+<text x="180" y="60" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#2C284E" xml:space="preserve">UI kit · palette, type, components and three layout options</text>
+<text x="1400" y="60" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" text-anchor="end" xml:space="preserve">Mockups v1 · 1440 × 900 · Inkscape layers</text>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-palette" inkscape:label="Palette">
+<g id="00-card-palette" inkscape:label="Card · Palette">
+<rect x="40.5" y="88.5" width="663" height="259" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="56" y="116" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Palette</text>
+<g id="00-swatch-dfd9e2" inkscape:label="Swatch · #DFD9E2">
+<rect x="56.5" y="128.5" width="115" height="67" rx="10" fill="#DFD9E2" stroke="#CFC9DA" stroke-width="1"/>
+<text x="56" y="216" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#0F0D1A" xml:space="preserve">#DFD9E2</text>
+<text x="56" y="232" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">Background · surfaces</text>
+<text x="56" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">borders</text>
+</g>
+<g id="00-swatch-5c53a2" inkscape:label="Swatch · #5C53A2">
+<rect x="184" y="128" width="116" height="68" rx="10" fill="#5C53A2"/>
+<text x="184" y="216" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#0F0D1A" xml:space="preserve">#5C53A2</text>
+<text x="184" y="232" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">Primary · nav</text>
+<text x="184" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">focus</text>
+</g>
+<g id="00-swatch-20a76b" inkscape:label="Swatch · #20A76B">
+<rect x="312" y="128" width="116" height="68" rx="10" fill="#20A76B"/>
+<text x="312" y="216" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#0F0D1A" xml:space="preserve">#20A76B</text>
+<text x="312" y="232" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">Lossless · PASS</text>
+<text x="312" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">done</text>
+</g>
+<g id="00-swatch-f4b73e" inkscape:label="Swatch · #F4B73E">
+<rect x="440" y="128" width="116" height="68" rx="10" fill="#F4B73E"/>
+<text x="440" y="216" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#0F0D1A" xml:space="preserve">#F4B73E</text>
+<text x="440" y="232" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">Warning · hi-res</text>
+<text x="440" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">busy</text>
+</g>
+<g id="00-swatch-bc3843" inkscape:label="Swatch · #BC3843">
+<rect x="568" y="128" width="116" height="68" rx="10" fill="#BC3843"/>
+<text x="568" y="216" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#0F0D1A" xml:space="preserve">#BC3843</text>
+<text x="568" y="232" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">Lossy · failed</text>
+<text x="568" y="246" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2C284E" xml:space="preserve">destructive</text>
+</g>
+<text x="56" y="274" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">TINTS &amp; NEUTRALS</text>
+<rect x="56.5" y="284.5" width="21" height="21" rx="6" fill="#000000" stroke="#CFC9DA" stroke-width="1"/>
+<text x="86" y="294" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Max contrast</text>
+<text x="86" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#000000</text>
+<rect x="184.5" y="284.5" width="21" height="21" rx="6" fill="#0F0D1A" stroke="#CFC9DA" stroke-width="1"/>
+<text x="214" y="294" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Text</text>
+<text x="214" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#0F0D1A</text>
+<rect x="312.5" y="284.5" width="21" height="21" rx="6" fill="#2C284E" stroke="#CFC9DA" stroke-width="1"/>
+<text x="342" y="294" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Text 2</text>
+<text x="342" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#2C284E</text>
+<rect x="440.5" y="284.5" width="21" height="21" rx="6" fill="#7B7782" stroke="#CFC9DA" stroke-width="1"/>
+<text x="470" y="294" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Muted</text>
+<text x="470" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#7B7782</text>
+<rect x="568.5" y="284.5" width="21" height="21" rx="6" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="598" y="294" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Cards</text>
+<text x="598" y="305" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#FFFFFF</text>
+<rect x="56.5" y="314.5" width="21" height="21" rx="6" fill="#F0F0F7" stroke="#CFC9DA" stroke-width="1"/>
+<text x="86" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Selection</text>
+<text x="86" y="335" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#F0F0F7</text>
+<rect x="184.5" y="314.5" width="21" height="21" rx="6" fill="#E2F4EC" stroke="#CFC9DA" stroke-width="1"/>
+<text x="214" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Good tint</text>
+<text x="214" y="335" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#E2F4EC</text>
+<rect x="312.5" y="314.5" width="21" height="21" rx="6" fill="#FDF1D8" stroke="#CFC9DA" stroke-width="1"/>
+<text x="342" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Warn tint</text>
+<text x="342" y="335" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#FDF1D8</text>
+<rect x="440.5" y="314.5" width="21" height="21" rx="6" fill="#F8EBEC" stroke="#CFC9DA" stroke-width="1"/>
+<text x="470" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Bad tint</text>
+<text x="470" y="335" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#F8EBEC</text>
+<rect x="568.5" y="314.5" width="21" height="21" rx="6" fill="#252047" stroke="#CFC9DA" stroke-width="1"/>
+<text x="598" y="324" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Sidebar</text>
+<text x="598" y="335" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#7B7782" xml:space="preserve">#252047</text>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-type-scale" inkscape:label="Type scale">
+<g id="00-card-type-scale" inkscape:label="Card · Type scale">
+<rect x="720.5" y="88.5" width="679" height="259" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="736" y="116" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Type scale</text>
+<text x="829.16" y="116" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">Inter → Segoe UI → Helvetica Neue → Arial</text>
+<text x="736" y="160" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="700" fill="#0F0D1A" xml:space="preserve">Display 28 · Kind of Blue</text>
+<text x="736" y="201" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#0F0D1A" xml:space="preserve">Title 20 · Check the upload</text>
+<text x="736" y="234" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Heading 15 · Quick test</text>
+<text x="736" y="262" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#0F0D1A" xml:space="preserve">Body 13 · Reads file headers and the rip log.</text>
+<text x="736" y="288" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">Small 12 · archive.org/details/miles-davis-kind-of-blue-1959</text>
+<text x="736" y="313" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">CAPTION 10.5 · MUSICBRAINZ MATCHES</text>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-components" inkscape:label="Components">
+<g id="00-card-components" inkscape:label="Card · Components">
+<rect x="40.5" y="364.5" width="1359" height="291" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="56" y="392" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Components</text>
+<text x="56" y="410" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">BUTTONS</text>
+<g id="00-button-search" inkscape:label="Button · Search">
+<rect x="56" y="422" width="69.14" height="32" rx="8" fill="#5C53A2"/>
+<text x="68" y="442.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Search</text>
+</g>
+<g id="00-button-run-again" inkscape:label="Button · Run again">
+<rect x="133.64" y="422.5" width="106.36" height="31" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 157.32 438 A 4.69 4.69 0 1 1 155.73 434.44 M 157.32 432.84 V 435.38 H 154.79" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="164.14" y="442.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Run again</text>
+</g>
+<g id="00-button-cancel" inkscape:label="Button · Cancel">
+<rect x="248.49" y="422" width="67.97" height="32" rx="8" fill="#BC3843"/>
+<text x="260.49" y="442.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Cancel</text>
+</g>
+<g id="00-button-deep-test-380-mb" inkscape:label="Button · Deep test · 380 MB">
+<rect x="56" y="464" width="170.69" height="32" rx="8" fill="#5C53A2"/>
+<path d="M 70.34 485.16 V 480.94 M 73.16 485.16 V 477.19 M 75.97 485.16 V 475.31 M 78.78 485.16 V 479.06 M 81.12 485.16 V 482.34" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="87" y="484.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Deep test · 380 MB</text>
+</g>
+<g id="00-button-clear-cache" inkscape:label="Button · Clear cache">
+<rect x="235.19" y="464.5" width="119.02" height="31" rx="8" fill="#FFFFFF" stroke="#E1A5AA" stroke-width="1"/>
+<path d="M 249.5 476.72 H 258.88 M 252.78 476.72 V 474.84 H 255.6 V 476.72 M 250.91 476.72 L 251.38 485.16 H 257 L 257.47 476.72" fill="none" stroke="#922E3D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="265.69" y="484.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#922E3D" xml:space="preserve">Clear cache</text>
+</g>
+<g id="00-button-see-evidence" inkscape:label="Button · See evidence">
+<text x="252" y="528.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#5C53A2" xml:space="preserve">See evidence</text>
+<path d="M 348.79 521.16 L 351.63 524 L 348.79 526.84" fill="none" stroke="#5C53A2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="00-button-play-pause" inkscape:label="Button · Play/pause">
+<circle cx="72" cy="524" r="16" fill="#5C53A2"/>
+<path d="M 70.36 519.6 L 77.4 524 L 70.36 528.4 Z" fill="#FFFFFF"/>
+</g>
+<g id="00-button-play-pause-2" inkscape:label="Button · Play/pause">
+<circle cx="112" cy="524" r="16" fill="#5C53A2"/>
+<path d="M 108.92 519.6 H 111.12 V 528.4 H 108.92 Z M 112.88 519.6 H 115.08 V 528.4 H 112.88 Z" fill="#FFFFFF"/>
+</g>
+<g id="00-icon-button-x" inkscape:label="Icon button · x">
+<rect x="136.5" y="510.5" width="27" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 146.63 520.63 L 153.37 527.37 M 153.37 520.63 L 146.63 527.37" fill="none" stroke="#2C284E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="00-icon-button-folder" inkscape:label="Icon button · folder">
+<rect x="170.5" y="510.5" width="27" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 178.23 520.63 A 0.96 0.96 0 0 1 179.19 519.67 H 182.56 L 184 521.11 H 188.81 A 0.96 0.96 0 0 1 189.78 522.07 V 527.85 A 0.96 0.96 0 0 1 188.81 528.81 H 179.19 A 0.96 0.96 0 0 1 178.23 527.85 Z" fill="none" stroke="#2C284E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="00-icon-button-refresh" inkscape:label="Icon button · refresh">
+<rect x="204.5" y="510.5" width="27" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 222.81 524 A 4.81 4.81 0 1 1 221.18 520.34 M 222.81 518.71 V 521.3 H 220.21" fill="none" stroke="#2C284E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text x="56" y="568" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">ICONS</text>
+<path d="M 67.5 587 A 4.5 4.5 0 1 1 58.5 587 A 4.5 4.5 0 1 1 67.5 587 Z M 66.4 590.4 L 70 594" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 96 588 A 6 6 0 1 1 84 588 A 6 6 0 1 1 96 588 Z M 92 588 A 2 2 0 1 1 88 588 A 2 2 0 1 1 92 588 Z" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 111 582.5 V 593.5 M 114.5 582.5 V 593.5 M 117.5 583.2 L 121 592.8" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 136 584.5 H 138 M 141.2 584.5 H 148 M 136 591.5 H 142.8 M 146 591.5 H 148 M 141.2 584.5 A 1.6 1.6 0 1 1 138 584.5 A 1.6 1.6 0 1 1 141.2 584.5 Z M 146 591.5 A 1.6 1.6 0 1 1 142.8 591.5 A 1.6 1.6 0 1 1 146 591.5 Z" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 162 584.5 A 1 1 0 0 1 163 583.5 H 166.5 L 168 585 H 173 A 1 1 0 0 1 174 586 V 592 A 1 1 0 0 1 173 593 H 163 A 1 1 0 0 1 162 592 Z" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 194 582.5 V 590.5 M 190.8 587.5 L 194 590.7 L 197.2 587.5 M 189 593.5 H 199" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 220 582.5 L 226 585.5 L 220 588.5 L 214 585.5 Z M 214 588.5 L 220 591.5 L 226 588.5 M 214 591.2 L 220 594.2 L 226 591.2" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 242.5 586 V 582.5 H 249.5 V 586 M 242.5 591.5 H 240.5 V 586 H 251.5 V 591.5 H 249.5 M 242.5 589.5 H 249.5 V 593.5 H 242.5 Z" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 266.5 583.5 H 277.5 V 592.5 H 266.5 Z M 266.5 590.5 L 270 587 L 273 590 L 275 588 L 277.5 590.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 292.5 593.5 V 589 M 295.5 593.5 V 585 M 298.5 593.5 V 583 M 301.5 593.5 V 587 M 304 593.5 V 590.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 317.5 588 H 319.5 L 321 584 L 323 592 L 325 583 L 327 593 L 328.5 588 H 330.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 350 582.5 L 356.2 593.2 H 343.8 Z M 350 586.5 V 589.3 M 350 591.3 V 591.4" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="400" y="410" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">QUALITY CLASSES</text>
+<g id="00-quality-badge-lossless-cd-rip" inkscape:label="Quality badge · Lossless · CD rip">
+<rect x="400" y="422" width="126.97" height="20" rx="6" fill="#20A76B"/>
+<path d="M 418.38 432 A 4.88 4.88 0 1 1 408.62 432 A 4.88 4.88 0 1 1 418.38 432 Z M 415.12 432 A 1.62 1.62 0 1 1 411.88 432 A 1.62 1.62 0 1 1 415.12 432 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="423" y="435.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF" xml:space="preserve">Lossless · CD rip</text>
+</g>
+<g id="00-quality-badge-lossless-hi-res" inkscape:label="Quality badge · Lossless · hi-res">
+<rect x="550" y="422" width="119.26" height="20" rx="6" fill="#E2F4EC"/>
+<circle cx="561" cy="432" r="3" fill="#F4B73E"/>
+<text x="568" y="435.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">Lossless · hi-res</text>
+</g>
+<g id="00-quality-badge-lossless" inkscape:label="Quality badge · Lossless">
+<rect x="400" y="452" width="76.27" height="20" rx="6" fill="#E2F4EC"/>
+<circle cx="411" cy="462" r="3" fill="#20A76B"/>
+<text x="418" y="465.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">Lossless</text>
+</g>
+<g id="00-quality-badge-lossy-high-bitrate" inkscape:label="Quality badge · Lossy · high bitrate">
+<rect x="550.5" y="452.5" width="133.17" height="19" rx="6" fill="#FFFFFF" stroke="#E1A5AA" stroke-width="1"/>
+<circle cx="561" cy="462" r="3" fill="#BC3843"/>
+<text x="568" y="465.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#922E3D" xml:space="preserve">Lossy · high bitrate</text>
+</g>
+<g id="00-quality-badge-lossy" inkscape:label="Quality badge · Lossy">
+<rect x="400" y="482" width="60" height="20" rx="6" fill="#F8EBEC"/>
+<circle cx="411" cy="492" r="3" fill="#BC3843"/>
+<text x="418" y="495.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#922E3D" xml:space="preserve">Lossy</text>
+</g>
+<g id="00-quality-badge-failed" inkscape:label="Quality badge · Failed">
+<rect x="550" y="482" width="64.88" height="20" rx="6" fill="#BC3843"/>
+<path d="M 560.66 489.16 L 566.34 494.84 M 566.34 489.16 L 560.66 494.84" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="573" y="495.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#FFFFFF" xml:space="preserve">Failed</text>
+</g>
+<text x="400" y="528" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">TIERS</text>
+<g id="00-tier-chip-a" inkscape:label="Tier chip · A">
+<rect x="400" y="538" width="20" height="20" rx="5" fill="#20A76B"/>
+<text x="410" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle" xml:space="preserve">A</text>
+</g>
+<g id="00-tier-chip-b" inkscape:label="Tier chip · B">
+<rect x="428.5" y="538.5" width="19" height="19" rx="5" fill="#E2F4EC" stroke="#A6DCC4" stroke-width="1"/>
+<text x="438" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#1A634E" text-anchor="middle" xml:space="preserve">B</text>
+</g>
+<g id="00-tier-chip-c" inkscape:label="Tier chip · C">
+<rect x="456.5" y="538.5" width="19" height="19" rx="5" fill="#FDF1D8" stroke="#F8D48B" stroke-width="1"/>
+<text x="466" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#6D5332" text-anchor="middle" xml:space="preserve">C</text>
+</g>
+<g id="00-tier-chip-l" inkscape:label="Tier chip · L">
+<rect x="484.5" y="538.5" width="19" height="19" rx="5" fill="#F8EBEC" stroke="#E1A5AA" stroke-width="1"/>
+<text x="494" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#922E3D" text-anchor="middle" xml:space="preserve">L</text>
+</g>
+<g id="00-tier-chip-d" inkscape:label="Tier chip · D">
+<rect x="512" y="538" width="20" height="20" rx="5" fill="#BC3843"/>
+<text x="522" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle" xml:space="preserve">D</text>
+</g>
+<g id="00-tier-chip" inkscape:label="Tier chip · ?">
+<rect x="540.5" y="538.5" width="19" height="19" rx="5" fill="#EDEAEF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="550" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#2C284E" text-anchor="middle" xml:space="preserve">?</text>
+</g>
+<text x="400" y="588" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">TESTED LEVEL</text>
+<g id="00-tested-level-v0" inkscape:label="Tested level · V0">
+<rect x="400.5" y="598.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="406" y="610.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V0</text>
+</g>
+<g id="00-tested-level-v1" inkscape:label="Tested level · V1">
+<rect x="432.5" y="598.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="438" y="610.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V1</text>
+</g>
+<g id="00-tested-level-v2" inkscape:label="Tested level · V2">
+<rect x="464.5" y="598.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="470" y="610.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V2</text>
+</g>
+<g id="00-tested-level-v3" inkscape:label="Tested level · V3">
+<rect x="496.5" y="598.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="502" y="610.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V3</text>
+</g>
+<text x="532" y="611" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7B7782" xml:space="preserve">untested · headers · quick · deep</text>
+<text x="720" y="410" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">VERDICTS</text>
+<g id="00-verdict-chip-pass-21-8-khz" inkscape:label="Verdict chip · PASS · 21.8 kHz">
+<rect x="720" y="422" width="128.1" height="24" rx="6" fill="#20A76B"/>
+<path d="M 729.95 434.42 L 732.48 436.95 L 737.55 431.05" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="743.5" y="438.14" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#FFFFFF" xml:space="preserve">PASS · 21.8 kHz</text>
+</g>
+<g id="00-verdict-chip-suspect-19-2-khz" inkscape:label="Verdict chip · SUSPECT · 19.2 kHz">
+<rect x="720" y="452" width="152.83" height="24" rx="6" fill="#F4B73E"/>
+<path d="M 733.75 459.36 L 738.98 468.39 H 728.52 Z M 733.75 462.73 V 465.1 M 733.75 466.78 V 466.87" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="743.5" y="468.14" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#0F0D1A" xml:space="preserve">SUSPECT · 19.2 kHz</text>
+</g>
+<g id="00-verdict-chip-likely-lossy-16-0-khz" inkscape:label="Verdict chip · LIKELY LOSSY · 16.0 kHz">
+<rect x="720" y="482" width="186.32" height="24" rx="6" fill="#BC3843"/>
+<path d="M 730.8 491.05 L 736.7 496.95 M 736.7 491.05 L 730.8 496.95" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="743.5" y="498.14" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#FFFFFF" xml:space="preserve">LIKELY LOSSY · 16.0 kHz</text>
+</g>
+<g id="00-verdict-chip-upsampled-22-0-khz" inkscape:label="Verdict chip · UPSAMPLED · 22.0 kHz">
+<rect x="720.5" y="512.5" width="170.89" height="23" rx="6" fill="#F8EBEC" stroke="#E1A5AA" stroke-width="1"/>
+<path d="M 733.75 519.36 L 738.98 528.39 H 728.52 Z M 733.75 522.73 V 525.1 M 733.75 526.78 V 526.87" fill="none" stroke="#922E3D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="743.5" y="528.14" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#922E3D" xml:space="preserve">UPSAMPLED · 22.0 kHz</text>
+</g>
+<text x="720" y="568" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">TAG SOURCE</text>
+<g id="00-source-badge-file" inkscape:label="Source badge · file">
+<rect x="720" y="578" width="24.79" height="16" rx="4" fill="#EDEAEF"/>
+<text x="725" y="589.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#2C284E" xml:space="preserve">file</text>
+</g>
+<g id="00-source-badge-ia" inkscape:label="Source badge · ia">
+<rect x="751.29" y="578.5" width="17.41" height="15" rx="4" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="755.79" y="589.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#2C284E" xml:space="preserve">ia</text>
+</g>
+<g id="00-source-badge-mb" inkscape:label="Source badge · MB">
+<rect x="775.2" y="578" width="25.75" height="16" rx="4" fill="#DBD9EB"/>
+<text x="780.2" y="589.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#4A4284" xml:space="preserve">MB</text>
+</g>
+<g id="00-source-badge-you" inkscape:label="Source badge · you">
+<rect x="806.94" y="578" width="26.92" height="16" rx="4" fill="#5C53A2"/>
+<text x="811.94" y="589.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#FFFFFF" xml:space="preserve">you</text>
+</g>
+<text x="720" y="614" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7B7782" xml:space="preserve">file · archive.org · MusicBrainz · you</text>
+<text x="960" y="410" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">INPUTS &amp; CONTROLS</text>
+<g id="00-field-focused" inkscape:label="Field · focused">
+<rect x="957.5" y="419.5" width="225" height="39" rx="11" fill="none" stroke="#DBD9EB" stroke-width="3"/>
+<rect x="960.5" y="422.5" width="219" height="33" rx="8" fill="#FFFFFF" stroke="#5C53A2" stroke-width="1"/>
+<path d="M 980.78 438.06 A 4.22 4.22 0 1 1 972.34 438.06 A 4.22 4.22 0 1 1 980.78 438.06 Z M 979.75 441.25 L 983.12 444.62" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="992" y="443.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">Artist</text>
+<text x="1031.46" y="443.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#0F0D1A" xml:space="preserve">Miles Davis</text>
+<line x1="1102.1" y1="431" x2="1102.1" y2="447" stroke="#5C53A2" stroke-width="1.5"/>
+</g>
+<g id="00-field-empty" inkscape:label="Field · empty">
+<rect x="960.5" y="464.5" width="219" height="33" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="970" y="485.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#7B7782" xml:space="preserve">Album · optional</text>
+</g>
+<g id="00-toggle-on" inkscape:label="Toggle · On">
+<rect x="1200" y="430" width="32" height="18" rx="9" fill="#5C53A2"/>
+<circle cx="1223" cy="439" r="7" fill="#FFFFFF"/>
+<text x="1240" y="443.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">On</text>
+</g>
+<g id="00-toggle-off" inkscape:label="Toggle · Off">
+<rect x="1270" y="430" width="32" height="18" rx="9" fill="#BEB8D2"/>
+<circle cx="1279" cy="439" r="7" fill="#FFFFFF"/>
+<text x="1310" y="443.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">Off</text>
+</g>
+<g id="00-checkbox-lossless-only" inkscape:label="Checkbox · Lossless only">
+<rect x="1200" y="472" width="16" height="16" rx="4" fill="#5C53A2"/>
+<path d="M 1204.06 480.44 L 1206.69 483.06 L 1211.94 476.94" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1222" y="484.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#0F0D1A" xml:space="preserve">Lossless only</text>
+</g>
+<g id="00-filter-flac-on" inkscape:label="Filter · FLAC (on)">
+<rect x="960.5" y="506.5" width="69.41" height="25" rx="13" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<path d="M 972.06 519.44 L 974.69 522.06 L 979.94 515.94" fill="none" stroke="#4A4284" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="986" y="523.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#4A4284" xml:space="preserve">FLAC</text>
+</g>
+<g id="00-filter-mp3-off" inkscape:label="Filter · MP3 (off)">
+<rect x="1032.5" y="506.5" width="46.42" height="25" rx="13" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1042" y="523.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#2C284E" xml:space="preserve">MP3</text>
+</g>
+<g id="00-segmented-quality" inkscape:label="Segmented · Quality">
+<rect x="1110" y="504" width="217.1" height="28" rx="9" fill="#EDEAEF"/>
+<rect x="1113.5" y="507.5" width="64.53" height="21" rx="7" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1145.76" y="522.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">Quality</text>
+<text x="1209.14" y="522.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Match</text>
+<text x="1281.93" y="522.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Popularity</text>
+</g>
+<text x="960" y="568" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">PROGRESS</text>
+<g id="00-progress-42" inkscape:label="Progress · 42%">
+<rect x="960" y="578" width="120" height="6" rx="3" fill="#EDEAEF"/>
+<rect x="960" y="578" width="50.4" height="6" rx="3" fill="#F4B73E"/>
+</g>
+<text x="1088" y="584" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#7B7782" xml:space="preserve">running</text>
+<g id="00-progress-100" inkscape:label="Progress · 100%">
+<rect x="960" y="596" width="120" height="6" rx="3" fill="#EDEAEF"/>
+<rect x="960" y="596" width="120" height="6" rx="3" fill="#20A76B"/>
+</g>
+<text x="1088" y="602" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#7B7782" xml:space="preserve">done</text>
+<g id="00-progress-55" inkscape:label="Progress · 55%">
+<rect x="1150" y="578" width="120" height="6" rx="3" fill="#EDEAEF"/>
+<rect x="1150" y="578" width="66" height="6" rx="3" fill="#BC3843"/>
+</g>
+<text x="1278" y="584" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#7B7782" xml:space="preserve">failed</text>
+<g id="00-progress-28" inkscape:label="Progress · 28%">
+<rect x="1150" y="596" width="120" height="6" rx="3" fill="#EDEAEF"/>
+<rect x="1150" y="596" width="33.6" height="6" rx="3" fill="#ABA3C8"/>
+</g>
+<text x="1278" y="602" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#7B7782" xml:space="preserve">paused</text>
+<g id="00-art-completeness" inkscape:label="Art completeness">
+<circle cx="964" cy="630" r="4" fill="#20A76B"/>
+<circle cx="975" cy="630" r="4" fill="#20A76B"/>
+<circle cx="986" cy="630" r="4" fill="#F4B73E"/>
+<circle cx="997" cy="630" r="3.5" fill="#FFFFFF" stroke="#B1AACC" stroke-width="1"/>
+<circle cx="1008" cy="630" r="3.5" fill="#FFFFFF" stroke="#B1AACC" stroke-width="1"/>
+</g>
+<text x="1024" y="634" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7B7782" xml:space="preserve">art: front · back · inside · tray · disc</text>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-table-row-sample" inkscape:label="Table row sample">
+<g id="00-card-result-row" inkscape:label="Card · Result row">
+<rect x="40.5" y="672.5" width="439" height="187" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="56" y="700" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Result row</text>
+<text x="147.98" y="700" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">selected + default</text>
+<g id="00-result-miles-davis-kind-of-blue-1959" inkscape:label="Result · miles-davis-kind-of-blue-1959">
+<rect x="48" y="712" width="424" height="60" rx="8" fill="#F0F0F7"/>
+<rect x="48" y="724" width="3" height="36" rx="1.5" fill="#5C53A2"/>
+<g id="00-quality-badge-lossless-cd-rip-2" inkscape:label="Quality badge · Lossless · CD rip">
+<rect x="60" y="721" width="122.11" height="19" rx="6" fill="#20A76B"/>
+<path d="M 77.94 730.5 A 4.69 4.69 0 1 1 68.56 730.5 A 4.69 4.69 0 1 1 77.94 730.5 Z M 74.81 730.5 A 1.56 1.56 0 1 1 71.69 730.5 A 1.56 1.56 0 1 1 74.81 730.5 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="82.5" y="734.28" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Lossless · CD rip</text>
+</g>
+<g id="00-tier-chip-b-2" inkscape:label="Tier chip · B">
+<rect x="188.61" y="721.5" width="18" height="18" rx="5" fill="#E2F4EC" stroke="#A6DCC4" stroke-width="1"/>
+<text x="197.61" y="734.3" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#1A634E" text-anchor="middle" xml:space="preserve">B</text>
+</g>
+<text x="214.11" y="735" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#0F0D1A" xml:space="preserve">FLAC 16/44.1</text>
+<g id="00-tested-level-v2-2" inkscape:label="Tested level · V2">
+<rect x="437.06" y="722.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="442.56" y="734.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V2</text>
+</g>
+<text x="60" y="752" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">miles-davis-kind-of-blue-1959</text>
+<g id="00-rip-file-cue" inkscape:label="Rip file · cue">
+<rect x="435.08" y="756" width="26.92" height="16" rx="4" fill="#EDEAEF"/>
+<text x="440.08" y="767.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#2C284E" xml:space="preserve">cue</text>
+</g>
+<g id="00-rip-file-log" inkscape:label="Rip file · log">
+<rect x="407.04" y="756" width="24.04" height="16" rx="4" fill="#EDEAEF"/>
+<text x="412.04" y="767.42" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#2C284E" xml:space="preserve">log</text>
+</g>
+<text x="60" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">CD rip · exact · 6 tracks · 55:22 · 380 MB · 1959</text>
+</g>
+<g id="00-result-miles-davis-sextet-kind-of-blue-lp-192" inkscape:label="Result · Miles-Davis-Sextet-Kind-of-Blue-LP-192">
+<g id="00-quality-badge-lossless-hi-res-2" inkscape:label="Quality badge · Lossless · hi-res">
+<rect x="60" y="785" width="115.02" height="19" rx="6" fill="#E2F4EC"/>
+<circle cx="71" cy="794.5" r="3" fill="#F4B73E"/>
+<text x="78" y="798.28" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#1A634E" xml:space="preserve">Lossless · hi-res</text>
+</g>
+<g id="00-tier-chip-c-2" inkscape:label="Tier chip · C">
+<rect x="181.52" y="785.5" width="18" height="18" rx="5" fill="#FDF1D8" stroke="#F8D48B" stroke-width="1"/>
+<text x="190.52" y="798.3" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#6D5332" text-anchor="middle" xml:space="preserve">C</text>
+</g>
+<text x="207.02" y="799" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#0F0D1A" xml:space="preserve">FLAC 24/192</text>
+<g id="00-tested-level-v1-2" inkscape:label="Tested level · V1">
+<rect x="437.06" y="786.5" width="24.44" height="17" rx="5" fill="#F0F0F7" stroke="#DBD9EB" stroke-width="1"/>
+<text x="442.56" y="798.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#4A4284" xml:space="preserve">V1</text>
+</g>
+<text x="60" y="816" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Miles-Davis-Sextet-Kind-of-Blue-LP-192</text>
+<text x="60" y="831" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">vinyl rip · close · 6 tracks · 55:40 · 1.6 GB · 1959</text>
+</g>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="00-layer-options" inkscape:label="Options">
+<g id="00-option-card-a-workspace" inkscape:label="Option card · A Workspace">
+<rect x="496.5" y="672.5" width="295" height="187" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="512" y="688" width="28" height="28" rx="8" fill="#5C53A2"/>
+<text x="526" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF" text-anchor="middle" xml:space="preserve">A</text>
+<text x="550" y="708" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#0F0D1A" xml:space="preserve">Workspace</text>
+<text x="512" y="738" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Sidebar + three panes: results · album detail</text>
+<text x="512" y="755" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">with Quick / Deep test · metadata &amp; save.</text>
+<text x="512" y="772" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Queue is a bottom drawer.</text>
+<circle cx="519" cy="825" r="7" fill="#E2F4EC"/>
+<path d="M 515.62 825.38 L 517.88 827.62 L 522.38 822.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="532" y="829" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Fast for power users; everything visible.</text>
+<circle cx="519" cy="845" r="7" fill="#FDF1D8"/>
+<path d="M 519 840.72 L 523.26 848.08 H 514.74 Z M 519 843.47 V 845.39 M 519 846.77 V 846.84" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="532" y="849" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Dense; small waveform.</text>
+</g>
+<g id="00-option-card-b-guided-steps" inkscape:label="Option card · B Guided steps">
+<rect x="800.5" y="672.5" width="295" height="187" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="816" y="688" width="28" height="28" rx="8" fill="#5C53A2"/>
+<text x="830" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF" text-anchor="middle" xml:space="preserve">B</text>
+<text x="854" y="708" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#0F0D1A" xml:space="preserve">Guided steps</text>
+<text x="816" y="738" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">One focused card per step with Back / Next.</text>
+<text x="816" y="755" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Find → Check → Tag → Save; Pick album →</text>
+<text x="816" y="772" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Choose scans → Print.</text>
+<circle cx="823" cy="825" r="7" fill="#E2F4EC"/>
+<path d="M 819.62 825.38 L 821.88 827.62 L 826.38 822.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="836" y="829" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Calm, hard to get wrong.</text>
+<circle cx="823" cy="845" r="7" fill="#FDF1D8"/>
+<path d="M 823 840.72 L 827.26 848.08 H 818.74 Z M 823 843.47 V 845.39 M 823 846.77 V 846.84" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="836" y="849" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">More clicks to compare uploads.</text>
+</g>
+<g id="00-option-card-c-library-first" inkscape:label="Option card · C Library first">
+<rect x="1104.5" y="672.5" width="295" height="187" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="1120" y="688" width="28" height="28" rx="8" fill="#5C53A2"/>
+<text x="1134" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF" text-anchor="middle" xml:space="preserve">C</text>
+<text x="1158" y="708" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#0F0D1A" xml:space="preserve">Library first</text>
+<text x="1120" y="738" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Home is the cover grid. Ctrl K searches</text>
+<text x="1120" y="755" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">archive.org in a slide-over; albums open a</text>
+<text x="1120" y="772" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">sheet: Tracks · Upgrade · CD Art.</text>
+<circle cx="1127" cy="825" r="7" fill="#E2F4EC"/>
+<path d="M 1123.62 825.38 L 1125.88 827.62 L 1130.38 822.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1140" y="829" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Feels like a music app.</text>
+<circle cx="1127" cy="845" r="7" fill="#FDF1D8"/>
+<path d="M 1127 840.72 L 1131.26 848.08 H 1122.74 Z M 1127 843.47 V 845.39 M 1127 846.77 V 846.84" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1140" y="849" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Search is secondary.</text>
+</g>
+</g>
+</svg>

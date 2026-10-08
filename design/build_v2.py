@@ -75,6 +75,7 @@ def frame(d, title, active):
 # --------------------------------------------------------------------------
 # 3D spectrogram (waterfall): time slices recede into the page, height = loudness
 # --------------------------------------------------------------------------
+FREQ = [(0.0, INDIGO), (0.34, GREEN), (0.67, AMBER), (1.0, RED)]   # low → high frequency
 LOUD = [(0.0, mix(NAVY, INDIGO, 0.25)), (0.35, INDIGO), (0.62, RED), (0.85, AMBER), (1.0, mix(AMBER, WHITE, 0.55))]
 
 
@@ -112,10 +113,11 @@ def spectrum_slices(n_t, n_f, cutoff, nyq, seed):
 
 
 def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=96, playhead=0.34,
-                   duration="11:33", now="3:58", label="3D spectrogram", pixel=0):
+                   duration="11:33", now="3:58", label="3D spectrogram", pixel=0, by_freq=False):
     """Waterfall plot inside the box (x, y, w, h). Front edge = start of the track, back = end.
 
-    pixel > 0 draws the slices as square blocks of that size (an old LCD look); labels stay sharp."""
+    pixel > 0 draws the slices as square blocks of that size (an old LCD look); labels and the playhead stay sharp.
+    by_freq colours each slice along the frequency axis (FREQ) instead of by loudness (LOUD)."""
     depth_x, depth_y = w * 0.15, h * 0.30        # how far the last slice sits up and to the right
     base_w = w - depth_x - 110                   # frequency axis length of one slice
     amp_h = h * 0.56                             # height of a full-scale peak
@@ -129,8 +131,9 @@ def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=9
 
     with d.group(label):
         # gradient defined inline so the group can be copied between files
-        stops = "".join('<stop offset="%s" stop-color="%s"/>' % (fmt(o), c) for o, c in LOUD)
-        d.raw('<defs><linearGradient id="%s" x1="0" y1="1" x2="0" y2="0">%s</linearGradient></defs>' % (gid, stops))
+        stops = "".join('<stop offset="%s" stop-color="%s"/>' % (fmt(o), c) for o, c in (FREQ if by_freq else LOUD))
+        d.raw('<defs><linearGradient id="%s" %s>%s</linearGradient></defs>'
+              % (gid, 'x1="0" y1="0" x2="1" y2="0"' if by_freq else 'x1="0" y1="1" x2="0" y2="0"', stops))
         with d.group("Floor and axes"):
             corners = [pt(0, 0, 0), pt(0, n_f - 1, 0), pt(n_t - 1, n_f - 1, 0), pt(n_t - 1, 0, 0)]
             d.path("M" + " L".join("%s %s" % (fmt(round(a, 1)), fmt(round(b, 1))) for a, b in corners) + " Z",
@@ -182,8 +185,15 @@ def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=9
                 with d.group("Slice %d%s" % (ti + 1, " · playhead" if ti == play_i else "")):
                     d.raw('<path d="%s" fill="url(#%s)" fill-opacity="%s" stroke="%s" stroke-width="%s" '
                           'stroke-linejoin="round"/>' % (dpath, gid, "0.96" if played else "0.82",
-                                                         WHITE if ti == play_i else mix(WHITE, INDIGO, 0.35),
-                                                         "1.6" if ti == play_i else "0.5"))
+                                                         WHITE if ti == play_i and not slice_attrs
+                                                         else mix(WHITE, INDIGO, 0.35),
+                                                         "1.6" if ti == play_i and not slice_attrs else "0.5"))
+                if ti == play_i and slice_attrs:
+                    # the playhead line is drawn outside the pixel filter so it stays a smooth line
+                    d.raw('</g>')
+                    d.raw('<path d="%s" fill="none" stroke="%s" stroke-width="1.6" stroke-linejoin="round" '
+                          'inkscape:label="Playhead line"/>' % (dpath, WHITE))
+                    d.raw('<g filter="url(#%s)">' % slice_attrs)
             if slice_attrs:
                 d.raw('</g>')
         with d.group("Playhead label"):
@@ -199,15 +209,15 @@ def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=9
             d.text(p[0] + 12, p[1] + 34.5, t, 10, 700, TEXT, anchor="end")
 
 
-def loudness_legend(d, x, y, w):
-    with d.group("Loudness legend"):
+def loudness_legend(d, x, y, w, stops_=None, lo="quiet", hi="loud", label="Loudness legend"):
+    with d.group(label):
         gid = d.uid("legend")
-        stops = "".join('<stop offset="%s" stop-color="%s"/>' % (fmt(o), c) for o, c in LOUD)
+        stops = "".join('<stop offset="%s" stop-color="%s"/>' % (fmt(o), c) for o, c in (stops_ or LOUD))
         d.raw('<defs><linearGradient id="%s" x1="0" y1="0" x2="1" y2="0">%s</linearGradient></defs>' % (gid, stops))
         d.raw('<rect x="%s" y="%s" width="%s" height="8" rx="4" fill="url(#%s)"/>' % (fmt(float(x)), fmt(float(y)),
                                                                                       fmt(float(w)), gid))
-        d.text(x, y + 22, "quiet", 10, 500, TEXT_3)
-        d.text(x + w, y + 22, "loud", 10, 500, TEXT_3, anchor="end")
+        d.text(x, y + 22, lo, 10, 500, TEXT_3)
+        d.text(x + w, y + 22, hi, 10, 500, TEXT_3, anchor="end")
 
 
 # --------------------------------------------------------------------------

@@ -44,6 +44,9 @@ Apple Developer ID (notarization) and a Windows code-signing certificate; both s
 - FFmpeg: built LGPL-only (no `--enable-gpl`; both build scripts refuse a GPL build). On Windows it is BtbN's static
   LGPL build; on macOS a minimal one built from the official source. `SOURCES.txt` records the exact downloads and
   their SHA-256 sums.
+- Font: TeX Gyre Heros (free Helvetica clone, unmodified), GUST Font License / LPPL 1.3c. It lives in
+  `iaflac/gui/static/fonts/` with its licence and is packaged with the rest of the UI. Helvetica Neue itself is not
+  bundled: its licence does not allow redistribution in an app.
 
 ## Known follow-ups
 

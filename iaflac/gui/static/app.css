@@ -1,6 +1,12 @@
 /* iaflac desktop UI: Option A "Workspace" from design/iaflac-mockups-v3.svg.
    Palette: #DFD9E2 lavender, #F4B73E amber, #BC3843 red, #5C53A2 indigo, #20A76B green, plus black and white. */
 
+/* Bundled TeX Gyre Heros (free Helvetica clone, GUST Font License): see fonts/README.txt */
+@font-face { font-family: "Heros"; src: url("/static/fonts/texgyreheros-regular.otf") format("opentype"); font-weight: 100 549; font-style: normal; }
+@font-face { font-family: "Heros"; src: url("/static/fonts/texgyreheros-bold.otf") format("opentype"); font-weight: 550 1000; font-style: normal; }
+@font-face { font-family: "Heros"; src: url("/static/fonts/texgyreheros-italic.otf") format("opentype"); font-weight: 100 549; font-style: italic; }
+@font-face { font-family: "Heros Cn"; src: url("/static/fonts/texgyreheroscn-bold.otf") format("opentype"); font-weight: 100 1000; }
+
 :root {
   --lavender: #DFD9E2; --amber: #F4B73E; --red: #BC3843; --indigo: #5C53A2; --green: #20A76B;
   --white: #FFFFFF; --ink: #13102A;
@@ -29,7 +35,7 @@
 
   --radius: 14px;
   --gap: 16px;
-  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font: "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -59,7 +65,7 @@ img { display: block; }
   display: flex; align-items: center; gap: 6px; padding: 0 16px; border-bottom: 1px solid var(--topbar-line);
 }
 .logo { height: 28px; width: auto; flex: none; color: var(--white); margin-right: 18px; overflow: visible; }
-.logo text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-stretch: condensed; }
+.logo text { font-family: "Heros Cn", "Helvetica Neue", Helvetica, Arial, sans-serif; font-stretch: condensed; }
 .tab {
   height: 32px; padding: 0 16px 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--topbar-text);
   display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;

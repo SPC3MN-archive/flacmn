@@ -14,6 +14,7 @@ import sys
 import threading
 import time
 import webbrowser
+from pathlib import Path
 
 import uvicorn
 
@@ -45,10 +46,13 @@ def main(argv=None) -> int:
     p.add_argument("--server-only", action="store_true", help="run the server and print its URL")
     p.add_argument("--port", type=int, default=0, help="port on 127.0.0.1 (default: any free port)")
     p.add_argument("--debug", action="store_true", help="enable the web inspector in the window")
+    p.add_argument("--url-file", help="also write the URL (with its token) to this file; for scripted checks of a build")
     args = p.parse_args(argv)
     port, token = args.port or free_port(), secrets.token_urlsafe(24)
     server = start_server(port, token)
     url = f"http://127.0.0.1:{port}/?token={token}"
+    if args.url_file:
+        Path(args.url_file).write_text(url + "\n", encoding="utf-8")
     try:
         if args.server_only:
             print(url, flush=True)

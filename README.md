@@ -14,6 +14,11 @@ python3 -m iaflac get <identifier> --dest ~/Music/IA      # lists files and size
 python3 -m iaflac replace --scan                      # albums you have only as MP3 (then: replace "Artist/Album")
 ```
 
+**Desktop app (in progress).** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
+same engine: every format ranked together, playback with waveform and spectrogram, MusicBrainz-checked tags, and a
+download queue that saves albums as `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. Installers are
+built by `.github/workflows/release.yml`; see `packaging/README.md`.
+
 Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac` and `ffmpeg` binaries.
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,
 `candidates.json`, `spectrograms/`). `SKILL.md` teaches Claude to drive it.

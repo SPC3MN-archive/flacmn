@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-TOOLS = ("flac", "metaflac", "ffmpeg", "ffprobe")
+TOOLS = ("flac", "metaflac", "ffmpeg")
 
 
 def bundled_dirs() -> list:

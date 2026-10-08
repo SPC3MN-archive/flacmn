@@ -120,15 +120,6 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def results(search_id: str):
         return core.results(search_id)
 
-    @api.get("/api/genres")
-    def genres():
-        return core.genres()
-
-    @api.post("/api/genre")
-    def genre(body: dict = Body(...)):
-        return core.genre_search(body.get("genre", ""), body.get("years", ""), body.get("terms", ""),
-                                 body.get("exclude", ""), bool(body.get("cd_only", True)), int(body.get("top", 25)))
-
     @api.get("/api/items/{identifier}")
     def item(identifier: str):
         return core.detail(identifier)

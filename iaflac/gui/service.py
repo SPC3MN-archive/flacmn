@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
-from .. import __version__, binaries, genre as genre_mod, musicbrainz as mb, paths, quality, queries, save, tagging
+from .. import __version__, binaries, musicbrainz as mb, paths, quality, queries, save, tagging
 from .. import cdart, jewelcase, library_index
 from ..ia_client import IAClient, IAError
 from ..names import folder_component
@@ -36,10 +36,8 @@ class NotFound(LookupError):
 @dataclass
 class SearchSession:
     id: str
-    kind: str                         # "album" | "genre"
     want: Optional[Want] = None
-    spec: object = None               # GenreSpec
-    result: object = None             # WantResult | GenreResult
+    result: object = None             # WantResult
     identifiers: list = field(default_factory=list)
     created: float = field(default_factory=time.time)
     done: bool = False
@@ -182,7 +180,7 @@ class App:
     # ---- search ------------------------------------------------------------------------------------------------
     def search(self, text: str = "", artist: str = "", album: str = "") -> dict:
         want = parse_query(text, artist, album)
-        sess = SearchSession(id=uuid.uuid4().hex[:12], kind="album", want=want)
+        sess = SearchSession(id=uuid.uuid4().hex[:12], want=want)
         self.searches[sess.id] = sess
         self._ensure_library()
 
@@ -214,8 +212,7 @@ class App:
                     pipe.inspect(c, want)
                 self.broadcast({"type": "candidate", "candidate": serialize.candidate_summary(c, want, self.library)})
             if sess is not None:
-                ranked = self._genre_ranked(sess) if sess.kind == "genre" else self._ranked(sess)
-                self.broadcast({"type": "results", "search_id": sess.id, "results": ranked})
+                self.broadcast({"type": "results", "search_id": sess.id, "results": self._ranked(sess)})
             return {"tested": [c.identifier for c in cands]}
 
         return self.jobs.submit("test", f"quick test of {len(cands)} result(s)", run)
@@ -225,9 +222,9 @@ class App:
         if sess is None:
             raise NotFound(f"no search {search_id}")
         res = sess.result
-        return {"search_id": sess.id, "kind": sess.kind, "done": sess.done,
+        return {"search_id": sess.id, "done": sess.done,
                 "want": {"artist": sess.want.artist, "album": sess.want.album} if sess.want else None,
-                "results": self._ranked(sess) if sess.kind == "album" else self._genre_ranked(sess),
+                "results": self._ranked(sess),
                 "notes": list(getattr(res, "notes", []) or []),
                 "near_misses": list(getattr(res, "near_misses", []) or []),
                 "lossless_other": list(getattr(res, "lossless_other", []) or []),
@@ -258,41 +255,6 @@ class App:
         if not c.spectral or not c.spectral.png or not Path(c.spectral.png).exists():
             raise NotFound("no spectrogram yet: run the deep test")
         return Path(c.spectral.png)
-
-    # ---- genre -------------------------------------------------------------------------------------------------
-    def genres(self) -> list:
-        return sorted(genre_mod.load_genres().keys())
-
-    def genre_search(self, name: str, years: str = "", terms: str = "", exclude: str = "",
-                     cd_only: bool = True, top: int = 25) -> dict:
-        spec_kw = dict(extra_terms=genre_mod.split_csv(terms), extra_exclude=genre_mod.split_csv(exclude))
-        terms_, excl = genre_mod.resolve(name, **spec_kw)
-        spec = genre_mod.GenreSpec(genre=name, terms=terms_, exclude=excl,
-                                   years=queries.parse_years(years) if years else None, cd_only=cd_only, top=top,
-                                   include_live=self.settings.include_live, free_only=self.settings.free_only)
-        sess = SearchSession(id=uuid.uuid4().hex[:12], kind="genre", spec=spec)
-        self.searches[sess.id] = sess
-        self._ensure_library()
-
-        def run(job: Job):
-            pipe = self.pipeline(job)
-            res = pipe.genre_search(spec, self.options())
-            sess.result, sess.identifiers, sess.done = res, [c.identifier for c in res.found], True
-            self._remember(res.found, None)
-            self.broadcast({"type": "results", "search_id": sess.id, "results": self._genre_ranked(sess),
-                            "notes": res.notes, "excluded": res.excluded})
-            top = res.found[: self.settings.auto_test_top]
-            if top:
-                self._quick_test(top, None, sess)
-            return {"search_id": sess.id, "count": len(res.found)}
-
-        job = self.jobs.submit("genre", f"genre: {name}", run)
-        return {"search_id": sess.id, "job_id": job.id}
-
-    def _genre_ranked(self, sess: SearchSession) -> list:
-        with self._lock:
-            cands = [self.cands[i] for i in sess.identifiers if i in self.cands]
-        return [serialize.candidate_summary(c, None, self.library) for c in sorted(cands, key=Pipeline.genre_key)]
 
     # ---- metadata ----------------------------------------------------------------------------------------------
     def meta(self, identifier: str, fresh: bool = False) -> dict:

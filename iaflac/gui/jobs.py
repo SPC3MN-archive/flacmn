@@ -29,7 +29,7 @@ PROGRESS_INTERVAL = 0.15            # seconds between progress events of one job
 @dataclass
 class Job:
     id: str
-    kind: str                        # search | test | deep | musicbrainz | library | genre | analyze
+    kind: str                        # search | test | deep | musicbrainz | library | analyze
     label: str
     state: str = "queued"            # queued | running | done | failed | cancelled
     progress: dict = field(default_factory=dict)

@@ -18,468 +18,473 @@
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a2-layer-navigation" inkscape:label="Navigation">
-<g id="a2-sidebar" inkscape:label="Sidebar">
-<rect id="a2-sidebar-background" inkscape:label="Sidebar background" x="0" y="36" width="200" height="864" fill="#102542"/>
+<g id="a2-top-bar" inkscape:label="Top bar">
+<rect id="a2-top-bar-background" inkscape:label="Top bar background" x="0" y="36" width="1440" height="48" fill="#252047"/>
 <g id="a2-nav-album-search" inkscape:label="Nav · Album Search">
-<path d="M 37.5 75 A 4.5 4.5 0 1 1 28.5 75 A 4.5 4.5 0 1 1 37.5 75 Z M 36.4 78.4 L 40 82" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="81" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Album Search</text>
+<path d="M 41.5 59 A 4.5 4.5 0 1 1 32.5 59 A 4.5 4.5 0 1 1 41.5 59 Z M 40.4 62.4 L 44 66" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Album Search</text>
 </g>
 <g id="a2-nav-cd-art" inkscape:label="Nav · CD Art">
-<rect x="12" y="100" width="176" height="40" rx="10" fill="#5C53A2"/>
-<path d="M 40 120 A 6 6 0 1 1 28 120 A 6 6 0 1 1 40 120 Z M 36 120 A 2 2 0 1 1 32 120 A 2 2 0 1 1 36 120 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="125" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">CD Art</text>
+<rect x="172.35" y="44" width="100.45" height="32" rx="8" fill="#5C53A2"/>
+<path d="M 200.35 60 A 6 6 0 1 1 188.35 60 A 6 6 0 1 1 200.35 60 Z M 196.35 60 A 2 2 0 1 1 192.35 60 A 2 2 0 1 1 196.35 60 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="210.35" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">CD Art</text>
 </g>
 <g id="a2-nav-library" inkscape:label="Nav · Library">
-<path d="M 29 158.5 V 169.5 M 32.5 158.5 V 169.5 M 35.5 159.2 L 39 168.8" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="169" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Library</text>
+<path d="M 295.8 54.5 V 65.5 M 299.3 54.5 V 65.5 M 302.3 55.2 L 305.8 64.8" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="316.8" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Library</text>
 <g id="a2-chip-5" inkscape:label="Chip · 5">
-<rect x="157.41" y="155" width="18.59" height="18" rx="9" fill="#2D3F59"/>
-<text x="163.41" y="167.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#EDEAEF" xml:space="preserve">5</text>
+<rect x="382.15" y="51" width="18.59" height="18" rx="9" fill="#322C5C"/>
+<text x="388.15" y="63.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#ECE8EE" xml:space="preserve">5</text>
+</g>
+</g>
+<g id="a2-queue-indicator" inkscape:label="Queue indicator">
+<g id="a2-chip-queue-1-downloading" inkscape:label="Chip · Queue · 1 downloading">
+<rect x="1230.09" y="50" width="151.91" height="22" rx="6" fill="#322C5C"/>
+<circle cx="1241.09" cy="61" r="3" fill="#F4B73E"/>
+<text x="1248.09" y="64.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#ECE8EE" xml:space="preserve">Queue · 1 downloading</text>
 </g>
 </g>
 <g id="a2-nav-settings" inkscape:label="Nav · Settings">
-<path d="M 28 828.5 H 30 M 33.2 828.5 H 40 M 28 835.5 H 34.8 M 38 835.5 H 40 M 33.2 828.5 A 1.6 1.6 0 1 1 30 828.5 A 1.6 1.6 0 1 1 33.2 828.5 Z M 38 835.5 A 1.6 1.6 0 1 1 34.8 835.5 A 1.6 1.6 0 1 1 38 835.5 Z" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="837" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Settings</text>
+<rect x="1392" y="44" width="32" height="32" rx="8" fill="none"/>
+<path d="M 1402 56.5 H 1404 M 1407.2 56.5 H 1414 M 1402 63.5 H 1408.8 M 1412 63.5 H 1414 M 1407.2 56.5 A 1.6 1.6 0 1 1 1404 56.5 A 1.6 1.6 0 1 1 1407.2 56.5 Z M 1412 63.5 A 1.6 1.6 0 1 1 1408.8 63.5 A 1.6 1.6 0 1 1 1412 63.5 Z" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a2-layer-album-and-scans" inkscape:label="Album and scans">
 <g id="a2-card-album-and-scans" inkscape:label="Card · Album and scans">
-<rect x="216.5" y="52.5" width="791" height="831" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="16.5" y="100.5" width="919" height="783" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-library-album-picker" inkscape:label="Library album picker">
-<rect x="232.5" y="68.5" width="339" height="47" rx="10" fill="#FFFFFF" stroke="#5C53A2" stroke-width="1"/>
+<rect x="32.5" y="116.5" width="359" height="47" rx="10" fill="#FFFFFF" stroke="#5C53A2" stroke-width="1"/>
 <g id="a2-cover-kind-of-blue" inkscape:label="Cover · Kind of Blue">
-<rect x="240" y="74" width="36" height="36" rx="5" fill="#383266"/>
-<circle cx="263.76" cy="88.4" r="9" fill="#5C53A2"/>
-<circle cx="263.76" cy="88.4" r="3.24" fill="#DFD9E2"/>
-<rect x="244.32" y="100.64" width="16.56" height="1.44" fill="#F4B73E"/>
-<rect x="244.32" y="103.88" width="10.8" height="1.01" fill="#B1AACC"/>
+<rect x="40" y="122" width="36" height="36" rx="5" fill="#383266"/>
+<circle cx="63.76" cy="136.4" r="9" fill="#5C53A2"/>
+<circle cx="63.76" cy="136.4" r="3.24" fill="#DFD9E2"/>
+<rect x="44.32" y="148.64" width="16.56" height="1.44" fill="#F4B73E"/>
+<rect x="44.32" y="151.88" width="10.8" height="1.01" fill="#B1AACC"/>
 </g>
-<text x="286" y="89" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="650" fill="#0F0D1A" xml:space="preserve">Kind of Blue</text>
-<text x="286" y="106" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#2C284E" xml:space="preserve">Miles Davis · 1959 · from your library</text>
-<path d="M 550.5 90.5 L 554 94 L 557.5 90.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="86" y="137" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="650" fill="#0F0D1A" xml:space="preserve">Kind of Blue</text>
+<text x="86" y="154" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#2C284E" xml:space="preserve">Miles Davis · 1959 · from your library</text>
+<path d="M 370.5 138.5 L 374 142 L 377.5 138.5" fill="none" stroke="#2C284E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 <g id="a2-button-find-art" inkscape:label="Button · Find art">
-<rect x="584" y="76" width="104" height="32" rx="8" fill="#5C53A2"/>
-<path d="M 611.73 91.06 A 4.22 4.22 0 1 1 603.29 91.06 A 4.22 4.22 0 1 1 611.73 91.06 Z M 610.7 94.25 L 614.07 97.62" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="619.95" y="96.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Find art</text>
+<rect x="404" y="124" width="104" height="32" rx="8" fill="#5C53A2"/>
+<path d="M 431.73 139.06 A 4.22 4.22 0 1 1 423.29 139.06 A 4.22 4.22 0 1 1 431.73 139.06 Z M 430.7 142.25 L 434.07 145.62" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="439.95" y="144.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Find art</text>
 </g>
 <g id="a2-find-art-status" inkscape:label="Find-art status">
-<text x="704" y="88" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1A634E" xml:space="preserve">Done · 7 pressings searched · 14 s</text>
+<text x="524" y="136" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1A634E" xml:space="preserve">Done · 7 pressings searched · 14 s</text>
 <g id="a2-progress-100" inkscape:label="Progress · 100%">
-<rect x="704" y="98" width="288" height="6" rx="3" fill="#EDEAEF"/>
-<rect x="704" y="98" width="288" height="6" rx="3" fill="#20A76B"/>
+<rect x="524" y="146" width="396" height="6" rx="3" fill="#EDEAEF"/>
+<rect x="524" y="146" width="396" height="6" rx="3" fill="#20A76B"/>
 </g>
 </g>
 <g id="a2-find-art-notes" inkscape:label="Find-art notes">
-<rect x="232" y="128" width="760" height="32" rx="8" fill="#F7F6F8"/>
-<path d="M 255.12 143.5 A 5.62 5.62 0 1 1 243.88 143.5 A 5.62 5.62 0 1 1 255.12 143.5 Z M 249.5 143.03 V 146.31 M 249.5 140.69 V 140.78" fill="none" stroke="#5C53A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="264" y="148" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" xml:space="preserve"><tspan font-size="11.5" font-weight="400" fill="#2C284E">Matched </tspan><tspan font-size="11.5" font-weight="650" fill="#0F0D1A">Columbia CK 64935 · 1997 US CD</tspan><tspan font-size="11.5" font-weight="400" fill="#2C284E">   ·   all five parts from the 1997 XE pressing   ·   </tspan><tspan font-size="11.5" font-weight="650" fill="#6D5332">disc label is soft</tspan></text>
+<rect x="32" y="176" width="888" height="32" rx="8" fill="#F7F6F8"/>
+<path d="M 55.12 191.5 A 5.62 5.62 0 1 1 43.88 191.5 A 5.62 5.62 0 1 1 55.12 191.5 Z M 49.5 191.03 V 194.31 M 49.5 188.69 V 188.78" fill="none" stroke="#5C53A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="64" y="196" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" xml:space="preserve"><tspan font-size="11.5" font-weight="400" fill="#2C284E">Matched </tspan><tspan font-size="11.5" font-weight="650" fill="#0F0D1A">Columbia CK 64935 · 1997 US CD</tspan><tspan font-size="11.5" font-weight="400" fill="#2C284E">   ·   all five parts from the 1997 XE pressing   ·   </tspan><tspan font-size="11.5" font-weight="650" fill="#6D5332">disc label is soft</tspan></text>
 </g>
-<line x1="232" y1="172.5" x2="992" y2="172.5" stroke="#E9E4EB" stroke-width="1"/>
+<line x1="32" y1="220.5" x2="920" y2="220.5" stroke="#E9E4EB" stroke-width="1"/>
 <g id="a2-scan-row-front-cover" inkscape:label="Scan row · Front cover">
-<rect x="235.5" y="189.5" width="117" height="117" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
+<rect x="35.5" y="234.5" width="105" height="105" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
 <g id="a2-scan-front" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-2" inkscape:label="Cover · Kind of Blue">
-<rect x="238" y="192" width="112" height="112" rx="4" fill="#383266"/>
-<circle cx="311.92" cy="236.8" r="28" fill="#5C53A2"/>
-<circle cx="311.92" cy="236.8" r="10.08" fill="#DFD9E2"/>
-<rect x="251.44" y="274.88" width="51.52" height="4.48" fill="#F4B73E"/>
-<rect x="251.44" y="284.96" width="33.6" height="3.14" fill="#B1AACC"/>
+<rect x="38" y="237" width="100" height="100" rx="4" fill="#383266"/>
+<circle cx="104" cy="277" r="25" fill="#5C53A2"/>
+<circle cx="104" cy="277" r="9" fill="#DFD9E2"/>
+<rect x="50" y="311" width="46" height="4" fill="#F4B73E"/>
+<rect x="50" y="320" width="30" height="2.8" fill="#B1AACC"/>
 </g>
 </g>
-<text x="402" y="210" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Front cover</text>
-<text x="402" y="230" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
+<text x="192" y="254" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Front cover</text>
+<text x="192" y="273" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
 <g id="a2-chip-595-dpi" inkscape:label="Chip · 595 dpi">
-<rect x="402" y="240" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
-<text x="410" y="253.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">595 dpi</text>
+<rect x="192" y="282" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
+<text x="200" y="295.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">595 dpi</text>
 </g>
-<text x="467.15" y="254" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">2835 × 2835 px</text>
-<text x="402" y="286" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
+<text x="257.15" y="296" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">2835 × 2835 px</text>
+<text x="192" y="326" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
 <g id="a2-scan-front-2" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-3" inkscape:label="Cover · Kind of Blue">
-<rect x="494" y="264" width="40" height="40" rx="3" fill="#383266"/>
-<circle cx="520.4" cy="280" r="10" fill="#5C53A2"/>
-<circle cx="520.4" cy="280" r="3.6" fill="#DFD9E2"/>
-<rect x="498.8" y="293.6" width="18.4" height="1.6" fill="#F4B73E"/>
-<rect x="498.8" y="297.2" width="12" height="1.12" fill="#B1AACC"/>
+<rect x="284" y="306" width="38" height="38" rx="3" fill="#383266"/>
+<circle cx="309.08" cy="321.2" r="9.5" fill="#5C53A2"/>
+<circle cx="309.08" cy="321.2" r="3.42" fill="#DFD9E2"/>
+<rect x="288.56" y="334.12" width="17.48" height="1.52" fill="#F4B73E"/>
+<rect x="288.56" y="337.54" width="11.4" height="1.06" fill="#B1AACC"/>
 </g>
 </g>
-<rect x="494.5" y="264.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="284.5" y="306.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-front-3" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-4" inkscape:label="Cover · Kind of Blue">
-<rect x="542" y="264" width="40" height="40" rx="3" fill="#383266"/>
-<circle cx="568.4" cy="280" r="10" fill="#5C53A2"/>
-<circle cx="568.4" cy="280" r="3.6" fill="#DFD9E2"/>
-<rect x="546.8" y="293.6" width="18.4" height="1.6" fill="#F4B73E"/>
-<rect x="546.8" y="297.2" width="12" height="1.12" fill="#B1AACC"/>
+<rect x="330" y="306" width="38" height="38" rx="3" fill="#383266"/>
+<circle cx="355.08" cy="321.2" r="9.5" fill="#5C53A2"/>
+<circle cx="355.08" cy="321.2" r="3.42" fill="#DFD9E2"/>
+<rect x="334.56" y="334.12" width="17.48" height="1.52" fill="#F4B73E"/>
+<rect x="334.56" y="337.54" width="11.4" height="1.06" fill="#B1AACC"/>
 </g>
 </g>
-<rect x="542.5" y="264.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="330.5" y="306.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-front-4" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-5" inkscape:label="Cover · Kind of Blue">
-<rect x="590" y="264" width="40" height="40" rx="3" fill="#383266"/>
-<circle cx="616.4" cy="280" r="10" fill="#5C53A2"/>
-<circle cx="616.4" cy="280" r="3.6" fill="#DFD9E2"/>
-<rect x="594.8" y="293.6" width="18.4" height="1.6" fill="#F4B73E"/>
-<rect x="594.8" y="297.2" width="12" height="1.12" fill="#B1AACC"/>
+<rect x="376" y="306" width="38" height="38" rx="3" fill="#383266"/>
+<circle cx="401.08" cy="321.2" r="9.5" fill="#5C53A2"/>
+<circle cx="401.08" cy="321.2" r="3.42" fill="#DFD9E2"/>
+<rect x="380.56" y="334.12" width="17.48" height="1.52" fill="#F4B73E"/>
+<rect x="380.56" y="337.54" width="11.4" height="1.06" fill="#B1AACC"/>
 </g>
 </g>
-<rect x="590.5" y="264.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="376.5" y="306.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-front-5" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-6" inkscape:label="Cover · Kind of Blue">
-<rect x="638" y="264" width="40" height="40" rx="3" fill="#383266"/>
-<circle cx="664.4" cy="280" r="10" fill="#5C53A2"/>
-<circle cx="664.4" cy="280" r="3.6" fill="#DFD9E2"/>
-<rect x="642.8" y="293.6" width="18.4" height="1.6" fill="#F4B73E"/>
-<rect x="642.8" y="297.2" width="12" height="1.12" fill="#B1AACC"/>
+<rect x="422" y="306" width="38" height="38" rx="3" fill="#383266"/>
+<circle cx="447.08" cy="321.2" r="9.5" fill="#5C53A2"/>
+<circle cx="447.08" cy="321.2" r="3.42" fill="#DFD9E2"/>
+<rect x="426.56" y="334.12" width="17.48" height="1.52" fill="#F4B73E"/>
+<rect x="426.56" y="337.54" width="11.4" height="1.06" fill="#B1AACC"/>
 </g>
 </g>
-<rect x="638.5" y="264.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="422.5" y="306.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-front-6" inkscape:label="Scan · front">
 <g id="a2-cover-kind-of-blue-7" inkscape:label="Cover · Kind of Blue">
-<rect x="686" y="264" width="40" height="40" rx="3" fill="#383266"/>
-<circle cx="712.4" cy="280" r="10" fill="#5C53A2"/>
-<circle cx="712.4" cy="280" r="3.6" fill="#DFD9E2"/>
-<rect x="690.8" y="293.6" width="18.4" height="1.6" fill="#F4B73E"/>
-<rect x="690.8" y="297.2" width="12" height="1.12" fill="#B1AACC"/>
+<rect x="468" y="306" width="38" height="38" rx="3" fill="#383266"/>
+<circle cx="493.08" cy="321.2" r="9.5" fill="#5C53A2"/>
+<circle cx="493.08" cy="321.2" r="3.42" fill="#DFD9E2"/>
+<rect x="472.56" y="334.12" width="17.48" height="1.52" fill="#F4B73E"/>
+<rect x="472.56" y="337.54" width="11.4" height="1.06" fill="#B1AACC"/>
 </g>
 </g>
-<rect x="686.5" y="264.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
-<text x="738" y="289" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
-<line x1="232" y1="318.5" x2="992" y2="318.5" stroke="#E9E4EB" stroke-width="1"/>
+<rect x="468.5" y="306.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<text x="518" y="329" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
+<line x1="32" y1="351.5" x2="920" y2="351.5" stroke="#E9E4EB" stroke-width="1"/>
 </g>
 <g id="a2-scan-row-back-spines" inkscape:label="Scan row · Back + spines">
-<rect x="235.5" y="329.5" width="145" height="115" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
+<rect x="35.5" y="362.5" width="133" height="105" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
 <g id="a2-scan-back" inkscape:label="Scan · back">
-<rect x="238" y="332" width="140" height="110" rx="4" fill="#EAE6EC"/>
-<rect x="238" y="332" width="6.3" height="110" fill="#383266"/>
-<rect x="371.7" y="332" width="6.3" height="110" fill="#383266"/>
-<rect x="263.2" y="351.8" width="72.8" height="3.85" fill="#7B7782"/>
-<rect x="263.2" y="362.8" width="58.8" height="3.85" fill="#7B7782"/>
-<rect x="263.2" y="373.8" width="72.8" height="3.85" fill="#7B7782"/>
-<rect x="263.2" y="384.8" width="58.8" height="3.85" fill="#7B7782"/>
-<rect x="263.2" y="395.8" width="72.8" height="3.85" fill="#7B7782"/>
-<rect x="263.2" y="406.8" width="58.8" height="3.85" fill="#7B7782"/>
-<rect x="330.4" y="409" width="25.2" height="15.4" fill="#0F0D1A" fill-opacity="0.6"/>
+<rect x="38" y="365" width="128" height="100" rx="4" fill="#EAE6EC"/>
+<rect x="38" y="365" width="5.76" height="100" fill="#383266"/>
+<rect x="160.24" y="365" width="5.76" height="100" fill="#383266"/>
+<rect x="61.04" y="383" width="66.56" height="3.5" fill="#7B7782"/>
+<rect x="61.04" y="393" width="53.76" height="3.5" fill="#7B7782"/>
+<rect x="61.04" y="403" width="66.56" height="3.5" fill="#7B7782"/>
+<rect x="61.04" y="413" width="53.76" height="3.5" fill="#7B7782"/>
+<rect x="61.04" y="423" width="66.56" height="3.5" fill="#7B7782"/>
+<rect x="61.04" y="433" width="53.76" height="3.5" fill="#7B7782"/>
+<rect x="122.48" y="435" width="23.04" height="14" fill="#0F0D1A" fill-opacity="0.6"/>
 </g>
-<text x="402" y="350" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Back + spines</text>
-<text x="402" y="370" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
+<text x="192" y="382" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Back + spines</text>
+<text x="192" y="401" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
 <g id="a2-chip-583-dpi" inkscape:label="Chip · 583 dpi">
-<rect x="402" y="380" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
-<text x="410" y="393.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">583 dpi</text>
+<rect x="192" y="410" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
+<text x="200" y="423.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">583 dpi</text>
 </g>
-<text x="467.15" y="394" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">3470 × 2710 px</text>
-<text x="402" y="426" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
+<text x="257.15" y="424" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">3470 × 2710 px</text>
+<text x="192" y="454" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
 <g id="a2-scan-back-2" inkscape:label="Scan · back">
-<rect x="494" y="404" width="52" height="40" rx="3" fill="#EEEBF0"/>
-<rect x="494" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="543.66" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="503.36" y="411.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="503.36" y="415.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="503.36" y="419.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="503.36" y="423.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="503.36" y="427.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="503.36" y="431.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="528.32" y="432" width="9.36" height="5.6" fill="#0F0D1A" fill-opacity="0.6"/>
+<rect x="284" y="434" width="48" height="38" rx="3" fill="#EEEBF0"/>
+<rect x="284" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="329.84" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="292.64" y="440.84" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="292.64" y="444.64" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="292.64" y="448.44" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="292.64" y="452.24" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="292.64" y="456.04" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="292.64" y="459.84" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="315.68" y="460.6" width="8.64" height="5.32" fill="#0F0D1A" fill-opacity="0.6"/>
 </g>
-<rect x="494.5" y="404.5" width="51" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="284.5" y="434.5" width="47" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-back-3" inkscape:label="Scan · back">
-<rect x="554" y="404" width="52" height="40" rx="3" fill="#E7E2E9"/>
-<rect x="554" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="603.66" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="563.36" y="411.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="563.36" y="415.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="563.36" y="419.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="563.36" y="423.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="563.36" y="427.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="563.36" y="431.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="588.32" y="432" width="9.36" height="5.6" fill="#0F0D1A" fill-opacity="0.6"/>
+<rect x="340" y="434" width="48" height="38" rx="3" fill="#E7E2E9"/>
+<rect x="340" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="385.84" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="348.64" y="440.84" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="348.64" y="444.64" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="348.64" y="448.44" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="348.64" y="452.24" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="348.64" y="456.04" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="348.64" y="459.84" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="371.68" y="460.6" width="8.64" height="5.32" fill="#0F0D1A" fill-opacity="0.6"/>
 </g>
-<rect x="554.5" y="404.5" width="51" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="340.5" y="434.5" width="47" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-back-4" inkscape:label="Scan · back">
-<rect x="614" y="404" width="52" height="40" rx="3" fill="#F1EEF2"/>
-<rect x="614" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="663.66" y="404" width="2.34" height="40" fill="#383266"/>
-<rect x="623.36" y="411.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="623.36" y="415.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="623.36" y="419.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="623.36" y="423.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="623.36" y="427.2" width="27.04" height="1.4" fill="#7B7782"/>
-<rect x="623.36" y="431.2" width="21.84" height="1.4" fill="#7B7782"/>
-<rect x="648.32" y="432" width="9.36" height="5.6" fill="#0F0D1A" fill-opacity="0.6"/>
+<rect x="396" y="434" width="48" height="38" rx="3" fill="#F1EEF2"/>
+<rect x="396" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="441.84" y="434" width="2.16" height="38" fill="#383266"/>
+<rect x="404.64" y="440.84" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="404.64" y="444.64" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="404.64" y="448.44" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="404.64" y="452.24" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="404.64" y="456.04" width="24.96" height="1.33" fill="#7B7782"/>
+<rect x="404.64" y="459.84" width="20.16" height="1.33" fill="#7B7782"/>
+<rect x="427.68" y="460.6" width="8.64" height="5.32" fill="#0F0D1A" fill-opacity="0.6"/>
 </g>
-<rect x="614.5" y="404.5" width="51" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
-<text x="678" y="429" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
-<line x1="232" y1="458.5" x2="992" y2="458.5" stroke="#E9E4EB" stroke-width="1"/>
+<rect x="396.5" y="434.5" width="47" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<text x="456" y="457" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
+<line x1="32" y1="479.5" x2="920" y2="479.5" stroke="#E9E4EB" stroke-width="1"/>
 </g>
 <g id="a2-scan-row-inside-of-front-insert" inkscape:label="Scan row · Inside of front insert">
-<rect x="235.5" y="469.5" width="117" height="117" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
+<rect x="35.5" y="490.5" width="105" height="105" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
 <g id="a2-scan-inside" inkscape:label="Scan · inside">
-<rect x="238" y="472" width="112" height="112" rx="4" fill="#F7F6F8"/>
-<rect x="249.2" y="487.68" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="498.88" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="510.08" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="521.28" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="532.48" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="543.68" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="249.2" y="554.88" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="487.68" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="498.88" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="510.08" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="521.28" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="532.48" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="543.68" width="38.08" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="554.88" width="29.12" height="2.8" fill="#7B7782"/>
-<rect x="299.6" y="552.64" width="38.08" height="20.16" fill="#463F7E"/>
+<rect x="38" y="493" width="100" height="100" rx="4" fill="#F7F6F8"/>
+<rect x="48" y="507" width="26" height="2.5" fill="#7B7782"/>
+<rect x="48" y="517" width="34" height="2.5" fill="#7B7782"/>
+<rect x="48" y="527" width="34" height="2.5" fill="#7B7782"/>
+<rect x="48" y="537" width="26" height="2.5" fill="#7B7782"/>
+<rect x="48" y="547" width="34" height="2.5" fill="#7B7782"/>
+<rect x="48" y="557" width="34" height="2.5" fill="#7B7782"/>
+<rect x="48" y="567" width="26" height="2.5" fill="#7B7782"/>
+<rect x="93" y="507" width="26" height="2.5" fill="#7B7782"/>
+<rect x="93" y="517" width="34" height="2.5" fill="#7B7782"/>
+<rect x="93" y="527" width="34" height="2.5" fill="#7B7782"/>
+<rect x="93" y="537" width="26" height="2.5" fill="#7B7782"/>
+<rect x="93" y="547" width="34" height="2.5" fill="#7B7782"/>
+<rect x="93" y="557" width="34" height="2.5" fill="#7B7782"/>
+<rect x="93" y="567" width="26" height="2.5" fill="#7B7782"/>
+<rect x="93" y="565" width="34" height="18" fill="#463F7E"/>
 </g>
-<text x="402" y="490" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Inside of front insert</text>
-<text x="402" y="510" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
+<text x="192" y="510" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Inside of front insert</text>
+<text x="192" y="529" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
 <g id="a2-chip-580-dpi" inkscape:label="Chip · 580 dpi">
-<rect x="402" y="520" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
-<text x="410" y="533.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">580 dpi</text>
+<rect x="192" y="538" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
+<text x="200" y="551.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">580 dpi</text>
 </g>
-<text x="467.15" y="534" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">2740 × 2740 px</text>
-<text x="402" y="566" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
+<text x="257.15" y="552" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">2740 × 2740 px</text>
+<text x="192" y="582" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
 <g id="a2-scan-inside-2" inkscape:label="Scan · inside">
-<rect x="494" y="544" width="40" height="40" rx="3" fill="#F3F1F4"/>
-<rect x="498" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="498" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="498" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="498" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="498" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="498" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="498" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="516" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="516" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="516" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="516" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="516" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="516" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="516" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="516" y="572.8" width="13.6" height="7.2" fill="#463F7E"/>
+<rect x="284" y="562" width="38" height="38" rx="3" fill="#F3F1F4"/>
+<rect x="287.8" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="287.8" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="287.8" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="287.8" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="287.8" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="287.8" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="287.8" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="304.9" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="304.9" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="304.9" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="304.9" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="304.9" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="304.9" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="304.9" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="304.9" y="589.36" width="12.92" height="6.84" fill="#463F7E"/>
 </g>
-<rect x="494.5" y="544.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="284.5" y="562.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-inside-3" inkscape:label="Scan · inside">
-<rect x="542" y="544" width="40" height="40" rx="3" fill="#FAF9FB"/>
-<rect x="546" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="546" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="546" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="546" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="546" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="546" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="546" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="564" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="564" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="564" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="564" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="564" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="564" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="564" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="564" y="572.8" width="13.6" height="7.2" fill="#463F7E"/>
+<rect x="330" y="562" width="38" height="38" rx="3" fill="#FAF9FB"/>
+<rect x="333.8" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="333.8" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="333.8" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="333.8" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="333.8" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="333.8" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="333.8" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="350.9" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="350.9" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="350.9" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="350.9" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="350.9" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="350.9" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="350.9" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="350.9" y="589.36" width="12.92" height="6.84" fill="#463F7E"/>
 </g>
-<rect x="542.5" y="544.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="330.5" y="562.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-inside-4" inkscape:label="Scan · inside">
-<rect x="590" y="544" width="40" height="40" rx="3" fill="#F1EEF2"/>
-<rect x="594" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="594" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="594" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="594" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="594" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="594" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="594" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="612" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="612" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="612" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="612" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="612" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="612" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="612" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="612" y="572.8" width="13.6" height="7.2" fill="#463F7E"/>
+<rect x="376" y="562" width="38" height="38" rx="3" fill="#F1EEF2"/>
+<rect x="379.8" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="379.8" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="379.8" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="379.8" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="379.8" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="379.8" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="379.8" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="396.9" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="396.9" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="396.9" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="396.9" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="396.9" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="396.9" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="396.9" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="396.9" y="589.36" width="12.92" height="6.84" fill="#463F7E"/>
 </g>
-<rect x="590.5" y="544.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="376.5" y="562.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-inside-5" inkscape:label="Scan · inside">
-<rect x="638" y="544" width="40" height="40" rx="3" fill="#F7F6F8"/>
-<rect x="642" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="642" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="642" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="642" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="642" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="642" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="642" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="660" y="549.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="660" y="553.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="660" y="557.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="660" y="561.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="660" y="565.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="660" y="569.6" width="13.6" height="1" fill="#7B7782"/>
-<rect x="660" y="573.6" width="10.4" height="1" fill="#7B7782"/>
-<rect x="660" y="572.8" width="13.6" height="7.2" fill="#463F7E"/>
+<rect x="422" y="562" width="38" height="38" rx="3" fill="#F7F6F8"/>
+<rect x="425.8" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="425.8" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="425.8" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="425.8" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="425.8" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="425.8" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="425.8" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="442.9" y="567.32" width="9.88" height="1" fill="#7B7782"/>
+<rect x="442.9" y="571.12" width="12.92" height="1" fill="#7B7782"/>
+<rect x="442.9" y="574.92" width="12.92" height="1" fill="#7B7782"/>
+<rect x="442.9" y="578.72" width="9.88" height="1" fill="#7B7782"/>
+<rect x="442.9" y="582.52" width="12.92" height="1" fill="#7B7782"/>
+<rect x="442.9" y="586.32" width="12.92" height="1" fill="#7B7782"/>
+<rect x="442.9" y="590.12" width="9.88" height="1" fill="#7B7782"/>
+<rect x="442.9" y="589.36" width="12.92" height="6.84" fill="#463F7E"/>
 </g>
-<rect x="638.5" y="544.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
-<text x="690" y="569" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
-<line x1="232" y1="598.5" x2="992" y2="598.5" stroke="#E9E4EB" stroke-width="1"/>
+<rect x="422.5" y="562.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<text x="472" y="585" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
+<line x1="32" y1="607.5" x2="920" y2="607.5" stroke="#E9E4EB" stroke-width="1"/>
 </g>
 <g id="a2-scan-row-under-tray" inkscape:label="Scan row · Under-tray">
-<rect x="235.5" y="609.5" width="145" height="115" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
+<rect x="35.5" y="618.5" width="133" height="105" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
 <g id="a2-scan-tray" inkscape:label="Scan · tray">
-<rect x="238" y="612" width="140" height="110" rx="4" fill="#463F7E"/>
-<circle cx="282.8" cy="669.2" r="28.6" fill="#ABA3C8"/>
-<rect x="324.8" y="645" width="36.4" height="4.4" fill="#DFD9E2"/>
-<rect x="324.8" y="656" width="25.2" height="4.4" fill="#ABA3C8"/>
+<rect x="38" y="621" width="128" height="100" rx="4" fill="#463F7E"/>
+<circle cx="78.96" cy="673" r="26" fill="#ABA3C8"/>
+<rect x="117.36" y="651" width="33.28" height="4" fill="#DFD9E2"/>
+<rect x="117.36" y="661" width="23.04" height="4" fill="#ABA3C8"/>
 </g>
-<text x="402" y="630" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Under-tray</text>
-<text x="402" y="650" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
+<text x="192" y="638" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Under-tray</text>
+<text x="192" y="657" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">Cover Art Archive · 1997 XE CD</text>
 <g id="a2-chip-583-dpi-2" inkscape:label="Chip · 583 dpi">
-<rect x="402" y="660" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
-<text x="410" y="673.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">583 dpi</text>
+<rect x="192" y="666" width="57.15" height="20" rx="5" fill="#E2F4EC"/>
+<text x="200" y="679.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#1A634E" xml:space="preserve">583 dpi</text>
 </g>
-<text x="467.15" y="674" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">3170 × 2710 px</text>
-<text x="402" y="706" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
+<text x="257.15" y="680" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">3170 × 2710 px</text>
+<text x="192" y="710" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
 <g id="a2-scan-tray-2" inkscape:label="Scan · tray">
-<rect x="494" y="684" width="52" height="40" rx="3" fill="#3D3770"/>
-<circle cx="510.64" cy="704.8" r="10.4" fill="#ABA3C8"/>
-<rect x="526.24" y="696" width="13.52" height="1.6" fill="#DFD9E2"/>
-<rect x="526.24" y="700" width="9.36" height="1.6" fill="#ABA3C8"/>
+<rect x="284" y="690" width="48" height="38" rx="3" fill="#3D3770"/>
+<circle cx="299.36" cy="709.76" r="9.88" fill="#ABA3C8"/>
+<rect x="313.76" y="701.4" width="12.48" height="1.52" fill="#DFD9E2"/>
+<rect x="313.76" y="705.2" width="8.64" height="1.52" fill="#ABA3C8"/>
 </g>
-<rect x="494.5" y="684.5" width="51" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="284.5" y="690.5" width="47" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-tray-3" inkscape:label="Scan · tray">
-<rect x="554" y="684" width="52" height="40" rx="3" fill="#4D468A"/>
-<circle cx="570.64" cy="704.8" r="10.4" fill="#ABA3C8"/>
-<rect x="586.24" y="696" width="13.52" height="1.6" fill="#DFD9E2"/>
-<rect x="586.24" y="700" width="9.36" height="1.6" fill="#ABA3C8"/>
+<rect x="340" y="690" width="48" height="38" rx="3" fill="#4D468A"/>
+<circle cx="355.36" cy="709.76" r="9.88" fill="#ABA3C8"/>
+<rect x="369.76" y="701.4" width="12.48" height="1.52" fill="#DFD9E2"/>
+<rect x="369.76" y="705.2" width="8.64" height="1.52" fill="#ABA3C8"/>
 </g>
-<rect x="554.5" y="684.5" width="51" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
-<text x="618" y="709" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
+<rect x="340.5" y="690.5" width="47" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<text x="400" y="713" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
 </g>
 <g id="a2-scan-row-disc-label" inkscape:label="Scan row · Disc label">
-<rect x="226.5" y="740.5" width="771" height="133" rx="10" fill="#FDF1D8" stroke="#F8D48B" stroke-width="1"/>
-<rect x="235.5" y="749.5" width="117" height="117" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
+<rect x="26.5" y="738.5" width="899" height="121" rx="10" fill="#FDF1D8" stroke="#F8D48B" stroke-width="1"/>
+<rect x="35.5" y="746.5" width="105" height="105" rx="7" fill="none" stroke="#5C53A2" stroke-width="2"/>
 <g id="a2-scan-disc" inkscape:label="Scan · disc">
-<circle cx="294" cy="808" r="55" fill="#E5E1E8" stroke="#CFC9DA" stroke-width="1"/>
-<circle cx="294" cy="808" r="39.6" fill="#3F3872"/>
-<circle cx="294" cy="808" r="27.5" fill="#5C53A2"/>
-<rect x="277.5" y="838.25" width="33" height="3.3" fill="#F4B73E"/>
-<circle cx="294" cy="808" r="11" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<rect x="238" y="752" width="112" height="112" rx="4" fill="#FFFFFF" fill-opacity="0.35"/>
+<circle cx="88" cy="799" r="49" fill="#E5E1E8" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="88" cy="799" r="35.28" fill="#3F3872"/>
+<circle cx="88" cy="799" r="24.5" fill="#5C53A2"/>
+<rect x="73.3" y="825.95" width="29.4" height="2.94" fill="#F4B73E"/>
+<circle cx="88" cy="799" r="9.8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="38" y="749" width="100" height="100" rx="4" fill="#FFFFFF" fill-opacity="0.35"/>
 </g>
-<text x="402" y="770" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Disc label</text>
-<text x="402" y="790" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">archive.org upload · scans/cd.jpg</text>
+<text x="192" y="766" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#0F0D1A" xml:space="preserve">Disc label</text>
+<text x="192" y="785" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">archive.org upload · scans/cd.jpg</text>
 <g id="a2-chip-150-dpi-below-200" inkscape:label="Chip · 150 dpi · below 200">
-<rect x="402" y="800" width="142" height="20" rx="5" fill="#F4B73E"/>
-<path d="M 415.5 805.53 L 420.54 814.23 H 410.46 Z M 415.5 808.78 V 811.06 M 415.5 812.68 V 812.76" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="425" y="813.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#0F0D1A" xml:space="preserve">150 dpi · below 200</text>
+<rect x="192" y="794" width="142" height="20" rx="5" fill="#F4B73E"/>
+<path d="M 205.5 799.53 L 210.54 808.23 H 200.46 Z M 205.5 802.78 V 805.06 M 205.5 806.68 V 806.76" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="215" y="807.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#0F0D1A" xml:space="preserve">150 dpi · below 200</text>
 </g>
-<text x="552" y="814" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">690 × 690 px</text>
-<text x="402" y="846" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
+<text x="342" y="808" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#7B7782" xml:space="preserve">690 × 690 px</text>
+<text x="192" y="838" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">OTHER SCANS</text>
 <g id="a2-scan-disc-2" inkscape:label="Scan · disc">
-<circle cx="514" cy="844" r="19" fill="#E9E5EB" stroke="#CFC9DA" stroke-width="1"/>
-<circle cx="514" cy="844" r="13.68" fill="#3F3872"/>
-<circle cx="514" cy="844" r="9.5" fill="#5C53A2"/>
-<rect x="508.3" y="854.45" width="11.4" height="1.14" fill="#F4B73E"/>
-<circle cx="514" cy="844" r="3.8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="303" cy="837" r="18" fill="#E9E5EB" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="303" cy="837" r="12.96" fill="#3F3872"/>
+<circle cx="303" cy="837" r="9" fill="#5C53A2"/>
+<rect x="297.6" y="846.9" width="10.8" height="1.08" fill="#F4B73E"/>
+<circle cx="303" cy="837" r="3.6" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 </g>
-<rect x="494.5" y="824.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="284.5" y="818.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-disc-3" inkscape:label="Scan · disc">
-<circle cx="562" cy="844" r="19" fill="#E2DDE5" stroke="#CFC9DA" stroke-width="1"/>
-<circle cx="562" cy="844" r="13.68" fill="#3F3872"/>
-<circle cx="562" cy="844" r="9.5" fill="#5C53A2"/>
-<rect x="556.3" y="854.45" width="11.4" height="1.14" fill="#F4B73E"/>
-<circle cx="562" cy="844" r="3.8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="349" cy="837" r="18" fill="#E2DDE5" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="349" cy="837" r="12.96" fill="#3F3872"/>
+<circle cx="349" cy="837" r="9" fill="#5C53A2"/>
+<rect x="343.6" y="846.9" width="10.8" height="1.08" fill="#F4B73E"/>
+<circle cx="349" cy="837" r="3.6" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 </g>
-<rect x="542.5" y="824.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="330.5" y="818.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a2-scan-disc-4" inkscape:label="Scan · disc">
-<circle cx="610" cy="844" r="19" fill="#ECE8EE" stroke="#CFC9DA" stroke-width="1"/>
-<circle cx="610" cy="844" r="13.68" fill="#3F3872"/>
-<circle cx="610" cy="844" r="9.5" fill="#5C53A2"/>
-<rect x="604.3" y="854.45" width="11.4" height="1.14" fill="#F4B73E"/>
-<circle cx="610" cy="844" r="3.8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="395" cy="837" r="18" fill="#ECE8EE" stroke="#CFC9DA" stroke-width="1"/>
+<circle cx="395" cy="837" r="12.96" fill="#3F3872"/>
+<circle cx="395" cy="837" r="9" fill="#5C53A2"/>
+<rect x="389.6" y="846.9" width="10.8" height="1.08" fill="#F4B73E"/>
+<circle cx="395" cy="837" r="3.6" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 </g>
-<rect x="590.5" y="824.5" width="39" height="39" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
-<text x="642" y="849" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
+<rect x="376.5" y="818.5" width="37" height="37" rx="3" fill="none" stroke="#CFC9DA" stroke-width="1"/>
+<text x="426" y="841" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#5C53A2" xml:space="preserve">+ search more</text>
 </g>
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a2-layer-case-preview" inkscape:label="Case preview">
 <g id="a2-card-case-preview" inkscape:label="Card · Case preview">
-<rect x="1024.5" y="52.5" width="399" height="831" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="1040" y="80" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Case preview</text>
+<rect x="952.5" y="100.5" width="471" height="783" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="968" y="128" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Case preview</text>
 <g id="a2-preview-page-outside" inkscape:label="Preview page · Outside">
-<rect x="1202" y="62" width="206" height="28" rx="9" fill="#EDEAEF"/>
-<rect x="1205.5" y="65.5" width="71" height="21" rx="7" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="1241" y="80.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">Outside</text>
-<text x="1309" y="80.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Inside</text>
-<text x="1373" y="80.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Disc</text>
+<rect x="1202" y="110" width="206" height="28" rx="9" fill="#EDEAEF"/>
+<rect x="1205.5" y="113.5" width="71" height="21" rx="7" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1241" y="128.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" text-anchor="middle" xml:space="preserve">Outside</text>
+<text x="1309" y="128.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Inside</text>
+<text x="1373" y="128.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" text-anchor="middle" xml:space="preserve">Disc</text>
 </g>
 <g id="a2-page-1-outside" inkscape:label="Page 1 · Outside">
-<rect x="1040" y="104" width="368" height="560" rx="10" fill="#F7F6F8"/>
-<rect id="a2-a4-page" inkscape:label="A4 page" x="1035.01" y="116.5" width="377.99" height="535" rx="2" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<line x1="1113.72" y1="141.27" x2="1108.72" y2="141.27" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1115.72" y1="139.27" x2="1115.72" y2="134.27" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1334.28" y1="141.27" x2="1339.28" y2="141.27" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1332.28" y1="139.27" x2="1332.28" y2="134.27" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1113.72" y1="357.83" x2="1108.72" y2="357.83" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1115.72" y1="359.83" x2="1115.72" y2="364.83" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1334.28" y1="357.83" x2="1339.28" y2="357.83" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1332.28" y1="359.83" x2="1332.28" y2="364.83" stroke="#7B7782" stroke-width="0.6"/>
+<rect x="968" y="152" width="440" height="520" rx="10" fill="#F7F6F8"/>
+<rect id="a2-a4-page" inkscape:label="A4 page" x="1013.15" y="164.5" width="349.71" height="495" rx="2" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<line x1="1085.8" y1="187.38" x2="1080.8" y2="187.38" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1087.8" y1="185.38" x2="1087.8" y2="180.38" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1290.2" y1="187.38" x2="1295.2" y2="187.38" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1288.2" y1="185.38" x2="1288.2" y2="180.38" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1085.8" y1="387.78" x2="1080.8" y2="387.78" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1087.8" y1="389.78" x2="1087.8" y2="394.78" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1290.2" y1="387.78" x2="1295.2" y2="387.78" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1288.2" y1="389.78" x2="1288.2" y2="394.78" stroke="#7B7782" stroke-width="0.6"/>
 <g id="a2-cover-kind-of-blue-8" inkscape:label="Cover · Kind of Blue">
-<rect x="1115.72" y="141.27" width="216.57" height="216.57" fill="#383266"/>
-<circle cx="1258.65" cy="227.89" r="54.14" fill="#5C53A2"/>
-<circle cx="1258.65" cy="227.89" r="19.49" fill="#DFD9E2"/>
-<rect x="1141.71" y="301.52" width="99.62" height="8.66" fill="#F4B73E"/>
-<rect x="1141.71" y="321.02" width="64.97" height="6.06" fill="#B1AACC"/>
+<rect x="1087.8" y="187.38" width="200.4" height="200.4" fill="#383266"/>
+<circle cx="1220.06" cy="267.54" r="50.1" fill="#5C53A2"/>
+<circle cx="1220.06" cy="267.54" r="18.04" fill="#DFD9E2"/>
+<rect x="1111.85" y="335.68" width="92.19" height="8.02" fill="#F4B73E"/>
+<rect x="1111.85" y="353.72" width="60.12" height="5.61" fill="#B1AACC"/>
 </g>
-<text x="1338.28" y="153.27" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Front</text>
-<text x="1338.28" y="166.27" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#7B7782" xml:space="preserve">120 × 120</text>
-<line x1="1085.74" y1="379.49" x2="1080.74" y2="379.49" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1087.74" y1="377.49" x2="1087.74" y2="372.49" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1362.26" y1="379.49" x2="1367.26" y2="379.49" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1360.26" y1="377.49" x2="1360.26" y2="372.49" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1085.74" y1="592.44" x2="1080.74" y2="592.44" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1087.74" y1="594.44" x2="1087.74" y2="599.44" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1362.26" y1="592.44" x2="1367.26" y2="592.44" stroke="#7B7782" stroke-width="0.6"/>
-<line x1="1360.26" y1="594.44" x2="1360.26" y2="599.44" stroke="#7B7782" stroke-width="0.6"/>
+<text x="1294.2" y="199.38" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#2C284E" xml:space="preserve">Front</text>
+<text x="1294.2" y="212.38" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#7B7782" xml:space="preserve">120 × 120</text>
+<line x1="1059.91" y1="407.82" x2="1054.91" y2="407.82" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1061.91" y1="405.82" x2="1061.91" y2="400.82" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1316.09" y1="407.82" x2="1321.09" y2="407.82" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1314.09" y1="405.82" x2="1314.09" y2="400.82" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1059.91" y1="604.89" x2="1054.91" y2="604.89" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1061.91" y1="606.89" x2="1061.91" y2="611.89" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1316.09" y1="604.89" x2="1321.09" y2="604.89" stroke="#7B7782" stroke-width="0.6"/>
+<line x1="1314.09" y1="606.89" x2="1314.09" y2="611.89" stroke="#7B7782" stroke-width="0.6"/>
 <g id="a2-scan-back-5" inkscape:label="Scan · back">
-<rect x="1087.74" y="379.49" width="272.51" height="212.96" fill="#EAE6EC"/>
-<rect x="1087.74" y="379.49" width="12.26" height="212.96" fill="#383266"/>
-<rect x="1347.99" y="379.49" width="12.26" height="212.96" fill="#383266"/>
-<rect x="1136.8" y="417.82" width="141.71" height="7.45" fill="#7B7782"/>
-<rect x="1136.8" y="439.12" width="114.45" height="7.45" fill="#7B7782"/>
-<rect x="1136.8" y="460.41" width="141.71" height="7.45" fill="#7B7782"/>
-<rect x="1136.8" y="481.71" width="114.45" height="7.45" fill="#7B7782"/>
-<rect x="1136.8" y="503" width="141.71" height="7.45" fill="#7B7782"/>
-<rect x="1136.8" y="524.3" width="114.45" height="7.45" fill="#7B7782"/>
-<rect x="1267.6" y="528.56" width="49.05" height="29.81" fill="#0F0D1A" fill-opacity="0.6"/>
+<rect x="1061.91" y="407.82" width="252.18" height="197.06" fill="#EAE6EC"/>
+<rect x="1061.91" y="407.82" width="11.35" height="197.06" fill="#383266"/>
+<rect x="1302.74" y="407.82" width="11.35" height="197.06" fill="#383266"/>
+<rect x="1107.3" y="443.3" width="131.13" height="6.9" fill="#7B7782"/>
+<rect x="1107.3" y="463" width="105.91" height="6.9" fill="#7B7782"/>
+<rect x="1107.3" y="482.71" width="131.13" height="6.9" fill="#7B7782"/>
+<rect x="1107.3" y="502.42" width="105.91" height="6.9" fill="#7B7782"/>
+<rect x="1107.3" y="522.12" width="131.13" height="6.9" fill="#7B7782"/>
+<rect x="1107.3" y="541.83" width="105.91" height="6.9" fill="#7B7782"/>
+<rect x="1228.35" y="545.77" width="45.39" height="27.59" fill="#0F0D1A" fill-opacity="0.6"/>
 </g>
-<line x1="1099.47" y1="379.49" x2="1099.47" y2="592.44" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 2"/>
-<line x1="1348.53" y1="379.49" x2="1348.53" y2="592.44" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 2"/>
-<text x="1224" y="606.44" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#7B7782" text-anchor="middle" xml:space="preserve">Tray card 151 × 118 mm · 2 spines</text>
-<text x="1050" y="656" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#7B7782" xml:space="preserve">Page 1 of 3</text>
+<line x1="1072.77" y1="407.82" x2="1072.77" y2="604.89" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 2"/>
+<line x1="1303.23" y1="407.82" x2="1303.23" y2="604.89" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 2"/>
+<text x="1188" y="618.89" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#7B7782" text-anchor="middle" xml:space="preserve">Tray card 151 × 118 mm · 2 spines</text>
+<text x="978" y="664" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#7B7782" xml:space="preserve">Page 1 of 3</text>
 </g>
-<g id="a2-preview-warnings" inkscape:label="Preview warnings">
 <g id="a2-chip-disc-label-is-soft-150-dpi" inkscape:label="Chip · Disc label is soft (150 dpi)">
-<rect x="1040" y="680" width="178.59" height="22" rx="6" fill="#FDF1D8"/>
-<path d="M 1053.5 686.53 L 1058.54 695.23 H 1048.46 Z M 1053.5 689.78 V 692.06 M 1053.5 693.68 V 693.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1063" y="694.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Disc label is soft (150 dpi)</text>
+<rect x="968" y="686" width="178.59" height="22" rx="6" fill="#FDF1D8"/>
+<path d="M 981.5 692.53 L 986.54 701.23 H 976.46 Z M 981.5 695.78 V 698.06 M 981.5 699.68 V 699.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="991" y="700.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Disc label is soft (150 dpi)</text>
 </g>
-</g>
-<line x1="1040" y1="718.5" x2="1408" y2="718.5" stroke="#E9E4EB" stroke-width="1"/>
-<text x="1040" y="744" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">PRINT</text>
-<text x="1408" y="744" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" fill="#7B7782" text-anchor="end" xml:space="preserve">Letter · 1.5 mm bleed · 3 pages</text>
+<line x1="968" y1="722.5" x2="1408" y2="722.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="968" y="746" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">PRINT</text>
+<text x="1408" y="746" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" fill="#7B7782" text-anchor="end" xml:space="preserve">Letter · 1.5 mm bleed · 3 pages</text>
 <g id="a2-button-make-pdf" inkscape:label="Button · Make PDF">
-<rect x="1040" y="758" width="180" height="36" rx="8" fill="#5C53A2"/>
-<path d="M 1090.58 774.12 V 770.84 H 1097.14 V 774.12 M 1090.58 779.28 H 1088.7 V 774.12 H 1099.01 V 779.28 H 1097.14 M 1090.58 777.41 H 1097.14 V 781.16 H 1090.58 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1105.36" y="780.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Make PDF</text>
+<rect x="968" y="760" width="216" height="36" rx="8" fill="#5C53A2"/>
+<path d="M 1036.58 776.12 V 772.84 H 1043.14 V 776.12 M 1036.58 781.28 H 1034.7 V 776.12 H 1045.01 V 781.28 H 1043.14 M 1036.58 779.41 H 1043.14 V 783.16 H 1036.58 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1051.36" y="782.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" xml:space="preserve">Make PDF</text>
 </g>
 <g id="a2-button-open-pdf" inkscape:label="Button · Open PDF">
-<rect x="1228.5" y="758.5" width="179" height="35" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1284.25 770.84 H 1288.47 V 775.06 M 1288.47 770.84 L 1282.84 776.47 M 1286.59 777.41 V 781.16 H 1278.16 V 772.72 H 1281.91" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1294.81" y="780.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Open PDF</text>
+<rect x="1192.5" y="760.5" width="215" height="35" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1266.25 772.84 H 1270.47 V 777.06 M 1270.47 772.84 L 1264.84 778.47 M 1268.59 779.41 V 783.16 H 1260.16 V 774.72 H 1263.91" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1276.81" y="782.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Open PDF</text>
 </g>
 <g id="a2-button-save-scans-to-album-folder" inkscape:label="Button · Save scans to album folder">
-<rect x="1040.5" y="804.5" width="367" height="35" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1126.61 818.72 A 0.94 0.94 0 0 1 1127.55 817.78 H 1130.83 L 1132.24 819.19 H 1136.93 A 0.94 0.94 0 0 1 1137.86 820.12 V 825.75 A 0.94 0.94 0 0 1 1136.93 826.69 H 1127.55 A 0.94 0.94 0 0 1 1126.61 825.75 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1143.74" y="826.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Save scans to album folder</text>
+<rect x="968.5" y="806.5" width="439" height="35" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1090.61 820.72 A 0.94 0.94 0 0 1 1091.55 819.78 H 1094.83 L 1096.24 821.19 H 1100.93 A 0.94 0.94 0 0 1 1101.86 822.12 V 827.75 A 0.94 0.94 0 0 1 1100.93 828.69 H 1091.55 A 0.94 0.94 0 0 1 1090.61 827.75 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1107.74" y="828.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Save scans to album folder</text>
 </g>
 </g>
 </g>

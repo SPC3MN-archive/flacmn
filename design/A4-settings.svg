@@ -17,35 +17,44 @@
 <path d="M 1410.5 14.5 L 1417.5 21.5 M 1417.5 14.5 L 1410.5 21.5" fill="none" stroke="#B1AACC" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 </g>
-<g inkscape:groupmode="layer" id="a4n-layer-navigation" inkscape:label="Navigation">
-<g id="a4n-sidebar" inkscape:label="Sidebar">
-<rect id="a4n-sidebar-background" inkscape:label="Sidebar background" x="0" y="36" width="200" height="864" fill="#102542"/>
-<g id="a4n-nav-album-search" inkscape:label="Nav · Album Search">
-<path d="M 37.5 75 A 4.5 4.5 0 1 1 28.5 75 A 4.5 4.5 0 1 1 37.5 75 Z M 36.4 78.4 L 40 82" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="81" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Album Search</text>
+<g inkscape:groupmode="layer" id="a4-layer-navigation" inkscape:label="Navigation">
+<g id="a4-top-bar" inkscape:label="Top bar">
+<rect id="a4-top-bar-background" inkscape:label="Top bar background" x="0" y="36" width="1440" height="48" fill="#252047"/>
+<g id="a4-nav-album-search" inkscape:label="Nav · Album Search">
+<path d="M 41.5 59 A 4.5 4.5 0 1 1 32.5 59 A 4.5 4.5 0 1 1 41.5 59 Z M 40.4 62.4 L 44 66" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Album Search</text>
 </g>
-<g id="a4n-nav-cd-art" inkscape:label="Nav · CD Art">
-<path d="M 40 120 A 6 6 0 1 1 28 120 A 6 6 0 1 1 40 120 Z M 36 120 A 2 2 0 1 1 32 120 A 2 2 0 1 1 36 120 Z" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="125" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">CD Art</text>
+<g id="a4-nav-cd-art" inkscape:label="Nav · CD Art">
+<path d="M 200.35 60 A 6 6 0 1 1 188.35 60 A 6 6 0 1 1 200.35 60 Z M 196.35 60 A 2 2 0 1 1 192.35 60 A 2 2 0 1 1 196.35 60 Z" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="210.35" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">CD Art</text>
 </g>
-<g id="a4n-nav-library" inkscape:label="Nav · Library">
-<path d="M 29 158.5 V 169.5 M 32.5 158.5 V 169.5 M 35.5 159.2 L 39 168.8" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="169" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Library</text>
-<g id="a4n-chip-5" inkscape:label="Chip · 5">
-<rect x="157.41" y="155" width="18.59" height="18" rx="9" fill="#2D3F59"/>
-<text x="163.41" y="167.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#EDEAEF" xml:space="preserve">5</text>
-</g>
-</g>
-<g id="a4n-nav-settings" inkscape:label="Nav · Settings">
-<rect x="12" y="812" width="176" height="40" rx="10" fill="#5C53A2"/>
-<path d="M 28 828.5 H 30 M 33.2 828.5 H 40 M 28 835.5 H 34.8 M 38 835.5 H 40 M 33.2 828.5 A 1.6 1.6 0 1 1 30 828.5 A 1.6 1.6 0 1 1 33.2 828.5 Z M 38 835.5 A 1.6 1.6 0 1 1 34.8 835.5 A 1.6 1.6 0 1 1 38 835.5 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="837" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Settings</text>
+<g id="a4-nav-library" inkscape:label="Nav · Library">
+<path d="M 295.8 54.5 V 65.5 M 299.3 54.5 V 65.5 M 302.3 55.2 L 305.8 64.8" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="316.8" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Library</text>
+<g id="a4-chip-5" inkscape:label="Chip · 5">
+<rect x="382.15" y="51" width="18.59" height="18" rx="9" fill="#322C5C"/>
+<text x="388.15" y="63.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#ECE8EE" xml:space="preserve">5</text>
 </g>
 </g>
+<g id="a4-queue-indicator" inkscape:label="Queue indicator">
+<g id="a4-chip-queue-1-downloading" inkscape:label="Chip · Queue · 1 downloading">
+<rect x="1230.09" y="50" width="151.91" height="22" rx="6" fill="#322C5C"/>
+<circle cx="1241.09" cy="61" r="3" fill="#F4B73E"/>
+<text x="1248.09" y="64.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#ECE8EE" xml:space="preserve">Queue · 1 downloading</text>
 </g>
+</g>
+<g id="a4-nav-settings" inkscape:label="Nav · Settings">
+<rect x="1392" y="44" width="32" height="32" rx="8" fill="#5C53A2"/>
+<path d="M 1402 56.5 H 1404 M 1407.2 56.5 H 1414 M 1402 63.5 H 1408.8 M 1412 63.5 H 1414 M 1407.2 56.5 A 1.6 1.6 0 1 1 1404 56.5 A 1.6 1.6 0 1 1 1407.2 56.5 Z M 1412 63.5 A 1.6 1.6 0 1 1 1408.8 63.5 A 1.6 1.6 0 1 1 1412 63.5 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<g inkscape:groupmode="layer" id="a4-layer-settings-content" inkscape:label="Settings" transform="translate(-100,-32)">
+
+
 <g inkscape:groupmode="layer" id="a4-layer-settings" inkscape:label="Settings">
-<text x="232" y="88" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="700" fill="#0F0D1A" xml:space="preserve">Settings</text>
-<text x="232" y="110" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#2C284E" xml:space="preserve">Changes are saved automatically.</text>
+<text x="232" y="88" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="700" fill="#0F0D1A" xml:space="preserve"></text>
+<text x="232" y="110" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#2C284E" xml:space="preserve"></text>
 <g id="a4-card-library-files" inkscape:label="Card · Library &amp; files">
 <rect x="216.5" y="132.5" width="391" height="351" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 <text x="232" y="160" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Library &amp; files</text>
@@ -322,26 +331,6 @@
 <path d="M 1064.22 815.12 V 811.84 H 1070.78 V 815.12 M 1064.22 820.28 H 1062.34 V 815.12 H 1072.66 V 820.28 H 1070.78 M 1064.22 818.41 H 1070.78 V 822.16 H 1064.22 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="1079" y="821.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">Print a test page</text>
 </g>
-</g>
-</g>
-<g inkscape:groupmode="layer" id="a4-layer-activity-strip" inkscape:label="Activity strip">
-<g id="a4-activity-strip" inkscape:label="Activity strip">
-<rect x="200" y="868" width="1240" height="32" fill="#FFFFFF"/>
-<line x1="200" y1="868.5" x2="1440" y2="868.5" stroke="#CFC9DA" stroke-width="1"/>
-<text x="216" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#7B7782" letter-spacing="0.7" xml:space="preserve">ACTIVITY</text>
-<g id="a4-job-idle" inkscape:label="Job · Idle">
-<circle cx="299" cy="884" r="7" fill="#E2F4EC"/>
-<path d="M 295.62 884.38 L 297.88 886.62 L 302.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="312" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#0F0D1A" xml:space="preserve">Idle</text>
-<line x1="355.31" y1="878" x2="355.31" y2="890" stroke="#CFC9DA" stroke-width="1"/>
-</g>
-<g id="a4-tool-status" inkscape:label="Tool status">
-<circle cx="1313" cy="884" r="7" fill="#E2F4EC"/>
-<path d="M 1309.62 884.38 L 1311.88 886.62 L 1316.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1326" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">flac</text>
-<circle cx="1373" cy="884" r="7" fill="#E2F4EC"/>
-<path d="M 1369.62 884.38 L 1371.88 886.62 L 1376.38 881.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1386" y="888" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#2C284E" xml:space="preserve">ffmpeg</text>
 </g>
 </g>
 </g>

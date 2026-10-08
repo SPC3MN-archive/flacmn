@@ -18,312 +18,319 @@
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a3-layer-navigation" inkscape:label="Navigation">
-<g id="a3-sidebar" inkscape:label="Sidebar">
-<rect id="a3-sidebar-background" inkscape:label="Sidebar background" x="0" y="36" width="200" height="864" fill="#102542"/>
+<g id="a3-top-bar" inkscape:label="Top bar">
+<rect id="a3-top-bar-background" inkscape:label="Top bar background" x="0" y="36" width="1440" height="48" fill="#252047"/>
 <g id="a3-nav-album-search" inkscape:label="Nav · Album Search">
-<path d="M 37.5 75 A 4.5 4.5 0 1 1 28.5 75 A 4.5 4.5 0 1 1 37.5 75 Z M 36.4 78.4 L 40 82" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="81" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Album Search</text>
+<path d="M 41.5 59 A 4.5 4.5 0 1 1 32.5 59 A 4.5 4.5 0 1 1 41.5 59 Z M 40.4 62.4 L 44 66" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">Album Search</text>
 </g>
 <g id="a3-nav-cd-art" inkscape:label="Nav · CD Art">
-<path d="M 40 120 A 6 6 0 1 1 28 120 A 6 6 0 1 1 40 120 Z M 36 120 A 2 2 0 1 1 32 120 A 2 2 0 1 1 36 120 Z" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="125" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">CD Art</text>
+<path d="M 200.35 60 A 6 6 0 1 1 188.35 60 A 6 6 0 1 1 200.35 60 Z M 196.35 60 A 2 2 0 1 1 192.35 60 A 2 2 0 1 1 196.35 60 Z" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="210.35" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#ECE8EE" xml:space="preserve">CD Art</text>
 </g>
 <g id="a3-nav-library" inkscape:label="Nav · Library">
-<rect x="12" y="144" width="176" height="40" rx="10" fill="#5C53A2"/>
-<path d="M 29 158.5 V 169.5 M 32.5 158.5 V 169.5 M 35.5 159.2 L 39 168.8" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="169" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Library</text>
+<rect x="278.8" y="44" width="133.93" height="32" rx="8" fill="#5C53A2"/>
+<path d="M 295.8 54.5 V 65.5 M 299.3 54.5 V 65.5 M 302.3 55.2 L 305.8 64.8" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="316.8" y="65" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Library</text>
 <g id="a3-chip-5" inkscape:label="Chip · 5">
-<rect x="157.41" y="155" width="18.59" height="18" rx="9" fill="#FFFFFF"/>
-<text x="163.41" y="167.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#4A4284" xml:space="preserve">5</text>
+<rect x="382.15" y="51" width="18.59" height="18" rx="9" fill="#FFFFFF"/>
+<text x="388.15" y="63.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#4A4284" xml:space="preserve">5</text>
+</g>
+</g>
+<g id="a3-queue-indicator" inkscape:label="Queue indicator">
+<g id="a3-chip-queue-1-downloading" inkscape:label="Chip · Queue · 1 downloading">
+<rect x="1230.09" y="50" width="151.91" height="22" rx="6" fill="#322C5C"/>
+<circle cx="1241.09" cy="61" r="3" fill="#F4B73E"/>
+<text x="1248.09" y="64.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#ECE8EE" xml:space="preserve">Queue · 1 downloading</text>
 </g>
 </g>
 <g id="a3-nav-settings" inkscape:label="Nav · Settings">
-<path d="M 28 828.5 H 30 M 33.2 828.5 H 40 M 28 835.5 H 34.8 M 38 835.5 H 40 M 33.2 828.5 A 1.6 1.6 0 1 1 30 828.5 A 1.6 1.6 0 1 1 33.2 828.5 Z M 38 835.5 A 1.6 1.6 0 1 1 34.8 835.5 A 1.6 1.6 0 1 1 38 835.5 Z" fill="none" stroke="#82889A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="54" y="837" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" fill="#EDEAEF" xml:space="preserve">Settings</text>
+<rect x="1392" y="44" width="32" height="32" rx="8" fill="none"/>
+<path d="M 1402 56.5 H 1404 M 1407.2 56.5 H 1414 M 1402 63.5 H 1408.8 M 1412 63.5 H 1414 M 1407.2 56.5 A 1.6 1.6 0 1 1 1404 56.5 A 1.6 1.6 0 1 1 1407.2 56.5 Z M 1412 63.5 A 1.6 1.6 0 1 1 1408.8 63.5 A 1.6 1.6 0 1 1 1412 63.5 Z" fill="none" stroke="#9E96C2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a3-layer-library" inkscape:label="Library">
 <g id="a3-card-library" inkscape:label="Card · Library">
-<rect x="216.5" y="52.5" width="1207" height="417" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="232" y="80" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Library</text>
-<text x="295.26" y="80" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">5 albums · 71 tracks · 2.4 GB · D:\Music</text>
+<rect x="16.5" y="100.5" width="1407" height="401" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="32" y="128" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#0F0D1A" xml:space="preserve">Library</text>
+<text x="95.26" y="128" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">5 albums · 71 tracks · 2.4 GB · D:\Music</text>
 <g id="a3-field-filter" inkscape:label="Field · Filter">
-<rect x="1024.5" y="62.5" width="259" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1044.78 76.06 A 4.22 4.22 0 1 1 1036.34 76.06 A 4.22 4.22 0 1 1 1044.78 76.06 Z M 1043.75 79.25 L 1047.12 82.62" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1056" y="81.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">Filter albums…</text>
+<rect x="1004.5" y="110.5" width="279" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1024.78 124.06 A 4.22 4.22 0 1 1 1016.34 124.06 A 4.22 4.22 0 1 1 1024.78 124.06 Z M 1023.75 127.25 L 1027.12 130.62" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1036" y="129.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#7B7782" xml:space="preserve">Filter albums…</text>
 </g>
 <g id="a3-button-rescan" inkscape:label="Button · Rescan">
-<rect x="1296.5" y="62.5" width="111" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1332.27 77 A 4.38 4.38 0 1 1 1330.78 73.67 M 1332.27 72.19 V 74.55 H 1329.9" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1338.89" y="81.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Rescan</text>
+<rect x="1296.5" y="110.5" width="111" height="29" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1332.27 125 A 4.38 4.38 0 1 1 1330.78 121.67 M 1332.27 120.19 V 122.55 H 1329.9" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1338.89" y="129.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Rescan</text>
 </g>
-<text x="288" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
-<text x="452" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ALBUM</text>
-<text x="654" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">YEAR</text>
-<text x="702" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">FORMAT</text>
-<text x="884" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TRACKS</text>
-<text x="916" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">COVER</text>
-<text x="976" y="124" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ISSUES</text>
-<line x1="232" y1="132.5" x2="1408" y2="132.5" stroke="#CFC9DA" stroke-width="1"/>
+<text x="88" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
+<text x="266" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ALBUM</text>
+<text x="486" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">YEAR</text>
+<text x="536" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">FORMAT</text>
+<text x="726" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TRACKS</text>
+<text x="758" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">COVER</text>
+<text x="822" y="172" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ISSUES</text>
+<line x1="32" y1="180.5" x2="1408" y2="180.5" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a3-library-row-geogaddi" inkscape:label="Library row · Geogaddi">
 <g id="a3-cover-geogaddi" inkscape:label="Cover · Geogaddi">
-<rect x="232" y="144" width="44" height="44" rx="5" fill="#C1E6D6"/>
-<circle cx="254" cy="166" r="16.72" fill="#9DD8BE"/>
-<circle cx="254" cy="166" r="12.76" fill="#C7E9DA"/>
-<circle cx="254" cy="166" r="8.8" fill="#56BC8F"/>
-<circle cx="254" cy="166" r="4.84" fill="#C7E9DA"/>
-<circle cx="254" cy="166" r="1.76" fill="#1A5C4A"/>
+<rect x="32" y="191" width="44" height="44" rx="5" fill="#C1E6D6"/>
+<circle cx="54" cy="213" r="16.72" fill="#9DD8BE"/>
+<circle cx="54" cy="213" r="12.76" fill="#C7E9DA"/>
+<circle cx="54" cy="213" r="8.8" fill="#56BC8F"/>
+<circle cx="54" cy="213" r="4.84" fill="#C7E9DA"/>
+<circle cx="54" cy="213" r="1.76" fill="#1A5C4A"/>
 </g>
-<text x="288" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Boards of Canada</text>
-<text x="452" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Geogaddi</text>
-<text x="654" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2002</text>
-<text x="702" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
-<text x="884" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">23</text>
-<circle cx="931" cy="166" r="7" fill="#E2F4EC"/>
-<path d="M 927.62 166.38 L 929.88 168.62 L 934.38 163.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="983" cy="166" r="7" fill="#E2F4EC"/>
-<path d="M 979.62 166.38 L 981.88 168.62 L 986.38 163.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="998" y="171" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#1A634E" xml:space="preserve">No issues</text>
-<line x1="232" y1="198.5" x2="1408" y2="198.5" stroke="#E9E4EB" stroke-width="1"/>
+<text x="88" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Boards of Canada</text>
+<text x="266" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Geogaddi</text>
+<text x="486" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2002</text>
+<text x="536" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
+<text x="726" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">23</text>
+<circle cx="773" cy="213" r="7" fill="#E2F4EC"/>
+<path d="M 769.62 213.38 L 771.88 215.62 L 776.38 210.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="829" cy="213" r="7" fill="#E2F4EC"/>
+<path d="M 825.62 213.38 L 827.88 215.62 L 832.38 210.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="844" y="218" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#1A634E" xml:space="preserve">No issues</text>
+<line x1="32" y1="244.5" x2="1408" y2="244.5" stroke="#E9E4EB" stroke-width="1"/>
 </g>
 <g id="a3-library-row-kind-of-blue" inkscape:label="Library row · Kind of Blue">
 <g id="a3-cover-kind-of-blue" inkscape:label="Cover · Kind of Blue">
-<rect x="232" y="208" width="44" height="44" rx="5" fill="#383266"/>
-<circle cx="261.04" cy="225.6" r="11" fill="#5C53A2"/>
-<circle cx="261.04" cy="225.6" r="3.96" fill="#DFD9E2"/>
-<rect x="237.28" y="240.56" width="20.24" height="1.76" fill="#F4B73E"/>
-<rect x="237.28" y="244.52" width="13.2" height="1.23" fill="#B1AACC"/>
+<rect x="32" y="253" width="44" height="44" rx="5" fill="#383266"/>
+<circle cx="61.04" cy="270.6" r="11" fill="#5C53A2"/>
+<circle cx="61.04" cy="270.6" r="3.96" fill="#DFD9E2"/>
+<rect x="37.28" y="285.56" width="20.24" height="1.76" fill="#F4B73E"/>
+<rect x="37.28" y="289.52" width="13.2" height="1.23" fill="#B1AACC"/>
 </g>
-<text x="288" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Miles Davis</text>
-<text x="452" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Kind of Blue</text>
-<text x="654" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">1959</text>
-<text x="702" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
-<text x="884" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">6</text>
-<circle cx="931" cy="230" r="7" fill="#E2F4EC"/>
-<path d="M 927.62 230.38 L 929.88 232.62 L 934.38 227.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="983" cy="230" r="7" fill="#E2F4EC"/>
-<path d="M 979.62 230.38 L 981.88 232.62 L 986.38 227.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="998" y="235" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#1A634E" xml:space="preserve">No issues</text>
+<text x="88" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Miles Davis</text>
+<text x="266" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Kind of Blue</text>
+<text x="486" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">1959</text>
+<text x="536" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
+<text x="726" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">6</text>
+<circle cx="773" cy="275" r="7" fill="#E2F4EC"/>
+<path d="M 769.62 275.38 L 771.88 277.62 L 776.38 272.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="829" cy="275" r="7" fill="#E2F4EC"/>
+<path d="M 825.62 275.38 L 827.88 277.62 L 832.38 272.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="844" y="280" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#1A634E" xml:space="preserve">No issues</text>
 </g>
 <g id="a3-library-row-ok-computer" inkscape:label="Library row · OK Computer">
-<rect x="224" y="264" width="1192" height="60" rx="8" fill="#F0F0F7"/>
-<rect x="224" y="278" width="3" height="32" rx="1.5" fill="#5C53A2"/>
+<rect x="24" y="308" width="1392" height="58" rx="8" fill="#F0F0F7"/>
+<rect x="24" y="321" width="3" height="32" rx="1.5" fill="#5C53A2"/>
 <g id="a3-cover-ok-computer" inkscape:label="Cover · OK Computer">
-<rect x="232" y="272" width="44" height="44" rx="5" fill="#E4DFE6"/>
-<path d="M236.4 306.32 L256.2 279.92 L271.6 285.2 L250.48 311.6 Z" fill="#5C53A2"/>
-<rect x="259.28" y="296.64" width="7.04" height="7.04" fill="#BC3843"/>
-<rect x="236.4" y="276.4" width="14.96" height="1.32" fill="#0F0D1A"/>
-<rect x="236.4" y="279.48" width="9.68" height="1.32" fill="#2C284E"/>
+<rect x="32" y="315" width="44" height="44" rx="5" fill="#E4DFE6"/>
+<path d="M36.4 349.32 L56.2 322.92 L71.6 328.2 L50.48 354.6 Z" fill="#5C53A2"/>
+<rect x="59.28" y="339.64" width="7.04" height="7.04" fill="#BC3843"/>
+<rect x="36.4" y="319.4" width="14.96" height="1.32" fill="#0F0D1A"/>
+<rect x="36.4" y="322.48" width="9.68" height="1.32" fill="#2C284E"/>
 </g>
-<text x="288" y="299" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Radiohead</text>
-<text x="452" y="299" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">OK Computer</text>
-<text x="654" y="299" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">1997</text>
-<text x="702" y="299" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
-<text x="884" y="299" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">12</text>
-<circle cx="931" cy="294" r="7" fill="#E2F4EC"/>
-<path d="M 927.62 294.38 L 929.88 296.62 L 934.38 291.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="88" y="342" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Radiohead</text>
+<text x="266" y="342" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">OK Computer</text>
+<text x="486" y="342" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">1997</text>
+<text x="536" y="342" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 16/44.1</text>
+<text x="726" y="342" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">12</text>
+<circle cx="773" cy="337" r="7" fill="#E2F4EC"/>
+<path d="M 769.62 337.38 L 771.88 339.62 L 776.38 334.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 <g id="a3-chip-track-7-has-no-track-number" inkscape:label="Chip · Track 7 has no track number">
-<rect x="976" y="283" width="191.78" height="22" rx="6" fill="#FDF1D8"/>
-<path d="M 989.5 289.53 L 994.54 298.23 H 984.46 Z M 989.5 292.78 V 295.06 M 989.5 296.68 V 296.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="999" y="297.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Track 7 has no track number</text>
+<rect x="822" y="326" width="191.78" height="22" rx="6" fill="#FDF1D8"/>
+<path d="M 835.5 332.53 L 840.54 341.23 H 830.46 Z M 835.5 335.78 V 338.06 M 835.5 339.68 V 339.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="845" y="340.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Track 7 has no track number</text>
 </g>
 <g id="a3-chip-cue-file-may-double-list-it" inkscape:label="Chip · .cue file may double-list it">
-<rect x="1175.78" y="283" width="175.64" height="22" rx="6" fill="#FDF1D8"/>
-<path d="M 1189.28 289.53 L 1194.31 298.23 H 1184.24 Z M 1189.28 292.78 V 295.06 M 1189.28 296.68 V 296.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1198.78" y="297.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">.cue file may double-list it</text>
+<rect x="1021.78" y="326" width="175.64" height="22" rx="6" fill="#FDF1D8"/>
+<path d="M 1035.28 332.53 L 1040.31 341.23 H 1030.24 Z M 1035.28 335.78 V 338.06 M 1035.28 339.68 V 339.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1044.78" y="340.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">.cue file may double-list it</text>
 </g>
 <g id="a3-button-fix" inkscape:label="Button · Fix">
-<rect x="1365.28" y="280.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="1376.78" y="298.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
+<rect x="1365.28" y="323.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1376.78" y="341.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
 </g>
 </g>
 <g id="a3-library-row-when-i-get-home" inkscape:label="Library row · When I Get Home">
-<rect x="232.5" y="336.5" width="43" height="43" rx="5" fill="#EDEAEF" stroke="#CFC9DA" stroke-width="1" stroke-dasharray="3 2"/>
-<path d="M 248.5 353.5 H 259.5 V 362.5 H 248.5 Z M 248.5 360.5 L 252 357 L 255 360 L 257 358 L 259.5 360.5" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="288" y="363" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Solange</text>
-<text x="452" y="363" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">When I Get Home</text>
-<text x="654" y="363" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2019</text>
-<text x="702" y="363" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 24/48</text>
-<text x="884" y="363" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">19</text>
-<circle cx="931" cy="358" r="7" fill="#F8EBEC"/>
-<path d="M 928.38 355.38 L 933.62 360.62 M 933.62 355.38 L 928.38 360.62" fill="none" stroke="#BC3843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="32.5" y="377.5" width="43" height="43" rx="5" fill="#EDEAEF" stroke="#CFC9DA" stroke-width="1" stroke-dasharray="3 2"/>
+<path d="M 48.5 394.5 H 59.5 V 403.5 H 48.5 Z M 48.5 401.5 L 52 398 L 55 401 L 57 399 L 59.5 401.5" fill="none" stroke="#7B7782" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="88" y="404" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Solange</text>
+<text x="266" y="404" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">When I Get Home</text>
+<text x="486" y="404" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2019</text>
+<text x="536" y="404" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#1A634E" xml:space="preserve">FLAC 24/48</text>
+<text x="726" y="404" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">19</text>
+<circle cx="773" cy="399" r="7" fill="#F8EBEC"/>
+<path d="M 770.38 396.38 L 775.62 401.62 M 775.62 396.38 L 770.38 401.62" fill="none" stroke="#BC3843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 <g id="a3-chip-no-cover-art" inkscape:label="Chip · No cover art">
-<rect x="976" y="347" width="99.01" height="22" rx="6" fill="#FDF1D8"/>
-<path d="M 989.5 353.53 L 994.54 362.23 H 984.46 Z M 989.5 356.78 V 359.06 M 989.5 360.68 V 360.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="999" y="361.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">No cover art</text>
+<rect x="822" y="388" width="99.01" height="22" rx="6" fill="#FDF1D8"/>
+<path d="M 835.5 394.53 L 840.54 403.23 H 830.46 Z M 835.5 397.78 V 400.06 M 835.5 401.68 V 401.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="845" y="402.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">No cover art</text>
 </g>
 <g id="a3-chip-tracks-disagree-on-date" inkscape:label="Chip · Tracks disagree on DATE">
-<rect x="1083.01" y="347" width="172.93" height="22" rx="6" fill="#FDF1D8"/>
-<path d="M 1096.51 353.53 L 1101.54 362.23 H 1091.47 Z M 1096.51 356.78 V 359.06 M 1096.51 360.68 V 360.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1106.01" y="361.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Tracks disagree on DATE</text>
+<rect x="929.01" y="388" width="172.93" height="22" rx="6" fill="#FDF1D8"/>
+<path d="M 942.51 394.53 L 947.54 403.23 H 937.47 Z M 942.51 397.78 V 400.06 M 942.51 401.68 V 401.76" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="952.01" y="402.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#6D5332" xml:space="preserve">Tracks disagree on DATE</text>
 </g>
 <g id="a3-button-fix-2" inkscape:label="Button · Fix">
-<rect x="1365.28" y="344.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="1376.78" y="362.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
+<rect x="1365.28" y="385.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1376.78" y="403.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
 </g>
-<line x1="232" y1="390.5" x2="1408" y2="390.5" stroke="#E9E4EB" stroke-width="1"/>
+<line x1="32" y1="430.5" x2="1408" y2="430.5" stroke="#E9E4EB" stroke-width="1"/>
 </g>
 <g id="a3-library-row-astronom-a-de-balc-n" inkscape:label="Library row · Astronomía de Balcón">
 <g id="a3-cover-astronom-a-de-balc-n" inkscape:label="Cover · Astronomía de Balcón">
-<rect x="232" y="400" width="44" height="44" rx="5" fill="#17403F"/>
-<circle cx="262.8" cy="413.2" r="5.72" fill="#F4B73E"/>
-<circle cx="239.92" cy="408.8" r="0.8" fill="#DFD9E2"/>
-<circle cx="246.08" cy="405.28" r="1.06" fill="#DFD9E2"/>
-<circle cx="251.8" cy="412.32" r="0.8" fill="#DFD9E2"/>
-<circle cx="242.56" cy="417.6" r="1.06" fill="#DFD9E2"/>
-<circle cx="269.84" cy="422.88" r="0.8" fill="#DFD9E2"/>
-<circle cx="256.2" cy="404.4" r="1.06" fill="#DFD9E2"/>
-<rect x="232" y="430.8" width="44" height="1.32" fill="#141F30"/>
-<rect x="234.64" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="239.48" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="244.32" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="249.16" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="254" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="258.84" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="263.68" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="268.52" y="430.8" width="1" height="11.7" fill="#141F30"/>
-<rect x="273.36" y="430.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="32" y="439" width="44" height="44" rx="5" fill="#17403F"/>
+<circle cx="62.8" cy="452.2" r="5.72" fill="#F4B73E"/>
+<circle cx="39.92" cy="447.8" r="0.8" fill="#DFD9E2"/>
+<circle cx="46.08" cy="444.28" r="1.06" fill="#DFD9E2"/>
+<circle cx="51.8" cy="451.32" r="0.8" fill="#DFD9E2"/>
+<circle cx="42.56" cy="456.6" r="1.06" fill="#DFD9E2"/>
+<circle cx="69.84" cy="461.88" r="0.8" fill="#DFD9E2"/>
+<circle cx="56.2" cy="443.4" r="1.06" fill="#DFD9E2"/>
+<rect x="32" y="469.8" width="44" height="1.32" fill="#141F30"/>
+<rect x="34.64" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="39.48" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="44.32" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="49.16" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="54" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="58.84" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="63.68" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="68.52" y="469.8" width="1" height="11.7" fill="#141F30"/>
+<rect x="73.36" y="469.8" width="1" height="11.7" fill="#141F30"/>
 </g>
-<text x="288" y="427" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Tanox</text>
-<text x="452" y="427" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Astronomía de Balcón</text>
-<text x="654" y="427" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2006</text>
-<text x="702" y="427" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#922E3D" xml:space="preserve">MP3 VBR ~245 kbps</text>
-<text x="884" y="427" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">11</text>
-<circle cx="931" cy="422" r="7" fill="#E2F4EC"/>
-<path d="M 927.62 422.38 L 929.88 424.62 L 934.38 419.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="88" y="466" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" fill="#0F0D1A" xml:space="preserve">Tanox</text>
+<text x="266" y="466" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#0F0D1A" xml:space="preserve">Astronomía de Balcón</text>
+<text x="486" y="466" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">2006</text>
+<text x="536" y="466" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#922E3D" xml:space="preserve">MP3 VBR ~245 kbps</text>
+<text x="726" y="466" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">11</text>
+<circle cx="773" cy="461" r="7" fill="#E2F4EC"/>
+<path d="M 769.62 461.38 L 771.88 463.62 L 776.38 458.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 <g id="a3-chip-lossy-mp3-a-flac-copy-may-exist" inkscape:label="Chip · Lossy MP3: a FLAC copy may exist">
-<rect x="976" y="411" width="228.05" height="22" rx="6" fill="#F8EBEC"/>
-<circle cx="987" cy="422" r="3" fill="#BC3843"/>
-<text x="994" y="425.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#922E3D" xml:space="preserve">Lossy MP3: a FLAC copy may exist</text>
+<rect x="822" y="450" width="228.05" height="22" rx="6" fill="#F8EBEC"/>
+<circle cx="833" cy="461" r="3" fill="#BC3843"/>
+<text x="840" y="464.96" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#922E3D" xml:space="preserve">Lossy MP3: a FLAC copy may exist</text>
 </g>
 <g id="a3-button-fix-3" inkscape:label="Button · Fix">
-<rect x="1365.28" y="408.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<text x="1376.78" y="426.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
+<rect x="1365.28" y="447.5" width="42.22" height="27" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<text x="1376.78" y="465.32" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#0F0D1A" xml:space="preserve">Fix</text>
 </g>
 </g>
 </g>
 </g>
 <g inkscape:groupmode="layer" id="a3-layer-album-view" inkscape:label="Album view">
 <g id="a3-card-album-view" inkscape:label="Card · Album view">
-<rect x="216.5" y="486.5" width="1207" height="397" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="16.5" y="518.5" width="1407" height="365" rx="12" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
 <g id="a3-cover-ok-computer-2" inkscape:label="Cover · OK Computer">
-<rect x="232" y="502" width="56" height="56" rx="7" fill="#E4DFE6"/>
-<path d="M237.6 545.68 L262.8 512.08 L282.4 518.8 L255.52 552.4 Z" fill="#5C53A2"/>
-<rect x="266.72" y="533.36" width="8.96" height="8.96" fill="#BC3843"/>
-<rect x="237.6" y="507.6" width="19.04" height="1.68" fill="#0F0D1A"/>
-<rect x="237.6" y="511.52" width="12.32" height="1.68" fill="#2C284E"/>
+<rect x="32" y="534" width="56" height="56" rx="7" fill="#E4DFE6"/>
+<path d="M37.6 577.68 L62.8 544.08 L82.4 550.8 L55.52 584.4 Z" fill="#5C53A2"/>
+<rect x="66.72" y="565.36" width="8.96" height="8.96" fill="#BC3843"/>
+<rect x="37.6" y="539.6" width="19.04" height="1.68" fill="#0F0D1A"/>
+<rect x="37.6" y="543.52" width="12.32" height="1.68" fill="#2C284E"/>
 </g>
-<text x="304" y="524" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#0F0D1A" xml:space="preserve">OK Computer</text>
-<text x="304" y="544" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead · 1997 · 12 tracks · 53:21 · Music/Radiohead/OK Computer (1997)/</text>
+<text x="104" y="556" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#0F0D1A" xml:space="preserve">OK Computer</text>
+<text x="104" y="576" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead · 1997 · 12 tracks · 53:21 · Music/Radiohead/OK Computer (1997)/</text>
 <g id="a3-quality-badge-lossless-cd-rip" inkscape:label="Quality badge · Lossless · CD rip">
-<rect x="443.55" y="510" width="122.11" height="20" rx="6" fill="#20A76B"/>
-<path d="M 461.49 520 A 4.69 4.69 0 1 1 452.11 520 A 4.69 4.69 0 1 1 461.49 520 Z M 458.36 520 A 1.56 1.56 0 1 1 455.24 520 A 1.56 1.56 0 1 1 458.36 520 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="466.05" y="523.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Lossless · CD rip</text>
+<rect x="243.55" y="542" width="122.11" height="20" rx="6" fill="#20A76B"/>
+<path d="M 261.49 552 A 4.69 4.69 0 1 1 252.11 552 A 4.69 4.69 0 1 1 261.49 552 Z M 258.36 552 A 1.56 1.56 0 1 1 255.24 552 A 1.56 1.56 0 1 1 258.36 552 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="266.05" y="555.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#FFFFFF" xml:space="preserve">Lossless · CD rip</text>
 </g>
 <g id="a3-chip-flac-16-44-1" inkscape:label="Chip · FLAC 16/44.1">
-<rect x="571.66" y="510" width="90.09" height="20" rx="5" fill="#EDEAEF"/>
-<text x="579.66" y="523.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#2C284E" xml:space="preserve">FLAC 16/44.1</text>
+<rect x="371.66" y="542" width="90.09" height="20" rx="5" fill="#EDEAEF"/>
+<text x="379.66" y="555.78" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#2C284E" xml:space="preserve">FLAC 16/44.1</text>
 </g>
 <g id="a3-button-open-folder" inkscape:label="Button · Open folder">
-<rect x="1376.5" y="504.5" width="31" height="31" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1385.4 516.15 A 1.1 1.1 0 0 1 1386.5 515.05 H 1390.35 L 1392 516.7 H 1397.5 A 1.1 1.1 0 0 1 1398.6 517.8 V 524.4 A 1.1 1.1 0 0 1 1397.5 525.5 H 1386.5 A 1.1 1.1 0 0 1 1385.4 524.4 Z" fill="none" stroke="#2C284E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1376.5" y="536.5" width="31" height="31" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1385.4 548.15 A 1.1 1.1 0 0 1 1386.5 547.05 H 1390.35 L 1392 548.7 H 1397.5 A 1.1 1.1 0 0 1 1398.6 549.8 V 556.4 A 1.1 1.1 0 0 1 1397.5 557.5 H 1386.5 A 1.1 1.1 0 0 1 1385.4 556.4 Z" fill="none" stroke="#2C284E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 <g id="a3-button-cd-art" inkscape:label="Button · CD art">
-<rect x="1284.3" y="504.5" width="83.2" height="31" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
-<path d="M 1308.92 520 A 5.62 5.62 0 1 1 1297.67 520 A 5.62 5.62 0 1 1 1308.92 520 Z M 1305.17 520 A 1.88 1.88 0 1 1 1301.42 520 A 1.88 1.88 0 1 1 1305.17 520 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="1314.8" y="524.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">CD art</text>
+<rect x="1284.3" y="536.5" width="83.2" height="31" rx="8" fill="#FFFFFF" stroke="#CFC9DA" stroke-width="1"/>
+<path d="M 1308.92 552 A 5.62 5.62 0 1 1 1297.67 552 A 5.62 5.62 0 1 1 1308.92 552 Z M 1305.17 552 A 1.88 1.88 0 1 1 1301.42 552 A 1.88 1.88 0 1 1 1305.17 552 Z" fill="none" stroke="#0F0D1A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1314.8" y="556.68" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#0F0D1A" xml:space="preserve">CD art</text>
 </g>
 <g id="a3-tracks" inkscape:label="Tracks">
-<text x="232" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">#</text>
-<text x="258" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">TITLE</text>
-<text x="602" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
-<text x="752" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">LENGTH</text>
-<text x="812" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TAGS</text>
-<line x1="232" y1="594.5" x2="812" y2="594.5" stroke="#CFC9DA" stroke-width="1"/>
-<text x="232" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">1</text>
-<text x="258" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Airbag</text>
-<text x="602" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:44</text>
-<circle cx="805" cy="612" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 612.38 L 803.88 614.62 L 808.38 609.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="232" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">2</text>
-<text x="258" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Paranoid Android</text>
-<text x="602" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">6:23</text>
-<circle cx="805" cy="642" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 642.38 L 803.88 644.62 L 808.38 639.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="232" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">3</text>
-<text x="258" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Subterranean Homesick Alien</text>
-<text x="602" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:27</text>
-<circle cx="805" cy="672" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 672.38 L 803.88 674.62 L 808.38 669.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="232" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">4</text>
-<text x="258" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Exit Music (For a Film)</text>
-<text x="602" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:24</text>
-<circle cx="805" cy="702" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 702.38 L 803.88 704.62 L 808.38 699.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="232" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">5</text>
-<text x="258" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Let Down</text>
-<text x="602" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:59</text>
-<circle cx="805" cy="732" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 732.38 L 803.88 734.62 L 808.38 729.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="232" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">6</text>
-<text x="258" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Karma Police</text>
-<text x="602" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="752" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:21</text>
-<circle cx="805" cy="762" r="7" fill="#E2F4EC"/>
-<path d="M 801.62 762.38 L 803.88 764.62 L 808.38 759.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">#</text>
-<text x="854" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">TITLE</text>
-<text x="1198" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
-<text x="1348" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">LENGTH</text>
-<text x="1408" y="586" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TAGS</text>
-<line x1="828" y1="594.5" x2="1408" y2="594.5" stroke="#CFC9DA" stroke-width="1"/>
-<rect x="822" y="598" width="592" height="28" rx="6" fill="#FDF1D8"/>
-<text x="828" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#6D5332" xml:space="preserve">–</text>
-<text x="854" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Fitter Happier</text>
+<text x="32" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">#</text>
+<text x="58" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">TITLE</text>
+<text x="502" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
+<text x="652" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">LENGTH</text>
+<text x="712" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TAGS</text>
+<line x1="32" y1="624.5" x2="712" y2="624.5" stroke="#CFC9DA" stroke-width="1"/>
+<text x="32" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">1</text>
+<text x="58" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Airbag</text>
+<text x="502" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:44</text>
+<circle cx="705" cy="642" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 642.38 L 703.88 644.62 L 708.38 639.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="32" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">2</text>
+<text x="58" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Paranoid Android</text>
+<text x="502" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">6:23</text>
+<circle cx="705" cy="672" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 672.38 L 703.88 674.62 L 708.38 669.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="32" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">3</text>
+<text x="58" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Subterranean Homesick Alien</text>
+<text x="502" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:27</text>
+<circle cx="705" cy="702" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 702.38 L 703.88 704.62 L 708.38 699.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="32" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">4</text>
+<text x="58" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Exit Music (For a Film)</text>
+<text x="502" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:24</text>
+<circle cx="705" cy="732" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 732.38 L 703.88 734.62 L 708.38 729.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="32" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">5</text>
+<text x="58" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Let Down</text>
+<text x="502" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:59</text>
+<circle cx="705" cy="762" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 762.38 L 703.88 764.62 L 708.38 759.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="32" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">6</text>
+<text x="58" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Karma Police</text>
+<text x="502" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="652" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:21</text>
+<circle cx="705" cy="792" r="7" fill="#E2F4EC"/>
+<path d="M 701.62 792.38 L 703.88 794.62 L 708.38 789.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="728" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">#</text>
+<text x="754" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">TITLE</text>
+<text x="1198" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" letter-spacing="0.5" xml:space="preserve">ARTIST</text>
+<text x="1348" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">LENGTH</text>
+<text x="1408" y="616" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#7B7782" text-anchor="end" letter-spacing="0.5" xml:space="preserve">TAGS</text>
+<line x1="728" y1="624.5" x2="1408" y2="624.5" stroke="#CFC9DA" stroke-width="1"/>
+<rect x="722" y="628" width="692" height="28" rx="6" fill="#FDF1D8"/>
+<text x="728" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#6D5332" xml:space="preserve">–</text>
+<text x="754" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Fitter Happier</text>
 <g id="a3-chip-no-track-number" inkscape:label="Chip · no track number">
-<rect x="946.26" y="603" width="93.87" height="18" rx="5" fill="#F4B73E"/>
-<text x="952.26" y="615.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#0F0D1A" xml:space="preserve">no track number</text>
+<rect x="846.26" y="633" width="93.87" height="18" rx="5" fill="#F4B73E"/>
+<text x="852.26" y="645.6" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#0F0D1A" xml:space="preserve">no track number</text>
 </g>
-<text x="1198" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="617" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">1:57</text>
-<circle cx="1401" cy="612" r="7" fill="#FDF1D8"/>
-<path d="M 1401 607.72 L 1405.26 615.08 H 1396.74 Z M 1401 610.47 V 612.39 M 1401 613.77 V 613.84" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">8</text>
-<text x="854" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Electioneering</text>
 <text x="1198" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">3:50</text>
-<circle cx="1401" cy="642" r="7" fill="#E2F4EC"/>
-<path d="M 1397.62 642.38 L 1399.88 644.62 L 1404.38 639.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">9</text>
-<text x="854" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Climbing Up the Walls</text>
+<text x="1348" y="647" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">1:57</text>
+<circle cx="1401" cy="642" r="7" fill="#FDF1D8"/>
+<path d="M 1401 637.72 L 1405.26 645.08 H 1396.74 Z M 1401 640.47 V 642.39 M 1401 643.77 V 643.84" fill="none" stroke="#6D5332" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="728" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">8</text>
+<text x="754" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Electioneering</text>
 <text x="1198" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:45</text>
+<text x="1348" y="677" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">3:50</text>
 <circle cx="1401" cy="672" r="7" fill="#E2F4EC"/>
 <path d="M 1397.62 672.38 L 1399.88 674.62 L 1404.38 669.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">10</text>
-<text x="854" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">No Surprises</text>
+<text x="728" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">9</text>
+<text x="754" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Climbing Up the Walls</text>
 <text x="1198" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">3:48</text>
+<text x="1348" y="707" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:45</text>
 <circle cx="1401" cy="702" r="7" fill="#E2F4EC"/>
 <path d="M 1397.62 702.38 L 1399.88 704.62 L 1404.38 699.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">11</text>
-<text x="854" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Lucky</text>
+<text x="728" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">10</text>
+<text x="754" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">No Surprises</text>
 <text x="1198" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:19</text>
+<text x="1348" y="737" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">3:48</text>
 <circle cx="1401" cy="732" r="7" fill="#E2F4EC"/>
 <path d="M 1397.62 732.38 L 1399.88 734.62 L 1404.38 729.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="828" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">12</text>
-<text x="854" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">The Tourist</text>
+<text x="728" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">11</text>
+<text x="754" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">Lucky</text>
 <text x="1198" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
-<text x="1348" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">5:24</text>
+<text x="1348" y="767" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">4:19</text>
 <circle cx="1401" cy="762" r="7" fill="#E2F4EC"/>
 <path d="M 1397.62 762.38 L 1399.88 764.62 L 1404.38 759.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="728" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="500" fill="#7B7782" xml:space="preserve">12</text>
+<text x="754" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="500" fill="#0F0D1A" xml:space="preserve">The Tourist</text>
+<text x="1198" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" xml:space="preserve">Radiohead</text>
+<text x="1348" y="797" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#2C284E" text-anchor="end" xml:space="preserve">5:24</text>
+<circle cx="1401" cy="792" r="7" fill="#E2F4EC"/>
+<path d="M 1397.62 792.38 L 1399.88 794.62 L 1404.38 789.38" fill="none" stroke="#20A76B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 </g>
 </g>

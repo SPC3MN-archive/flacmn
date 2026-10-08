@@ -1,13 +1,13 @@
 """Print sheets for a standard CD jewel case, as a PDF at true size (print at 100% / "actual size", not "fit").
 
-    front insert   120 x 120 mm         booklet spread 240 x 120 mm (folds in the middle)
-    tray card      151 x 118 mm         = two 6.5 mm spines + 138 mm back, folds on the dashed lines
+    front insert   120 x 120 mm         printed both sides: front cover outside, inside of the insert on the back
+    tray card      151 x 118 mm         = two 6.5 mm spines + 138 mm back; on its reverse, the under-tray image
     disc label     118 mm across, with a centre hole (41 mm for most sticker labels; 23 mm or less for printable discs)
 
 Every piece has crop marks; images run 1.5 mm past the cut line (bleed) so a slightly-off cut leaves no white edge.
-A booklet is imposed for double-sided printing (flip on the short edge), so the folded sheets read in page order.
-Anything missing is generated: a tracklist tray card, spines with the artist and album, a disc label cut from the
-front cover. Each piece reports the resolution its image prints at; under 200 dpi it will look soft.
+Page 1 is the outside of the case, page 2 the inside (printed on the back of page 1), page 3 the disc label.
+Anything missing is generated: a tracklist tray card or inside panel, spines with the artist and album, a disc label
+cut from the front cover. Each piece reports the resolution its image prints at; under 200 dpi it will look soft.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Optional
 
 from PIL import Image
-from reportlab.lib.pagesizes import A4, LETTER, landscape
+from reportlab.lib.pagesizes import A4, LETTER
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
@@ -49,7 +49,7 @@ class PrintOptions:
 
 @dataclass
 class Piece:
-    name: str                        # "front insert", "tray card", "disc label", "booklet sheet 1 (outside)"
+    name: str                        # "front cover", "back + spines", "inside of front insert", "under-tray image", "disc label"
     page: int
     source: str                      # image label, or "generated: ..."
     dpi: Optional[int] = None
@@ -127,7 +127,7 @@ def reader(img: Image.Image) -> ImageReader:
 
 
 def split_spread(img: Image.Image) -> list:
-    """A booklet scan that shows two pages side by side becomes two pages."""
+    """A scan that shows two pages side by side (an opened booklet) becomes two pages."""
     w, h = img.size
     if w / h < 1.6:
         return [img]
@@ -143,19 +143,6 @@ def edge_colour(img: Image.Image) -> tuple:
 def text_colour(rgb: tuple) -> tuple:
     lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
     return (0, 0, 0) if lum > 0.55 else (1, 1, 1)
-
-
-def impose(pages: list) -> list:
-    """Saddle-stitch order for a folded booklet. pages: page 1 (front cover) .. page n. Returns sheets as
-    [(outside_left, outside_right), (inside_left, inside_right)], padded with None to a multiple of 4."""
-    pages = list(pages) + [None] * (-len(pages) % 4)
-    n = len(pages)
-    sheets = []
-    for i in range(n // 4):
-        outside = (pages[n - 1 - 2 * i], pages[2 * i])
-        inside = (pages[2 * i + 1], pages[n - 2 - 2 * i])
-        sheets.append((outside, inside))
-    return sheets
 
 
 # ---- drawing -----------------------------------------------------------------------------------------------------
@@ -315,12 +302,16 @@ def draw_disc(sh: Sheet, img: Optional[Image.Image], cx: float, cy: float, title
 # ---- the document ------------------------------------------------------------------------------------------------
 
 def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optional[list] = None,
-           front: Optional[Art] = None, back: Optional[Art] = None, disc: Optional[Art] = None,
-           tray: Optional[Art] = None, booklet: Optional[list] = None, opts: Optional[PrintOptions] = None) -> PrintReport:
-    """Write the print PDF to `path`. booklet: [Art] of the pages after the front cover, in reading order."""
+           front: Optional[Art] = None, back: Optional[Art] = None, inside: Optional[Art] = None,
+           tray: Optional[Art] = None, disc: Optional[Art] = None, opts: Optional[PrintOptions] = None) -> PrintReport:
+    """Write the print PDF to `path`:
+      page 1  OUTSIDE  front cover (front insert) above the tray card (back + both spines)
+      page 2  INSIDE   print on the back of page 1: the inside of the front insert behind the front cover, and the
+                       under-tray image (seen through the clear tray) behind the tray card's back panel
+      page 3  DISC     the disc label(s), for label stock or a printable disc
+    Both inserts are centred, so a double-sided print flipped on the long edge lines the inside up with the outside."""
     opts = opts or PrintOptions()
     tracks = tracks or []
-    booklet = booklet or []
     report = PrintReport(paper=opts.paper)
     page_size = PAPERS.get(opts.paper, LETTER)
     pw, ph = page_size[0] / mm, page_size[1] / mm
@@ -328,131 +319,91 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
     c.setTitle(f"{artist} - {album}: CD jewel case")
     c.setAuthor("iaflac")
     sh = Sheet(c, opts)
-    page = 1
     title = f"{artist} — {album}" + (f" ({year})" if year else "")
     front_img = front.image() if front else None
+    page = [1]
 
     def piece(name, source, dpi=None):
         warn = f"{dpi} dpi: will print soft" if dpi is not None and dpi < SOFT_DPI else ""
-        report.pieces.append(Piece(name, page, source, dpi, warn))
+        report.pieces.append(Piece(name, page[0], source, dpi, warn))
 
     def footer(text):
-        sh.label(f"{title}  ·  {text}  ·  print at 100% (actual size)", 12, 8)
+        sh.label(f"{title}  ·  {text}  ·  print at 100% (actual size)", 12, 6)
 
-    def tray_card(x, y):
-        if back is not None:
-            img = back.image()
-            ratio = img.size[0] / img.size[1]
-            if ratio >= (SPINE_RATIO + BACK_RATIO) / 2:          # the scan includes its spines
-                dpi = sh.image(img, x, y, TRAY_W, TRAY_H)
-                piece("tray card", back.label, dpi)
-            else:
-                dpi = sh.image(img, x + SPINE, y, TRAY_W - 2 * SPINE, TRAY_H)
-                draw_spines(sh, x, y, f"{artist}  ·  {album}", edge_colour(img))
-                piece("tray card", f"{back.label} (spines generated)", dpi)
-        else:
-            bg = edge_colour(front_img) if front_img is not None else (1, 1, 1)
-            draw_tracklist(sh, x + SPINE, y, TRAY_W - 2 * SPINE, TRAY_H, artist, album, year, tracks, bg)
-            draw_spines(sh, x, y, f"{artist}  ·  {album}", bg)
-            piece("tray card", "generated: tracklist from your tags")
-        sh.marks(x, y, TRAY_W, TRAY_H)
-        sh.fold(x + SPINE, y, TRAY_H)
-        sh.fold(x + TRAY_W - SPINE, y, TRAY_H)
-        sh.label("tray card · fold on the dashed marks", x, y + TRAY_H + MARK_GAP + opts.bleed + MARK_LEN + 1.5)
-
-    def front_insert(x, y):
-        if front_img is not None:
-            piece("front insert", front.label, sh.image(front_img, x, y, FRONT_W, FRONT_H))
-        else:
-            draw_tracklist(sh, x, y, FRONT_W, FRONT_H, artist, album, year, [], (1, 1, 1))
-            piece("front insert", "generated: title only (no front cover found)")
-        sh.marks(x, y, FRONT_W, FRONT_H)
-        sh.label("front insert", x, y + FRONT_H + MARK_GAP + opts.bleed + MARK_LEN + 1.5)
-
-    disc_img = disc.image() if disc else None
-
-    def disc_labels(top_y, count, first=0):
-        img = disc_img if disc_img is not None else front_img
-        src = disc.label if disc else ("generated: cut from the front cover" if front_img else "generated: title only")
-        several = opts.discs > 1
-        for k in range(count):
-            n = first + k
-            cy = top_y - opts.disc_outer / 2 - k * (opts.disc_outer + 14)
-            dpi = draw_disc(sh, img, pw / 2, cy, album, artist + (f" · disc {n + 1}" if several else ""))
-            name = f"disc label{f' {n + 1}' if several else ''}"
-            piece(name, src, dpi)
-            sh.label(f"{name} · {opts.disc_outer:g} mm, hole {opts.disc_inner:g} mm",
-                     pw / 2 - opts.disc_outer / 2, cy + opts.disc_outer / 2 + 2)
-
-    # Each portrait page holds one large piece at the top and, below it, a disc label (or nothing).
-    top = ph - 14
-    discs_left = list(range(max(1, opts.discs)))
-
-    def disc_below(piece_y: float) -> str:
-        if not discs_left:
-            return ""
-        disc_labels(piece_y - 14, 1, discs_left.pop(0))
-        return " + disc label"
-
-    y = top - TRAY_H
-    tray_card((pw - TRAY_W) / 2, y)
-    footer("tray card" + disc_below(y))
-    c.showPage()
-    page += 1
-    if not booklet:
-        y = top - FRONT_H
-        front_insert((pw - FRONT_W) / 2, y)
-        footer("front insert" + disc_below(y))
+    def next_page():
         c.showPage()
-        page += 1
-    while discs_left:
-        disc_labels(top - 8, 1, discs_left.pop(0))
-        footer("disc label")
-        c.showPage()
-        page += 1
-    if booklet:
-        pages = [front_img]
-        page_src = [front.label if front else "blank"]
-        for art in booklet:
-            for part in split_spread(art.image()):
-                pages.append(part)
-                page_src.append(art.label)
-        sheets = impose(list(range(len(pages))))
-        lw, lh = landscape(page_size)[0] / mm, landscape(page_size)[1] / mm
-        for s, (outside, inside) in enumerate(sheets, 1):
-            for side, pair in (("outside", outside), ("inside", inside)):
-                c.setPageSize(landscape(page_size))
-                x0, y0 = (lw - 2 * FRONT_W) / 2, (lh - FRONT_H) / 2
-                dpis = []
-                for k, idx in enumerate(pair):
-                    if idx is not None and pages[idx] is not None:
-                        dpis.append(sh.image(pages[idx], x0 + k * FRONT_W, y0, FRONT_W, FRONT_H))
-                sh.marks(x0, y0, 2 * FRONT_W, FRONT_H)
-                sh.fold(x0 + FRONT_W, y0, FRONT_H)
-                nums = " | ".join(str(i + 1) if i is not None and i < len(pages) else "blank" for i in pair)
-                sh.label(f"booklet sheet {s} ({side}) · pages {nums} · fold on the dashed marks", x0,
-                         y0 + FRONT_H + MARK_GAP + opts.bleed + MARK_LEN + 1.5)
-                srcs = {page_src[i] for i in pair if i is not None and i < len(page_src)}
-                piece(f"booklet sheet {s} ({side})", "; ".join(sorted(srcs)) or "blank", min(dpis) if dpis else None)
-                sh.label(f"{title}  ·  booklet sheet {s} {side}  ·  print double-sided, flip on the short edge, "
-                         f"at 100% (actual size)", 12, 8)
-                c.showPage()
-                page += 1
-        report.instructions.append(f"Booklet: {len(sheets)} sheet(s). Print those pages double-sided, flipping on the "
-                                   "short edge, then fold each sheet and nest them in order.")
+        page[0] += 1
+
+    # the two inserts share one position on both sides of the sheet
+    fx, fy = (pw - FRONT_W) / 2, ph - 12 - FRONT_H
+    tx, ty = (pw - TRAY_W) / 2, fy - 10 - TRAY_H
+
+    # ---- page 1: outside
+    if front_img is not None:
+        piece("front cover", front.label, sh.image(front_img, fx, fy, FRONT_W, FRONT_H))
+    else:
+        draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, [], (1, 1, 1))
+        piece("front cover", "generated: title only (no front cover found)")
+    sh.marks(fx, fy, FRONT_W, FRONT_H)
+    if back is not None:
+        img = back.image()
+        if img.size[0] / img.size[1] >= (SPINE_RATIO + BACK_RATIO) / 2:       # the scan includes its spines
+            piece("back + spines", back.label, sh.image(img, tx, ty, TRAY_W, TRAY_H))
+        else:
+            dpi = sh.image(img, tx + SPINE, ty, TRAY_W - 2 * SPINE, TRAY_H)
+            draw_spines(sh, tx, ty, f"{artist}  ·  {album}", edge_colour(img))
+            piece("back + spines", f"{back.label} (spines generated)", dpi)
+    else:
+        bg = edge_colour(front_img) if front_img is not None else (1, 1, 1)
+        draw_tracklist(sh, tx + SPINE, ty, TRAY_W - 2 * SPINE, TRAY_H, artist, album, year, tracks, bg)
+        draw_spines(sh, tx, ty, f"{artist}  ·  {album}", bg)
+        piece("back + spines", "generated: tracklist from your tags")
+    sh.marks(tx, ty, TRAY_W, TRAY_H)
+    sh.fold(tx + SPINE, ty, TRAY_H)
+    sh.fold(tx + TRAY_W - SPINE, ty, TRAY_H)
+    footer("OUTSIDE (page 1)")
+    next_page()
+
+    # ---- page 2: inside, on the back of page 1 (no crop marks: cut from the outside)
+    saved_marks, opts.crop_marks = opts.crop_marks, False
+    if inside is not None:
+        piece("inside of front insert", inside.label, sh.image(split_spread(inside.image())[0], fx, fy, FRONT_W, FRONT_H))
+    else:
+        draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, tracks, (1, 1, 1))
+        piece("inside of front insert", "generated: tracklist from your tags")
     if tray is not None:
-        c.setPageSize(page_size)
-        x, y = (pw - (TRAY_W - 2 * SPINE)) / 2, top - TRAY_H
-        dpi = sh.image(tray.image(), x, y, TRAY_W - 2 * SPINE, TRAY_H)
-        sh.marks(x, y, TRAY_W - 2 * SPINE, TRAY_H)
-        sh.label("under-tray card (seen through the clear tray) · glue to the back of the tray card or cut separately",
-                 x, y + TRAY_H + MARK_GAP + opts.bleed + MARK_LEN + 1.5)
-        piece("under-tray card", tray.label, dpi)
-        footer("inside of the tray")
-        c.showPage()
-        page += 1
+        piece("under-tray image", tray.label, sh.image(tray.image(), tx + SPINE, ty, TRAY_W - 2 * SPINE, TRAY_H))
+    else:
+        piece("under-tray image", "none found: left blank")
+    opts.crop_marks = saved_marks
+    footer("INSIDE (page 2): print on the back of page 1, double-sided, flip on the long edge")
+    next_page()
+
+    # ---- page 3: disc label(s)
+    disc_img = disc.image() if disc else front_img
+    src = disc.label if disc else ("generated: cut from the front cover" if front_img else "generated: title only")
+    count = max(1, opts.discs)
+    per_page = 2 if ph - 26 >= 2 * opts.disc_outer + 14 else 1
+    for n in range(count):
+        k = n % per_page
+        cy = ph - 14 - opts.disc_outer / 2 - k * (opts.disc_outer + 14)
+        name = f"disc label{f' {n + 1}' if count > 1 else ''}"
+        dpi = draw_disc(sh, disc_img, pw / 2, cy, album, artist + (f" · disc {n + 1}" if count > 1 else ""))
+        piece(name, src, dpi)
+        sh.label(f"{name} · {opts.disc_outer:g} mm, hole {opts.disc_inner:g} mm", pw / 2 - opts.disc_outer / 2,
+                 cy + opts.disc_outer / 2 + 2)
+        if k == per_page - 1 or n == count - 1:
+            footer("DISC (page 3): print on CD label stock or a printable disc")
+            next_page()
     c.save()
-    report.pages = page - 1
-    report.instructions.insert(0, "Print at 100% / Actual size (turn off 'Fit to page'), then cut on the crop marks.")
-    report.instructions.append("Tray card: fold the two spines back on the dashed marks before sliding it under the tray.")
+    report.pages = page[0] - 1
+    report.instructions = [
+        "Print at 100% / Actual size (turn off 'Fit to page').",
+        "Pages 1 and 2 are one sheet: print double-sided, flipping on the long edge, so the inside lands behind the "
+        "outside. Then cut on the crop marks of page 1.",
+        "Tray card: fold the two spines back on the dashed marks; the printed back faces out of the case and the "
+        "under-tray image faces in, behind the clear tray.",
+        "Disc label: print page 3 on CD label stock or a printable disc"
+        + (f" (hole {opts.disc_inner:g} mm; change it in Settings to match your labels)." if opts.disc_inner else "."),
+    ]
     return report

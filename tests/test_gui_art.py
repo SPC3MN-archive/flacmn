@@ -69,9 +69,9 @@ class ArtApi(unittest.TestCase):
         by_id = {i["id"]: i for i in art["images"]}
         self.assertEqual(by_id[sel["front"]]["release_id"], "rel-2", "the front matches the booklet's pressing")
         self.assertEqual(by_id[sel["front"]]["dpi"], 253)
-        # choose the album's own cover.jpg instead and drop the booklet
+        # choose the album's own cover.jpg instead and leave the inside blank (a generated tracklist)
         own = next(i for i in front_ids if by_id[i]["source"] == "folder")
-        state = self.http.put("/api/art/selection", json={"folder": folder, "selection": {**sel, "front": own, "booklet": []}}).json()
+        state = self.http.put("/api/art/selection", json={"folder": folder, "selection": {**sel, "front": own, "inside": None}}).json()
         self.assertEqual(state["selection"]["front"], own)
         caa_front = sel["front"]
         bad = self.http.put("/api/art/selection", json={"folder": folder, "selection": {"front": "nope"}})
@@ -80,7 +80,9 @@ class ArtApi(unittest.TestCase):
         self.assertEqual((img.status_code, img.headers["content-type"]), (200, "image/jpeg"))
         printed = self.wait(self.http.post("/api/art/print", json={"folder": folder}).json()["job_id"])
         self.assertTrue(printed["pdf"].endswith("Test Artist - Test Album (1999) - CD case.pdf"))
-        self.assertEqual([p["name"] for p in printed["pieces"]], ["tray card", "disc label", "front insert"])
+        self.assertEqual([p["name"] for p in printed["pieces"]],
+                         ["front cover", "back + spines", "inside of front insert", "under-tray image", "disc label"])
+        self.assertTrue(printed["pieces"][2]["source"].startswith("generated"))
         pdf = self.http.get("/api/art/pdf", params={"folder": folder})
         self.assertEqual((pdf.status_code, pdf.content[:5]), (200, b"%PDF-"))
         with mock.patch("iaflac.gui.service.open_with_system") as opened:
@@ -92,7 +94,7 @@ class ArtApi(unittest.TestCase):
     def test_whole_library_checklist(self):
         summary = self.wait(self.http.post("/api/art/scan-all").json()["job_id"])
         row = summary["albums"][0]
-        self.assertEqual((row["folder"], row["complete"], row["missing"]), ("Test Artist/Test Album (1999)", True, []))
+        self.assertEqual((row["folder"], row["complete"], row["missing"]), ("Test Artist/Test Album (1999)", False, ["under-tray"]))
         self.assertEqual(self.http.get("/api/art/summary").json()["albums"][0]["folder"], row["folder"])
 
     def test_folders_outside_the_library_are_refused(self):

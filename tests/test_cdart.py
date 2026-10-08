@@ -33,14 +33,7 @@ class Names(unittest.TestCase):
             self.assertEqual(cdart.classify_name(name), kind, name)
 
 
-class Imposition(unittest.TestCase):
-    def test_eight_page_booklet(self):
-        self.assertEqual(jc.impose([1, 2, 3, 4, 5, 6, 7, 8]),
-                         [((8, 1), (2, 7)), ((6, 3), (4, 5))])
-
-    def test_padding_with_blanks(self):
-        self.assertEqual(jc.impose([1, 2, 3]), [((None, 1), (2, 3))])
-
+class Spreads(unittest.TestCase):
     def test_spreads_split_into_pages(self):
         from PIL import Image
         self.assertEqual(len(jc.split_spread(Image.new("RGB", (2400, 1200)))), 2)
@@ -155,7 +148,8 @@ class FindArt(unittest.TestCase):
     def test_the_case_comes_from_one_scan_set_when_it_is_sharp_enough(self):
         art = self.find()
         sel = cdart.default_selection(art)
-        self.assertEqual([art.get(i).ref for i in sel["booklet"]], ["https://caa/rel-2/b1.jpg", "https://caa/rel-2/b2.jpg"])
+        self.assertEqual(sorted(sel), ["back", "disc", "front", "inside", "tray"])
+        self.assertEqual(art.get(sel["inside"]).ref, "https://caa/rel-2/b1.jpg", "the first booklet page")
         for kind in ("front", "back", "disc"):
             self.assertEqual(art.get(sel[kind]).release_id, "rel-2", f"{kind} matches the booklet's pressing")
 
@@ -177,27 +171,26 @@ class FindArt(unittest.TestCase):
 
         out = self.library / "print.pdf"
         report = jc.render(out, artist=art.artist, album=art.album, year=art.year, tracks=art.tracks,
-                           front=get("front"), back=get("back"), disc=get("disc"),
-                           booklet=[jc.Art(fetcher.get(art.get(i)), art.get(i).label) for i in sel["booklet"]])
+                           **{k: get(k) for k in cdart.PARTS})
         from pypdf import PdfReader
         pdf = PdfReader(str(out))
         self.assertEqual(len(pdf.pages), report.pages)
-        self.assertEqual(report.pages, 3, "tray+disc, booklet outside, booklet inside")
-        letter = (round(float(pdf.pages[0].mediabox.width)), round(float(pdf.pages[0].mediabox.height)))
-        self.assertEqual(letter, (612, 792))
-        self.assertGreater(float(pdf.pages[1].mediabox.width), float(pdf.pages[1].mediabox.height), "booklet pages are landscape")
-        names = [p.name for p in report.pieces]
-        self.assertEqual(names, ["tray card", "disc label", "booklet sheet 1 (outside)", "booklet sheet 1 (inside)"])
-        tray = report.pieces[0]
-        self.assertNotIn("spines generated", tray.source, "the 1510x1180 scan includes its spines")
+        self.assertEqual(report.pages, 3, "outside, inside, disc")
+        sizes = {(round(float(pg.mediabox.width)), round(float(pg.mediabox.height))) for pg in pdf.pages}
+        self.assertEqual(sizes, {(612, 792)}, "Letter portrait throughout, so the inside lines up with the outside")
+        self.assertEqual([(p.page, p.name) for p in report.pieces],
+                         [(1, "front cover"), (1, "back + spines"), (2, "inside of front insert"), (2, "under-tray image"),
+                          (3, "disc label")])
+        self.assertNotIn("spines generated", report.pieces[1].source, "the 1500x1180 scan includes its spines")
+        self.assertEqual(report.pieces[3].source, "none found: left blank")
 
     def test_save_scans_into_the_album_folder(self):
         art = self.find()
         fetcher = cdart.ArtFetcher(self.mb, self.ia, cache=self.library / ".art-cache")
         written = cdart.save_to_folder(art, cdart.default_selection(art), self.folder, fetcher)
         names = sorted(Path(p).name for p in written)
-        self.assertEqual(names, ["back.jpg", "booklet-01.jpg", "booklet-02.jpg", "disc.jpg", "front.jpg"])
-        self.assertEqual(len(self.mb.fetched), 5, "only the chosen scans were downloaded")
+        self.assertEqual(names, ["back.jpg", "disc.jpg", "front.jpg", "inside.jpg"])
+        self.assertEqual(len(self.mb.fetched), 4, "only the chosen scans were downloaded")
         self.assertTrue((self.folder / "cover.jpg").exists(), "the player's cover is left alone")
 
     def test_an_untagged_album_is_matched_on_musicbrainz_first(self):
@@ -230,7 +223,8 @@ class FindArt(unittest.TestCase):
         art = cdart.find_art(empty, mb_client=None, ia_client=None, library_root=self.library)
         self.assertTrue(any("tracklist tray card" in n for n in art.notes), art.notes)
         report = jc.render(self.library / "gen.pdf", artist="Nobody", album="Nothing", tracks=art.tracks)
-        self.assertEqual([p.source.split(":")[0] for p in report.pieces], ["generated", "generated", "generated"])
+        self.assertEqual([p.source.split(":")[0] for p in report.pieces],
+                         ["generated", "generated", "generated", "none found", "generated"])
 
 
 if __name__ == "__main__":

@@ -475,16 +475,11 @@ class App:
     def art_select(self, folder: str, selection: dict) -> dict:
         art = self._art(folder)
         clean = {}
-        for kind in ("front", "back", "disc", "tray"):
-            iid = selection.get(kind)
+        for part in cdart.PARTS:
+            iid = selection.get(part)
             if iid is not None and art.get(iid) is None:
-                raise ValueError(f"{kind}: unknown image {iid}")
-            clean[kind] = iid
-        pages = selection.get("booklet") or []
-        bad = [i for i in pages if art.get(i) is None]
-        if bad:
-            raise ValueError(f"booklet: unknown image {bad[0]}")
-        clean["booklet"] = list(pages)
+                raise ValueError(f"{part}: unknown image {iid}")
+            clean[part] = iid
         self.art_selections[folder] = clean
         return self.art_state(folder)
 
@@ -517,21 +512,20 @@ class App:
         def run(job: Job):
             fetcher = cdart.ArtFetcher(self.mb, self.client)
             emit = self.jobs.progress(job)
-            wanted = [k for k in ("front", "back", "disc", "tray") if sel.get(k)] + list(sel.get("booklet") or [])
+            wanted = [k for k in cdart.PARTS if sel.get(k)]
 
-            def load(iid):
-                im = art.get(iid)
-                emit({"stage": "art", "step": "fetching", "image": iid, "label": im.label,
-                      "index": wanted.index(iid) + 1 if iid in wanted else 0, "total": len(wanted)})
+            def load(part):
+                im = art.get(sel[part])
+                emit({"stage": "art", "step": "fetching", "part": part, "label": im.label,
+                      "index": wanted.index(part) + 1, "total": len(wanted)})
                 return jewelcase.Art(fetcher.get(im, cancel=job.cancelled), im.label)
 
-            parts = {k: load(sel[k]) if sel.get(k) else None for k in ("front", "back", "disc", "tray")}
-            booklet = [load(i) for i in sel.get("booklet") or []]
+            parts = {k: load(k) if sel.get(k) else None for k in cdart.PARTS}
             out = self._pdf_path(art)
             out.parent.mkdir(parents=True, exist_ok=True)
             emit({"stage": "art", "step": "rendering"})
             report = jewelcase.render(out, artist=art.artist, album=art.album, year=art.year, tracks=art.tracks,
-                                      booklet=booklet, opts=opts, **parts)
+                                      opts=opts, **parts)
             result = {"pdf": str(out), **report.to_dict()}
             self.broadcast({"type": "art_printed", "folder": folder, "pdf": str(out)})
             return result
@@ -593,8 +587,9 @@ class App:
     def _art_row(art: cdart.ArtSet) -> dict:
         c = art.completeness()
         return {"folder": art.folder, "artist": art.artist, "album": art.album, "year": art.year,
-                "completeness": c, "complete": all(c[k] for k in ("front", "back", "disc")) and c["booklet"] > 0,
-                "missing": [k for k in ("front", "back", "booklet", "disc") if not c[k]], "notes": art.notes}
+                "completeness": c, "complete": all(c[k] for k in ("front", "back", "booklet", "tray", "disc")),
+                "missing": [{"booklet": "inside", "tray": "under-tray"}.get(k, k)
+                            for k in ("front", "back", "booklet", "tray", "disc") if not c[k]], "notes": art.notes}
 
     def art_summary(self) -> dict:
         return {"albums": [self._art_row(a) for a in sorted(self.arts.values(), key=lambda a: a.folder.casefold())]}

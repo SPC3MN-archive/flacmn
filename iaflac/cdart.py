@@ -1,5 +1,5 @@
-"""Find the printed parts of a CD for an album in the library: front cover, back (tray card), booklet pages, disc label,
-the inside of the tray, spines.
+"""Find the printed parts of a CD for an album in the library: the outside of the case (front cover, back with its
+spines) and the inside (the inside of the front insert, the image under the clear tray, the disc label).
 
 Sources, most trusted first:
   1. images already in the album folder (scans you keep beside the music, e.g. Artwork/ or Scans/)
@@ -31,6 +31,7 @@ from .tagging import AlbumMeta, TrackMeta, read_track
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp", ".bmp")
 KINDS = ("front", "back", "booklet", "disc", "tray", "spine", "other")
 PRINTED = ("front", "back", "booklet", "disc", "tray")
+PARTS = ("front", "back", "inside", "tray", "disc")       # what a print uses; "inside" is chosen from booklet scans
 CAA_KIND = {"Front": "front", "Back": "back", "Booklet": "booklet", "Medium": "disc", "Tray": "tray", "Spine": "spine",
             "Liner": "booklet"}
 SOURCE_RANK = {"folder": 0, "archive.org": 1, "coverartarchive": 2, "coverartarchive-sibling": 3, "archive.org-search": 4}
@@ -398,44 +399,41 @@ def _quality(im: ArtImage, kind: str) -> float:
 
 
 def default_selection(art: ArtSet) -> dict:
-    """Which image prints where. The booklet comes from one scan set (pages of different pressings don't belong in
-    one booklet): the set with nearly the most pages and the sharpest scans. The other parts prefer that same set,
-    so the case matches, unless another scan is clearly sharper; your own folder scans get a small head start."""
-    groups: dict = {}
-    for im in art.of("booklet"):
-        groups.setdefault(im.group, []).append(im)
-    booklet, main_group = [], ""
-    if groups:
-        most = max(len(g) for g in groups.values())
+    """Which image prints where: {"front", "back", "inside", "tray", "disc"} -> image id or None.
+    The inside of the front insert is the first booklet page of a scan set (one pressing's scans, one archive.org
+    item, one folder). The set that covers the most of the five parts, sharpest, leads; every part prefers it so the
+    case matches, unless another scan is clearly sharper. Your own folder scans get a head start."""
+    candidates = {kind: art.of(kind) for kind in ("front", "back", "tray", "disc")}
+    firsts: dict = {}
+    for im in art.of("booklet"):                     # each set's first page is its inside panel
+        if im.group not in firsts or im.order < firsts[im.group].order:
+            firsts[im.group] = im
+    candidates["inside"] = list(firsts.values())
+    kind_of = {"inside": "booklet"}
 
-        def group_score(g):
-            pages = len(g) / most
-            sharp = min(_quality(i, "booklet") for i in g)
-            return (pages >= 0.75, 0.5 * pages + 0.5 * sharp, -g[0].rank)
+    def quality(im, part):
+        return _quality(im, kind_of.get(part, part))
 
-        best = max(groups.values(), key=group_score)
-        main_group = best[0].group
-        booklet = [im.id for im in sorted(best, key=lambda i: i.order)]
-    if not main_group:                               # no booklet: the set with the most printable parts leads
-        counts: dict = {}
-        for im in art.images:
-            if im.kind in ("front", "back", "disc", "tray"):
-                counts.setdefault(im.group, set()).add(im.kind)
-        main_group = max(counts, key=lambda g: len(counts[g]), default="")
+    groups = {im.group for ims in candidates.values() for im in ims}
 
-    def pick(kind):
-        cands = art.of(kind)
-        if not cands:
+    def coverage(group):
+        return sum(max((quality(im, part) for im in ims if im.group == group), default=0.0)
+                   for part, ims in candidates.items())
+
+    main_group = max(sorted(groups), key=coverage, default="")
+
+    def pick(part):
+        ims = candidates[part]
+        if not ims:
             return None
 
         def score(im):
-            return (_quality(im, kind) + (0.3 if im.group == main_group else 0.0)
+            return (quality(im, part) + (0.3 if im.group == main_group else 0.0)
                     + (0.15 if im.source == "folder" else 0.0) - 0.02 * im.rank)
 
-        return max(cands, key=score).id
+        return max(ims, key=score).id
 
-    return {"front": pick("front"), "back": pick("back"), "disc": pick("disc"), "tray": pick("tray"),
-            "booklet": booklet}
+    return {part: pick(part) for part in PARTS}
 
 
 # ---- fetching ----------------------------------------------------------------------------------------------------
@@ -483,14 +481,12 @@ class ArtFetcher:
 
 
 def save_to_folder(art: ArtSet, selection: dict, folder: Path, fetcher: ArtFetcher, subfolder: str = "Artwork") -> list:
-    """Copy the chosen scans into <album>/Artwork/ as front.jpg, back.jpg, disc.jpg, tray.jpg, booklet-01.jpg, ...
+    """Copy the chosen scans into <album>/Artwork/ as front.jpg, back.jpg, inside.jpg, tray.jpg, disc.jpg
     (cover.jpg beside the tracks is left alone, so players keep showing the same cover)."""
     out_dir = folder / subfolder
     out_dir.mkdir(exist_ok=True)
     written = []
-    plan = [(k, selection.get(k)) for k in ("front", "back", "disc", "tray")]
-    plan += [(f"booklet-{n:02d}", i) for n, i in enumerate(selection.get("booklet") or [], 1)]
-    for name, iid in plan:
+    for name, iid in ((k, selection.get(k)) for k in PARTS):
         im = art.get(iid) if iid else None
         if im is None or (im.source == "folder" and Path(im.ref).parent == out_dir):
             continue

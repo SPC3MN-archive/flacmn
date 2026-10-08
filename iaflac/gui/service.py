@@ -25,6 +25,9 @@ from .jobs import DownloadQueue, Job, JobManager, QueueItem
 from .settings import Settings
 
 
+PLAYABLE = {".flac", ".mp3", ".wav", ".ogg", ".m4a", ".opus"}     # any of the item's audio, originals or IA's derivatives
+
+
 class NotFound(LookupError):
     pass
 
@@ -424,7 +427,7 @@ class App:
     def remote_file(self, identifier: str, name: str):
         c = self.cand(identifier)
         f = next((f for f in c.item.files if f.name == name), None)
-        if f is None or f.source == "derivative" and f.format != "VBR MP3":
+        if f is None or Path(f.name).suffix.lower() not in PLAYABLE:
             raise NotFound(f"{identifier} has no playable file {name!r}")
         return c, f
 

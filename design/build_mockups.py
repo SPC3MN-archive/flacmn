@@ -1539,6 +1539,9 @@ def screen_A3(d):
                             ("Rescan library", 1, "done")])
 
 
+SHOW_QUICK_TEST = True   # round 3+ drops the quick test
+
+
 def screen_A4(d):
     chrome(d, "Option A · Workspace · Settings")
     sidebar_a(d, "Settings")
@@ -1599,10 +1602,12 @@ def screen_A4(d):
         # column 2
         x = xs[1]
         with d.group("Card · Search & tests"):
-            card(d, x, 132, CWD, 420, "Search & tests")
-            row_label(x + 16, 182, "Quick-test count", "Uploads tested after each search")
-            stepper(x + CWD - 120, 170, "3")
-            d.hline(x + 16, x + CWD - 16, 214, BORDER_SOFT)
+            card(d, x, 132, CWD, 420 if SHOW_QUICK_TEST else 362, "Search & tests")
+            if SHOW_QUICK_TEST:
+                row_label(x + 16, 182, "Quick-test count", "Uploads tested after each search")
+                stepper(x + CWD - 120, 170, "3")
+                d.hline(x + 16, x + CWD - 16, 214, BORDER_SOFT)
+        with d.group("Search & tests rows", transform=None if SHOW_QUICK_TEST else "translate(0,-58)"):
             row_label(x + 16, 240, "Search options")
             checkbox(d, x + 16, 258, True, "Show near misses in search notes", 12.5)
             checkbox(d, x + 16, 286, True, "Report other lossless formats (ALAC, APE)", 12.5)
@@ -1619,7 +1624,7 @@ def screen_A4(d):
             field(d, x + CWD - 160, 458, 144, "17 kHz", prefix="Lossy <", h=30, size=12,
                   label="Field · Lossy threshold")
             d.text(x + 16, 512, "Uploads above 20 kHz are marked PASS.", 11.5, 400, TEXT_3)
-        with d.group("Card · Tools"):
+        with d.group("Card · Tools", transform=None if SHOW_QUICK_TEST else "translate(0,-58)"):
             card(d, x, 564, CWD, 288, "Tools")
             button(d, x + CWD - 16, 572, "Check again", "secondary", h=28, size=12, icon_="refresh", anchor="end")
             tools = [("flac", "1.4.3", True, "decoding and tag writing"), ("ffmpeg", "7.1", True, "MP3/WAV, spectrum"),

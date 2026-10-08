@@ -112,8 +112,10 @@ def spectrum_slices(n_t, n_f, cutoff, nyq, seed):
 
 
 def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=96, playhead=0.34,
-                   duration="11:33", now="3:58", label="3D spectrogram"):
-    """Waterfall plot inside the box (x, y, w, h). Front edge = start of the track, back = end."""
+                   duration="11:33", now="3:58", label="3D spectrogram", pixel=0):
+    """Waterfall plot inside the box (x, y, w, h). Front edge = start of the track, back = end.
+
+    pixel > 0 draws the slices as square blocks of that size (an old LCD look); labels stay sharp."""
     depth_x, depth_y = w * 0.15, h * 0.30        # how far the last slice sits up and to the right
     base_w = w - depth_x - 110                   # frequency axis length of one slice
     amp_h = h * 0.56                             # height of a full-scale peak
@@ -153,7 +155,21 @@ def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=9
             fj = cutoff / nyq * (n_f - 1)
             a0, a1 = pt(0, fj, 0), pt(n_t - 1, fj, 0)
             d.line(a0[0], a0[1], a1[0], a1[1], stroke=AMBER, sw=2, dash="5 3")
+        slice_attrs = None
+        if pixel:
+            # mosaic filter: sample the slices on a pixel grid, then grow each sample into a solid block
+            fid = d.uid("pixelate")
+            r = (pixel - 1) / 2
+            d.raw('<defs><filter id="%s" filterUnits="userSpaceOnUse" x="%s" y="%s" width="%s" height="%s">'
+                  '<feFlood x="%s" y="%s" width="1" height="1"/><feComposite width="%s" height="%s"/>'
+                  '<feTile result="grid"/><feComposite in="SourceGraphic" in2="grid" operator="in"/>'
+                  '<feMorphology operator="dilate" radius="%s"/></filter></defs>'
+                  % (fid, fmt(float(x)), fmt(float(y)), fmt(float(w)), fmt(float(h)),
+                     fmt(float(x) + r), fmt(float(y) + r), pixel, pixel, fmt(r)))
+            slice_attrs = fid
         with d.group("Time slices"):
+            if slice_attrs:
+                d.raw('<g filter="url(#%s)">' % slice_attrs)
             play_i = round(playhead * (n_t - 1))
             for ti in range(n_t - 1, -1, -1):              # back to front, so nearer slices cover farther ones
                 row = data[ti]
@@ -168,6 +184,8 @@ def spectrogram_3d(d, x, y, w, h, cutoff=21.8, nyq=22.05, seed=11, n_t=28, n_f=9
                           'stroke-linejoin="round"/>' % (dpath, gid, "0.96" if played else "0.82",
                                                          WHITE if ti == play_i else mix(WHITE, INDIGO, 0.35),
                                                          "1.6" if ti == play_i else "0.5"))
+            if slice_attrs:
+                d.raw('</g>')
         with d.group("Playhead label"):
             p = pt(play_i, n_f - 1, 0)
             d.box(p[0] + 8, p[1] - 10, 44, 20, fill=TEXT, stroke=None, rx=5)

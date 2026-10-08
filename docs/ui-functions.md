@@ -125,7 +125,6 @@
 ## Settings
 
 - **Library folder**: where albums are saved and scanned (local folder, USB drive or Volumio network share).
-- **Quick-test count**: how many top results are quick-tested automatically.
 - **Search options**: include live recordings; free licences only; CD rips only; all formats (off = FLAC first, WAV/MP3 only if there's no FLAC).
 - **Cover art**: save the front cover only, every image in the upload, or none.
 - **Rip files**: skip or keep logs and cue sheets (skip by default so Volumio doesn't list albums twice).

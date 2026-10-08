@@ -18,7 +18,7 @@ from typing import Callable, Optional
 from . import binaries
 from .events import CancelCheck, Progress, check
 from .ia_client import IAClient, IAError
-from .model import FileInfo, ItemInfo, file_kind, is_track
+from .model import FileInfo, ItemInfo, file_kind, is_track, track_files
 from .names import folder_component
 
 # roles we will fetch. Cover art is included by default but only originals (never IA's derived thumbnails).
@@ -345,9 +345,9 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
     if library.resolve() not in root.parents:
         raise DownloadError(f"refusing {folder}: it is not inside {library}")
     cover = pick_cover(item) if art in ("cover", "all") else None
-    entries = []
+    entries, chosen = [], {id(f) for f in track_files(item.files, media)}
     for f in sorted(item.files, key=lambda f: f.name):
-        role, track = file_kind(f.name), is_track(f, media)
+        role, track = file_kind(f.name), id(f) in chosen
         if SKIP_NAMES.search(f.name) or (not track and f.source == "derivative"):
             continue
         wanted = (track or (rip == "keep" and role in LIB_RIP_ROLES)
@@ -359,7 +359,7 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
             res.skipped.append(f"{f.name!r}: unsafe path, refused")
             continue
         entries.append((f, rel))
-    tracks = {id(f) for f, _ in entries if is_track(f, media)}
+    tracks = {id(f) for f, _ in entries if id(f) in chosen}
     tops = {rel.parts[0] for _, rel in entries}
     if len(tops) == 1 and entries and all(len(rel.parts) > 1 for _, rel in entries):
         entries = [(f, Path(*rel.parts[1:])) for f, rel in entries]

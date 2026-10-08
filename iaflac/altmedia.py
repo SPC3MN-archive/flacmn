@@ -120,6 +120,7 @@ class AltStats:
     cd_format: int = 0
     formats: Counter = field(default_factory=Counter)
     kbps: float = 0.0
+    mode: str = ""                                   # mp3: the most common of VBR / CBR / ABR
 
     def format_label(self) -> str:
         return self.formats.most_common(1)[0][0] if self.formats else "?"
@@ -133,12 +134,12 @@ class AltStats:
     @property
     def file_type(self) -> str:
         """The inventory's File Type for what will be saved (a WAV is saved as FLAC)."""
-        return self.flac_type if self.media == "wav" else f"MP3 (VBR {round(self.kbps)}kbps)"
+        return self.flac_type if self.media == "wav" else f"MP3 ({self.mode or 'VBR'} {round(self.kbps)}kbps)"
 
 
 def build_stats(media: str, probes: dict) -> AltStats:
     st = AltStats(media, n=len(probes))
-    kbps, types = [], Counter()
+    kbps, types, modes = [], Counter(), Counter()
     for name, p in probes.items():
         if not p.ok:
             st.bad.append((name, p.kind, p.detail))
@@ -151,6 +152,9 @@ def build_stats(media: str, probes: dict) -> AltStats:
             types[(p.bits, p.sample_rate)] += 1
         else:
             kbps.append(p.kbps)
+            modes[p.mode or "VBR"] += 1
+    if modes:
+        st.mode = modes.most_common(1)[0][0]
     if types:
         (bits, rate), _ = types.most_common(1)[0]
         st.flac_type = f"FLAC ({bits}-bit/{rate / 1000:.1f}kHz)"

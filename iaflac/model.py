@@ -72,12 +72,23 @@ VBR_FORMAT = "VBR MP3"
 
 
 def is_track(f: "FileInfo", media: str = "flac") -> bool:
-    """Is this file one of the album's tracks in the given media? Original WAVs, IA's 'VBR MP3' files, or FLAC."""
+    """Is this file one of the album's tracks in the given media? Original WAVs, MP3s (the uploader's own, or IA's
+    'VBR MP3' derivatives), or FLAC. See track_files for which MP3s win when an item has both."""
     if media == "wav":
         return f.name.lower().endswith((".wav", ".wave")) and f.source != "derivative"
     if media == "mp3":
-        return f.format == VBR_FORMAT
+        return f.format == VBR_FORMAT or (f.name.lower().endswith(".mp3") and f.source != "derivative")
     return file_kind(f.name) == "flac"
+
+
+def track_files(files: list, media: str = "flac") -> list:
+    """An item's tracks in `media`, in track order. MP3: the uploader's original MP3s when there are any (IA's VBR
+    derivatives of them would only be a second, worse copy), otherwise IA's 'VBR MP3' files."""
+    tracks = [f for f in files if is_track(f, media)]
+    if media == "mp3":
+        originals = [f for f in tracks if f.source != "derivative"]
+        tracks = originals or tracks
+    return sorted(tracks, key=lambda f: natural_key(f.name))
 
 
 @dataclass
@@ -126,7 +137,7 @@ class ItemInfo:
     def flacs(self) -> list:
         """The item's tracks in the media being looked at: FLAC files, or (when no FLAC exists and the fallback search
         found this item by its WAV or VBR MP3 files) those files. The name is kept so everything downstream works alike."""
-        return sorted((f for f in self.files if is_track(f, self.media)), key=lambda f: natural_key(f.name))
+        return track_files(self.files, self.media)
 
     def files_of(self, kind: str) -> list:
         return sorted((f for f in self.files if file_kind(f.name) == kind and f.source != "derivative"),

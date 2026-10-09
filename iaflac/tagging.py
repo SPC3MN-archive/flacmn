@@ -349,8 +349,8 @@ def apply(folder: Path, meta: AlbumMeta, paths: dict, cover: Optional[bytes] = N
         dst.parent.mkdir(parents=True, exist_ok=True)
         tmp.replace(dst)
         res.files.append(dst)
-        if src != dst:
-            res.renamed[str(src.relative_to(folder)).replace("\\", "/")] = dst.name
+        if src.resolve() != dst.resolve():
+            res.renamed[str(src.resolve().relative_to(folder.resolve())).replace("\\", "/")] = dst.name
     if cover and write_cover_file:
         target = folder / "cover.jpg"
         try:

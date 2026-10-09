@@ -262,7 +262,7 @@ def find_art(folder: Path, *, mb_client=None, ia_client=None, release_id: str = 
     emit = progress or (lambda e: None)
     folder = Path(folder)
     meta, _ = album_facts(folder)
-    rel = folder.relative_to(library_root).as_posix() if library_root else folder.name
+    rel = folder.resolve().relative_to(Path(library_root).resolve()).as_posix() if library_root else folder.name
     art = ArtSet(folder=rel, artist=meta.albumartist, album=meta.album, year=meta.year, source_url=meta.source_url,
                  tracks=[{"disc": t.disc, "track": t.track, "title": t.title, "length": t.length} for t in meta.tracks])
     seen: set = set()

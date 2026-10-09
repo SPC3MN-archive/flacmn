@@ -143,6 +143,23 @@ class Writing(unittest.TestCase):
         self.assertEqual(tagging.read_track(self.folder / "2-01 - Blue in Green.flac")["artist"], "Bill Evans")
         self.assertEqual(tagging.validate(self.folder), [])
 
+    def test_a_library_reached_through_a_symlink_is_renamed_cleanly(self):
+        """The download step hands over resolved paths; the folder may not be (macOS /var is /private/var, or a
+        symlinked library). Every track must still be renamed and reported, not left as .iaflac-rename-N."""
+        link = Path(self.tmp.name) / "linked-library"
+        link.symlink_to(Path(self.tmp.name), target_is_directory=True)
+        folder = link / "Miles Davis" / "Kind of Blue (1959)"
+        paths = {k: v.resolve() for k, v in self.paths.items()}
+        (self.folder / "1-01 - So What.flac").write_bytes(self.flac_bytes)          # one track already has its final name
+        paths["CD1/01 so what.flac"] = (self.folder / "1-01 - So What.flac").resolve()
+        (self.folder / "CD1" / "01 so what.flac").unlink()
+        res = tagging.apply(folder, self.meta, paths)
+        self.assertEqual(res.problems, [])
+        self.assertEqual(sorted(p.name for p in self.folder.iterdir()),
+                         ["1-01 - So What.flac", "1-02 - Freddie Freeloader.flac", "2-01 - Blue in Green.flac"])
+        self.assertEqual(res.renamed, {"CD1/02 freddie.flac": "1-02 - Freddie Freeloader.flac",
+                                       "CD2/01 blue.flac": "2-01 - Blue in Green.flac"}, "an unchanged name is not a rename")
+
     def test_embedded_art_is_scaled_down_but_cover_jpg_keeps_the_original(self):
         from mutagen.flac import FLAC
         big = jpeg((2400, 2400))

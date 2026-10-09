@@ -318,7 +318,7 @@ class App:
             raise ValueError("choose a library folder in Settings first")
         if not lib.is_dir():
             raise ValueError(f"the library folder {lib} does not exist (is the drive or network share connected?)")
-        return lib
+        return lib.resolve()          # resolved like every path compared with it (macOS /var is /private/var, symlinked folders)
 
     def plan(self, identifier: str) -> dict:
         c = self.cand(identifier)

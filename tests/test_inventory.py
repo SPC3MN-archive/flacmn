@@ -430,6 +430,13 @@ class FromFolder(unittest.TestCase):
         self.make("01 Hi.flac", samples=9600, rate=96000)
         self.assertEqual(inv.album_from_folder(self.root, "A", "B").rows[0][3], "FLAC (16-bit/96.0kHz)")
 
+    def test_macos_sidecar_files_are_not_tracks(self):
+        from tests.helpers import add_appledouble
+        self.make("01 - One.flac")
+        self.make("Disc 2/01 - Two.flac")
+        add_appledouble(self.root)
+        self.assertEqual([r[2] for r in inv.album_from_folder(self.root, "A", "B").rows], ["One", "Two"])
+
     def test_a_fake_flac_is_refused(self):
         (self.root / "01 Fake.flac").write_bytes(b"ID3" + b"\0" * 200)
         with self.assertRaisesRegex(inv.InventoryError, "not a valid FLAC"):

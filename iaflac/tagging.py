@@ -23,6 +23,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Optional
 
+from .paths import is_hidden
 from .names import clean_album_title, derive_names, folder_component
 
 EMBED_MAX_PX = 1000                 # embedded art: big enough for any player, small enough not to bloat every track
@@ -378,9 +379,13 @@ def apply(folder: Path, meta: AlbumMeta, paths: dict, cover: Optional[bytes] = N
 def read_track(path: Path) -> dict:
     """Normalised tags of one file: {"title", "artist", "albumartist", "album", "track", "tracktotal", "disc",
     "disctotal", "date", "genre", "has_art", "format", "bits", "rate", "kbps", "length"}."""
-    from mutagen import File
-    audio = File(str(path))
+    from mutagen import File, MutagenError
     out = {"path": str(path), "has_art": False, "format": path.suffix.lower().lstrip(".").upper()}
+    try:
+        audio = File(str(path))
+    except MutagenError as exc:                     # e.g. FLACNoHeaderError: the name says .flac, the bytes don't
+        out["error"] = f"not a readable {out['format']} file ({type(exc).__name__})"
+        return out
     if audio is None:
         out["error"] = "not an audio file mutagen can read"
         return out
@@ -423,7 +428,7 @@ def folder_cover(folder: Path) -> Optional[Path]:
 
 def validate(folder: Path) -> list:
     """What a player would trip over in an album folder, as plain sentences (empty list: all good)."""
-    files = sorted(p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in AUDIO_EXTS)
+    files = sorted(p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in AUDIO_EXTS and not is_hidden(p, folder))
     if not files:
         return ["no FLAC or MP3 files"]
     tracks = [read_track(p) for p in files]
@@ -453,7 +458,7 @@ def validate(folder: Path) -> list:
         issues.append("multi-disc album without DISCTOTAL on every track")
     if not any(t.get("has_art") for t in tracks) and folder_cover(folder) is None:
         issues.append("no cover art (embedded or cover.jpg)")
-    if any(p.suffix.lower() == ".cue" for p in folder.rglob("*")):
+    if any(p.suffix.lower() == ".cue" and not is_hidden(p, folder) for p in folder.rglob("*")):
         issues.append("has a .cue sheet: Volumio/MPD may list the album twice")
     return issues
 

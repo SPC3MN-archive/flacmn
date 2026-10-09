@@ -353,6 +353,15 @@ class LibraryLayout(unittest.TestCase):
         self.assertEqual((again.downloaded, again.already_had), (0, 6))
         self.assertEqual(self.client.calls, [])
 
+    def test_macos_sidecar_files_on_a_fat32_drive_are_not_someone_elses_album(self):
+        from tests.helpers import add_appledouble
+        first = download.library_get(self.client, self.item, self.lib, "The Mars Volta", "Frances the Mute", yes=True)
+        add_appledouble(first.folder)
+        self.client.calls.clear()
+        again = download.library_get(self.client, self.item, self.lib, "The Mars Volta", "Frances the Mute", yes=True)
+        self.assertTrue(again.ok, again.failures)
+        self.assertEqual((again.downloaded, again.already_had), (0, 6))
+
     def test_an_empty_existing_album_folder_is_fine(self):
         (self.lib / "The Mars Volta" / "Frances the Mute").mkdir(parents=True)
         self.assertTrue(download.library_get(self.client, self.item, self.lib, "The Mars Volta", "Frances the Mute", yes=True).ok)

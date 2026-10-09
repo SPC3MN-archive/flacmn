@@ -123,6 +123,16 @@ class Writing(unittest.TestCase):
     def decoded(self, path):
         return subprocess.run(["flac", "-d", "-s", "-c", str(path)], capture_output=True, check=True).stdout
 
+    def test_macos_sidecar_files_are_skipped_and_an_unreadable_file_is_reported_not_raised(self):
+        from tests.helpers import APPLEDOUBLE, add_appledouble
+        tagging.apply(self.folder, self.meta, self.paths, jpeg())
+        add_appledouble(self.folder)
+        self.assertEqual(tagging.validate(self.folder), [], "the ._ files are not tracks")
+        t = tagging.read_track(self.folder / "._1-01 - So What.flac")
+        self.assertIn("not a readable FLAC file", t["error"])
+        (self.folder / "1-04 - Not Really.flac").write_bytes(APPLEDOUBLE)
+        self.assertTrue(any("not a readable FLAC file" in i for i in tagging.validate(self.folder)))
+
     def test_untagged_files_fail_validation(self):
         issues = tagging.validate(self.folder)
         self.assertTrue(any("TITLE" in i for i in issues), issues)

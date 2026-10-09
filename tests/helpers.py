@@ -84,3 +84,14 @@ def pink_noise(seconds: float, rate: int, seed: int = 0) -> np.ndarray:
     spectrum /= np.sqrt(freqs)
     x = np.fft.irfft(spectrum, n)
     return (0.25 * x / np.max(np.abs(x))).astype(np.float64)
+
+
+# What macOS writes beside every file on a FAT32/exFAT drive: `._<name>`, same extension, Finder metadata only.
+APPLEDOUBLE = (b"\x00\x05\x16\x07\x00\x02\x00\x00Mac OS X        ").ljust(4096, b"\x00")
+
+
+def add_appledouble(folder) -> None:
+    """Give every file in `folder` (recursively) its macOS `._` sidecar, as copying it to a FAT32 drive would."""
+    from pathlib import Path
+    for p in [p for p in Path(folder).rglob("*") if p.is_file() and not p.name.startswith(".")]:
+        (p.parent / f"._{p.name}").write_bytes(APPLEDOUBLE)

@@ -137,7 +137,7 @@ class ArtSet:
 
 def album_facts(folder: Path) -> tuple:
     """(AlbumMeta from the files' tags, tag dict of the first track). Track lengths come along for MusicBrainz."""
-    files = sorted((p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in (".flac", ".mp3")),
+    files = sorted((p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in (".flac", ".mp3") and not paths.is_hidden(p, folder)),
                    key=lambda p: natural_key(str(p.relative_to(folder))))
     tags = [read_track(p) for p in files]
     tags = [t for t in tags if not t.get("error")]
@@ -160,7 +160,7 @@ def album_facts(folder: Path) -> tuple:
 
 def from_folder(folder: Path) -> list:
     out = []
-    files = sorted((p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS and not p.name.startswith(".")),
+    files = sorted((p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS and not paths.is_hidden(p, folder)),
                    key=lambda p: natural_key(str(p.relative_to(folder))))
     for n, p in enumerate(files):
         rel = p.relative_to(folder).as_posix()

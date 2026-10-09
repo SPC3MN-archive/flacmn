@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from . import download, tagging
+from . import download, paths, tagging
 from .events import CancelCheck, Progress
 from .model import track_files
 from .tagging import AlbumMeta
@@ -113,7 +113,7 @@ def plan_save(cand, library: Path, meta: Optional[AlbumMeta] = None, opts: Optio
     names = tagging.planned_names(meta, ext_of)
     by_source = {pf.info.name: pf for pf in res.planned}
     plan = SavePlan(identifier=item.identifier, media=item.media, folder=folder, meta=meta, total_bytes=res.total_bytes,
-                    warnings=list(res.skipped), folder_exists=folder.exists() and any(folder.iterdir()))
+                    warnings=list(res.skipped), folder_exists=folder.exists() and any(not paths.is_hidden(p) for p in folder.iterdir()))
     for t in meta.tracks:
         pf = by_source.get(t.source)
         plan.tracks.append(PlannedTrack(t.source, names[t.source], pf.info.size if pf else 0, t.title, t.disc, t.track))

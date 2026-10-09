@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from . import binaries
+from .paths import is_hidden
 from .events import CancelCheck, Progress, check
 from .ia_client import IAClient, IAError
 from .model import FileInfo, ItemInfo, file_kind, is_track, track_files
@@ -27,7 +28,6 @@ RIP_ROLES = {"log", "cue", "accurip", "ffp", "md5", "sfv", "aucdtect", "playlist
 ART_ROLES = {"art"}
 SKIP_NAMES = re.compile(r"(__ia_thumb\.jpg|_spectrogram\.png|_meta\.(xml|sqlite)|_files\.xml|_reviews\.xml|\.torrent)$", re.I)
 CHUNK = 1 << 20
-IGNORABLE = {".DS_Store"}
 INCOMPLETE = ".iaflac-incomplete"                    # marker left in an album folder until every file has verified
 LIB_RIP_ROLES = {"log", "cue", "accurip", "aucdtect"}    # provenance evidence worth keeping next to the audio
 COVER_EXTS = (".jpg", ".jpeg", ".png")
@@ -395,7 +395,7 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
         wanted = {pf.path: pf.info for pf in res.planned}
         converted = {pf.final for pf in res.planned if pf.final}      # the .flac a WAV becomes is ours too
         present = [p.resolve() for p in folder.rglob("*")
-                   if p.is_file() and p.name not in IGNORABLE and p.name != INCOMPLETE and not p.name.endswith(".part")]
+                   if p.is_file() and not is_hidden(p, folder) and not p.name.endswith(".part")]
         foreign = [p for p in present if p not in wanted and p not in converted]
         if foreign and not marker.exists():
             raise DownloadError(f"{folder} already has files that are not part of this album ({foreign[0].name}); "

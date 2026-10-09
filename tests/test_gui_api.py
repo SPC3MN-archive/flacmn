@@ -155,8 +155,12 @@ class Api(unittest.TestCase):
         self.wait_idle()
         lib = self.http.get("/api/library").json()
         self.assertEqual([a["folder"] for a in lib["albums"]], ["Test Artist/Test Album (2001)"])
+        from tests.helpers import add_appledouble
+        clean = self.http.get("/api/library/album", params={"folder": "Test Artist/Test Album (2001)"}).json()
+        add_appledouble(folder)                               # as if the library were on a FAT32 drive
         album = self.http.get("/api/library/album", params={"folder": "Test Artist/Test Album (2001)"}).json()
         self.assertEqual(len(album["tracks"]), 3)
+        self.assertEqual(album["issues"], clean["issues"], "the ._ files change nothing")
         res = self.search()
         self.assertEqual(res["results"][0]["in_library"]["folder"], "Test Artist/Test Album (2001)")
 

@@ -384,7 +384,7 @@ class App:
         path = (root / folder).resolve()
         if not path.is_relative_to(root.resolve()) or not path.is_dir():
             raise NotFound(folder)
-        files = sorted(p for p in path.rglob("*") if p.is_file() and p.suffix.lower() in library_index.AUDIO)
+        files = sorted(p for p in path.rglob("*") if p.is_file() and p.suffix.lower() in library_index.AUDIO and not paths.is_hidden(p, path))
         tracks = []
         for p in files:
             t = tagging.read_track(p) if p.suffix.lower() in (".flac", ".mp3") else {"format": p.suffix[1:].upper()}

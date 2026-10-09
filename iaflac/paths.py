@@ -11,12 +11,21 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
 from platformdirs import user_cache_dir, user_config_dir, user_data_dir
 
 APP = "iaflac"
 PROJECT = Path(__file__).resolve().parents[1]
 LEGACY_CONFIG = Path("~/.config/iaflac/config.json")
+
+
+def is_hidden(path: Path, base: Optional[Path] = None) -> bool:
+    """A dot-file or anything inside a dot-folder (below `base`, when given): never part of an album. This covers the
+    `._<name>` files macOS writes beside every file on FAT32/exFAT drives, which keep the audio file's extension
+    but hold only Finder metadata, as well as .DS_Store and iaflac's own markers and staging folders."""
+    parts = Path(path).relative_to(base).parts if base is not None else (Path(path).name,)
+    return any(part.startswith(".") for part in parts)
 
 
 def from_source() -> bool:

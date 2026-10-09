@@ -123,8 +123,11 @@ def album_from_item(item, probes: dict, artist: str, album: str) -> NewAlbum:
 def album_from_folder(folder: Path, artist: str, album: str, allow_mp3: bool = False) -> NewAlbum:
     """Read an album folder on disk (FLAC only, or MP3 only when allow_mp3) and build its rows from the real file headers."""
     entries, other, mp3s = [], [], []
-    for root, _dirs, files in os.walk(folder):
+    for root, dirs, files in os.walk(folder):
+        dirs[:] = [d for d in dirs if not d.startswith(".")]
         for name in files:
+            if name.startswith("."):                   # macOS ._ sidecars on FAT32/exFAT, .DS_Store
+                continue
             path = Path(root) / name
             low = name.lower()
             if low.endswith(".flac"):

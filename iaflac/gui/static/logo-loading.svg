@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="94.263" height="27.197" viewBox="0 0 24.940435 7.195878" role="img" aria-label="Searching">
+<!-- flacmn loading animation: the dots of "mn" switch on one at a time and stay lit (the m, then the n; each column from
+     the bottom up), hold, then all dim and it starts again. Generated from logo.svg (same coordinates). Shown where
+     results appear while Album Search or CD Art is searching, so it is drawn in the app's ink and indigo for a light
+     panel; the top-bar logo itself stays static. -->
+<style>
+  .dot { opacity: .22; animation-duration: 4.2s; animation-timing-function: ease-out; animation-iteration-count: infinite; }
+  @keyframes d0 { 0%, 2.00% { opacity: .22; } 3.50%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d0 { animation-name: d0; }
+  @keyframes d1 { 0%, 3.20% { opacity: .22; } 4.70%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d1 { animation-name: d1; }
+  @keyframes d2 { 0%, 4.39% { opacity: .22; } 5.89%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d2 { animation-name: d2; }
+  @keyframes d3 { 0%, 5.59% { opacity: .22; } 7.09%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d3 { animation-name: d3; }
+  @keyframes d4 { 0%, 6.79% { opacity: .22; } 8.29%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d4 { animation-name: d4; }
+  @keyframes d5 { 0%, 7.98% { opacity: .22; } 9.48%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d5 { animation-name: d5; }
+  @keyframes d6 { 0%, 9.18% { opacity: .22; } 10.68%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d6 { animation-name: d6; }
+  @keyframes d7 { 0%, 10.38% { opacity: .22; } 11.88%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d7 { animation-name: d7; }
+  @keyframes d8 { 0%, 11.57% { opacity: .22; } 13.07%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d8 { animation-name: d8; }
+  @keyframes d9 { 0%, 12.77% { opacity: .22; } 14.27%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d9 { animation-name: d9; }
+  @keyframes d10 { 0%, 13.97% { opacity: .22; } 15.47%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d10 { animation-name: d10; }
+  @keyframes d11 { 0%, 15.16% { opacity: .22; } 16.66%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d11 { animation-name: d11; }
+  @keyframes d12 { 0%, 16.36% { opacity: .22; } 17.86%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d12 { animation-name: d12; }
+  @keyframes d13 { 0%, 17.56% { opacity: .22; } 19.06%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d13 { animation-name: d13; }
+  @keyframes d14 { 0%, 18.75% { opacity: .22; } 20.25%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d14 { animation-name: d14; }
+  @keyframes d15 { 0%, 19.95% { opacity: .22; } 21.45%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d15 { animation-name: d15; }
+  @keyframes d16 { 0%, 21.15% { opacity: .22; } 22.65%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d16 { animation-name: d16; }
+  @keyframes d17 { 0%, 22.34% { opacity: .22; } 23.84%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d17 { animation-name: d17; }
+  @keyframes d18 { 0%, 23.54% { opacity: .22; } 25.04%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d18 { animation-name: d18; }
+  @keyframes d19 { 0%, 24.74% { opacity: .22; } 26.24%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d19 { animation-name: d19; }
+  @keyframes d20 { 0%, 25.93% { opacity: .22; } 27.43%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d20 { animation-name: d20; }
+  @keyframes d21 { 0%, 27.13% { opacity: .22; } 28.63%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d21 { animation-name: d21; }
+  @keyframes d22 { 0%, 28.33% { opacity: .22; } 29.83%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d22 { animation-name: d22; }
+  @keyframes d23 { 0%, 29.52% { opacity: .22; } 31.02%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d23 { animation-name: d23; }
+  @keyframes d24 { 0%, 30.72% { opacity: .22; } 32.22%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d24 { animation-name: d24; }
+  @keyframes d25 { 0%, 31.92% { opacity: .22; } 33.42%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d25 { animation-name: d25; }
+  @keyframes d26 { 0%, 33.11% { opacity: .22; } 34.61%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d26 { animation-name: d26; }
+  @keyframes d27 { 0%, 34.31% { opacity: .22; } 35.81%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d27 { animation-name: d27; }
+  @keyframes d28 { 0%, 35.51% { opacity: .22; } 37.01%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d28 { animation-name: d28; }
+  @keyframes d29 { 0%, 36.70% { opacity: .22; } 38.20%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d29 { animation-name: d29; }
+  @keyframes d30 { 0%, 37.90% { opacity: .22; } 39.40%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d30 { animation-name: d30; }
+  @keyframes d31 { 0%, 39.10% { opacity: .22; } 40.60%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d31 { animation-name: d31; }
+  @keyframes d32 { 0%, 40.30% { opacity: .22; } 41.80%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d32 { animation-name: d32; }
+  @keyframes d33 { 0%, 41.49% { opacity: .22; } 42.99%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d33 { animation-name: d33; }
+  @keyframes d34 { 0%, 42.69% { opacity: .22; } 44.19%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d34 { animation-name: d34; }
+  @keyframes d35 { 0%, 43.89% { opacity: .22; } 45.39%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d35 { animation-name: d35; }
+  @keyframes d36 { 0%, 45.08% { opacity: .22; } 46.58%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d36 { animation-name: d36; }
+  @keyframes d37 { 0%, 46.28% { opacity: .22; } 47.78%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d37 { animation-name: d37; }
+  @keyframes d38 { 0%, 47.48% { opacity: .22; } 48.98%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d38 { animation-name: d38; }
+  @keyframes d39 { 0%, 48.67% { opacity: .22; } 50.17%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d39 { animation-name: d39; }
+  @keyframes d40 { 0%, 49.87% { opacity: .22; } 51.37%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d40 { animation-name: d40; }
+  @keyframes d41 { 0%, 51.07% { opacity: .22; } 52.57%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d41 { animation-name: d41; }
+  @keyframes d42 { 0%, 52.26% { opacity: .22; } 53.76%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d42 { animation-name: d42; }
+  @keyframes d43 { 0%, 53.46% { opacity: .22; } 54.96%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d43 { animation-name: d43; }
+  @keyframes d44 { 0%, 54.66% { opacity: .22; } 56.16%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d44 { animation-name: d44; }
+  @keyframes d45 { 0%, 55.85% { opacity: .22; } 57.35%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d45 { animation-name: d45; }
+  @keyframes d46 { 0%, 57.05% { opacity: .22; } 58.55%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d46 { animation-name: d46; }
+  @keyframes d47 { 0%, 58.25% { opacity: .22; } 59.75%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d47 { animation-name: d47; }
+  @keyframes d48 { 0%, 59.44% { opacity: .22; } 60.94%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d48 { animation-name: d48; }
+  @keyframes d49 { 0%, 60.64% { opacity: .22; } 62.14%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d49 { animation-name: d49; }
+  @keyframes d50 { 0%, 61.84% { opacity: .22; } 63.34%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d50 { animation-name: d50; }
+  @keyframes d51 { 0%, 63.03% { opacity: .22; } 64.53%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d51 { animation-name: d51; }
+  @keyframes d52 { 0%, 64.23% { opacity: .22; } 65.73%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d52 { animation-name: d52; }
+  @keyframes d53 { 0%, 65.43% { opacity: .22; } 66.93%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d53 { animation-name: d53; }
+  @keyframes d54 { 0%, 66.62% { opacity: .22; } 68.12%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d54 { animation-name: d54; }
+  @keyframes d55 { 0%, 67.82% { opacity: .22; } 69.32%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d55 { animation-name: d55; }
+  @keyframes d56 { 0%, 69.02% { opacity: .22; } 70.52%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d56 { animation-name: d56; }
+  @keyframes d57 { 0%, 70.21% { opacity: .22; } 71.71%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d57 { animation-name: d57; }
+  @keyframes d58 { 0%, 71.41% { opacity: .22; } 72.91%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d58 { animation-name: d58; }
+  @keyframes d59 { 0%, 72.61% { opacity: .22; } 74.11%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d59 { animation-name: d59; }
+  @keyframes d60 { 0%, 73.80% { opacity: .22; } 75.30%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d60 { animation-name: d60; }
+  @keyframes d61 { 0%, 75.00% { opacity: .22; } 76.50%, 90.0% { opacity: 1; } 96.0%, 100% { opacity: .22; } } .d61 { animation-name: d61; }
+  @media (prefers-reduced-motion: reduce) {
+    .dot-grid .dot { animation: breathe 2.4s ease-in-out infinite; }
+    @keyframes breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  }
+</style>
+<path transform="translate(-78.052086,-162.98334)" fill="#252047" stroke="#252047" stroke-width="0.18" stroke-linejoin="round" d="M80.927 166.036V165.183H80.244V165.004C80.244 164.57 80.289 164.501 80.613 164.501H80.909V163.538C80.792 163.53 80.595 163.521 80.424 163.521C79.597 163.521 79.219 163.922 79.219 164.817V165.183H78.653V166.036H79.219V169.719H80.244V166.036ZM82.572 169.719V163.598H81.547V169.719ZM86.967 169.719V169.54C86.796 169.454 86.742 169.275 86.742 168.832V166.377C86.742 165.55 86.158 165.064 85.142 165.064C84.064 165.064 83.552 165.49 83.426 166.65H84.414C84.477 166.189 84.657 166.019 85.098 166.019C85.52 166.019 85.736 166.189 85.736 166.53C85.736 166.743 85.628 166.863 85.376 166.905L84.45 167.067C83.713 167.195 83.3 167.715 83.3 168.508C83.3 169.327 83.767 169.838 84.522 169.838C85.026 169.838 85.358 169.668 85.763 169.182C85.79 169.429 85.799 169.497 85.862 169.719ZM85.736 168.09C85.736 168.585 85.331 168.986 84.828 168.986C84.522 168.986 84.334 168.772 84.334 168.431C84.334 168.039 84.522 167.86 85.035 167.758C85.448 167.681 85.601 167.63 85.736 167.511ZM91.048 166.803C90.931 165.644 90.284 165.064 89.295 165.064C88.126 165.064 87.434 165.976 87.434 167.511C87.434 169.003 88.082 169.838 89.241 169.838C90.257 169.838 90.886 169.216 91.039 168.065H89.996C89.951 168.542 89.672 168.858 89.277 168.858C88.756 168.858 88.495 168.389 88.495 167.46C88.495 166.547 88.783 166.07 89.34 166.07C89.708 166.07 89.906 166.292 90.005 166.803Z"/>
+<g class="dot-grid" fill="#5C53A2">
+    <circle class="dot d0" cx="14.3740" cy="6.4843" r="0.3448"/>
+    <circle class="dot d1" cx="14.3740" cy="5.7181" r="0.3448"/>
+    <circle class="dot d2" cx="14.3740" cy="4.9520" r="0.3448"/>
+    <circle class="dot d3" cx="14.3740" cy="4.1858" r="0.3448"/>
+    <circle class="dot d4" cx="14.3740" cy="3.4196" r="0.3448"/>
+    <circle class="dot d5" cx="14.3740" cy="2.6534" r="0.3448"/>
+    <circle class="dot d6" cx="15.1402" cy="6.4843" r="0.3448"/>
+    <circle class="dot d7" cx="15.1402" cy="5.7181" r="0.3448"/>
+    <circle class="dot d8" cx="15.1402" cy="4.9520" r="0.3448"/>
+    <circle class="dot d9" cx="15.1402" cy="4.1858" r="0.3448"/>
+    <circle class="dot d10" cx="15.1402" cy="3.4196" r="0.3448"/>
+    <circle class="dot d11" cx="15.9064" cy="3.4196" r="0.3448"/>
+    <circle class="dot d12" cx="15.9064" cy="2.6534" r="0.3448"/>
+    <circle class="dot d13" cx="16.6726" cy="6.4843" r="0.3448"/>
+    <circle class="dot d14" cx="16.6726" cy="5.7181" r="0.3448"/>
+    <circle class="dot d15" cx="16.6726" cy="4.9520" r="0.3448"/>
+    <circle class="dot d16" cx="16.6726" cy="4.1858" r="0.3448"/>
+    <circle class="dot d17" cx="16.6726" cy="3.4196" r="0.3448"/>
+    <circle class="dot d18" cx="16.6726" cy="2.6534" r="0.3448"/>
+    <circle class="dot d19" cx="17.4387" cy="6.4843" r="0.3448"/>
+    <circle class="dot d20" cx="17.4387" cy="5.7181" r="0.3448"/>
+    <circle class="dot d21" cx="17.4387" cy="4.9520" r="0.3448"/>
+    <circle class="dot d22" cx="17.4387" cy="4.1858" r="0.3448"/>
+    <circle class="dot d23" cx="17.4387" cy="3.4196" r="0.3448"/>
+    <circle class="dot d24" cx="17.4387" cy="2.6534" r="0.3448"/>
+    <circle class="dot d25" cx="18.2049" cy="3.4196" r="0.3448"/>
+    <circle class="dot d26" cx="18.2049" cy="2.6534" r="0.3448"/>
+    <circle class="dot d27" cx="18.9711" cy="6.4843" r="0.3448"/>
+    <circle class="dot d28" cx="18.9711" cy="5.7181" r="0.3448"/>
+    <circle class="dot d29" cx="18.9711" cy="4.9520" r="0.3448"/>
+    <circle class="dot d30" cx="18.9711" cy="4.1858" r="0.3448"/>
+    <circle class="dot d31" cx="18.9711" cy="3.4196" r="0.3448"/>
+    <circle class="dot d32" cx="18.9711" cy="2.6534" r="0.3448"/>
+    <circle class="dot d33" cx="19.7373" cy="6.4843" r="0.3448"/>
+    <circle class="dot d34" cx="19.7373" cy="5.7181" r="0.3448"/>
+    <circle class="dot d35" cx="19.7373" cy="4.9520" r="0.3448"/>
+    <circle class="dot d36" cx="19.7373" cy="4.1858" r="0.3448"/>
+    <circle class="dot d37" cx="19.7373" cy="3.4196" r="0.3448"/>
+    <circle class="dot d38" cx="21.2696" cy="6.4843" r="0.3448"/>
+    <circle class="dot d39" cx="21.2696" cy="5.7181" r="0.3448"/>
+    <circle class="dot d40" cx="21.2696" cy="4.9520" r="0.3448"/>
+    <circle class="dot d41" cx="21.2696" cy="4.1858" r="0.3448"/>
+    <circle class="dot d42" cx="21.2696" cy="3.4196" r="0.3448"/>
+    <circle class="dot d43" cx="21.2696" cy="2.6534" r="0.3448"/>
+    <circle class="dot d44" cx="22.0358" cy="6.4843" r="0.3448"/>
+    <circle class="dot d45" cx="22.0358" cy="5.7181" r="0.3448"/>
+    <circle class="dot d46" cx="22.0358" cy="4.9520" r="0.3448"/>
+    <circle class="dot d47" cx="22.0358" cy="4.1858" r="0.3448"/>
+    <circle class="dot d48" cx="22.0358" cy="3.4196" r="0.3448"/>
+    <circle class="dot d49" cx="22.8020" cy="3.4196" r="0.3448"/>
+    <circle class="dot d50" cx="22.8020" cy="2.6534" r="0.3448"/>
+    <circle class="dot d51" cx="23.5682" cy="6.4843" r="0.3448"/>
+    <circle class="dot d52" cx="23.5682" cy="5.7181" r="0.3448"/>
+    <circle class="dot d53" cx="23.5682" cy="4.9520" r="0.3448"/>
+    <circle class="dot d54" cx="23.5682" cy="4.1858" r="0.3448"/>
+    <circle class="dot d55" cx="23.5682" cy="3.4196" r="0.3448"/>
+    <circle class="dot d56" cx="23.5682" cy="2.6534" r="0.3448"/>
+    <circle class="dot d57" cx="24.3343" cy="6.4843" r="0.3448"/>
+    <circle class="dot d58" cx="24.3343" cy="5.7181" r="0.3448"/>
+    <circle class="dot d59" cx="24.3343" cy="4.9520" r="0.3448"/>
+    <circle class="dot d60" cx="24.3343" cy="4.1858" r="0.3448"/>
+    <circle class="dot d61" cx="24.3343" cy="3.4196" r="0.3448"/>
+</g>
+</svg>

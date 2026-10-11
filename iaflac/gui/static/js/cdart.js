@@ -50,7 +50,7 @@ export async function openAlbum(folder) {
 export function refresh() { render(); }
 
 // ---- left: album, find, parts --------------------------------------------------------------------------------------
-let statusEl = null;
+let statusEl = null, findStatusEl = null;      // beside the button, or under the loading logo while finding
 function render() {
   renderLeft();
   renderRight();
@@ -69,8 +69,8 @@ function renderLeft() {
   const find = h("button.btn.primary", { onclick: find_, disabled: !state.folder || state.finding }, icon("search"), state.art ? "Find again" : "Find art");
   const parts = h("div.parts.scroll");
   clear(left, h("div.row", { style: { gap: "16px", flex: "none" } }, picker, find, statusEl), notesBar(), parts);
-  renderStatus();
   renderParts(parts);
+  renderStatus();
 }
 
 function openPicker(anchor) {
@@ -95,7 +95,11 @@ function openPicker(anchor) {
 function renderStatus() {
   if (!statusEl) return;
   if (state.finding) {
-    clear(statusEl, h("span.ellipsis", state.stage ? `Searching · ${state.stage}` : "Searching the folder, archive.org and the Cover Art Archive…"),
+    const under = findStatusEl && findStatusEl.isConnected;     // no loader when re-finding over shown scans
+    clear(under ? statusEl : findStatusEl || statusEl);
+    const text = h("span.ellipsis", state.stage ? `Searching · ${state.stage}` : "Searching the folder, archive.org and the Cover Art Archive…");
+    if (under) clear(findStatusEl, text);                       // the animated logo above it is the progress indicator
+    else clear(statusEl, text,
       h("div.progress" + (state.progress ? ".busy" : ".indeterminate"), h("i", { style: state.progress ? { width: `${state.progress * 100}%` } : null })));
   } else if (state.art) {
     const n = state.art.releases?.length || 0;
@@ -160,7 +164,8 @@ function renderParts(box) {
     return;
   }
   if (!state.art) {
-    clear(box, state.finding ? h("div.empty", h("span.spinner"), "Looking for scans…")
+    findStatusEl = state.finding ? h("div.loading-status") : null;
+    clear(box, state.finding ? h("div.empty.loading", h("img.loading-logo", { src: "/static/logo-loading.svg", alt: "Looking for scans" }), findStatusEl)
       : h("div.empty", icon("search"), h("b", "No search yet for this album"), "Press Find art."));
     return;
   }

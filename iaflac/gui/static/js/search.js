@@ -10,6 +10,7 @@ const state = {
   sort: "quality",
 };
 let els = {};
+let stageEl = null;                // the status under the loading logo, while it is shown
 let onSelect = () => {};
 
 export function mountSearch(card, { select }) {
@@ -91,8 +92,8 @@ async function run() {
   state.stage = "Searching archive.org…";
   state.results = [];
   state.notes = null;
+  renderTable();                     // first: it puts up the loading logo the stage text goes under
   renderNotes();
-  renderTable();
   els.go.disabled = true;
   try {
     const r = await api("/search", { method: "POST", body: { artist, album } });
@@ -125,7 +126,11 @@ function count(x) {
 function renderNotes() {
   const n = els.notes;
   if (state.busy) {
-    clear(n, h("span.spinner"), h("span", state.stage || "Searching…"));
+    const text = state.stage || "Searching…";
+    if (stageEl && stageEl.isConnected) {                  // shown under the loading logo in the results
+      stageEl.lastChild.textContent = text;
+      clear(n);
+    } else clear(n, h("span", text));
     return;
   }
   if (!state.notes) {
@@ -167,7 +172,8 @@ function sourceShort(s) {
 function renderTable() {
   const rows = visible();
   if (!rows.length) {
-    clear(els.results, state.busy ? null : h("div.empty",
+    stageEl = state.busy ? h("div.loading-status", h("span.ellipsis", state.stage || "Searching…")) : null;
+    clear(els.results, state.busy ? h("div.empty.loading", h("img.loading-logo", { src: "/static/logo-loading.svg", alt: "Searching" }), stageEl) : h("div.empty",
       icon(state.notes ? "search" : "music"),
       state.notes ? h("b", "No uploads to show") : h("b", "No search yet"),
       state.notes ? h("span", "Try a shorter album title, or turn the format filters back on.") : null));

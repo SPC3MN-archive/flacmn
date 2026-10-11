@@ -78,6 +78,14 @@ class Scan(unittest.TestCase):
         self.assertEqual([p.name for p in calls], ["OK Computer"])
         self.assertEqual({a.folder: a.tracks for a in index.albums}["Radiohead/OK Computer"], 3)
 
+    def test_a_failed_check_is_tried_again_instead_of_remembered(self):
+        with mock.patch.object(li, "validate", side_effect=OSError("drive went away")):
+            first = self.scan()
+        self.assertTrue(all(a.issues[0].startswith(li.CHECK_FAILED) for a in first.albums if a.issues), first.albums)
+        again = self.scan()
+        self.assertFalse(any(i.startswith(li.CHECK_FAILED) for a in again.albums for i in a.issues),
+                         "the next scan checks those albums again rather than reusing the failure")
+
     def test_progress_events(self):
         events = []
         self.scan(progress=events.append)

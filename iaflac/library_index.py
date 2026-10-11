@@ -25,7 +25,8 @@ from .tagging import COVER_NAMES, DISC_DIR, read_track, validate
 
 AUDIO = {".flac", ".mp3", ".m4a", ".wav", ".ogg", ".opus", ".aiff", ".aif", ".wv", ".ape"}
 LOSSLESS = {"FLAC", "WAV", "AIFF", "AIF", "WV", "APE"}
-CACHE_VERSION = 1
+CHECK_FAILED = "could not check tags"
+CACHE_VERSION = 2          # bump when the checks change, so albums cached with the old checks are read again
 YEAR_SUFFIX = re.compile(r"\s*[(\[]((?:19|20)\d\d)[)\]]\s*$")
 
 
@@ -162,7 +163,7 @@ def read_album(root: Path, folder: Path, files: list) -> AlbumEntry:
     try:
         entry.issues = validate(folder) if any(p.suffix.lower() in (".flac", ".mp3") for p in files) else []
     except Exception as exc:
-        entry.issues = [f"could not check tags ({type(exc).__name__})"]
+        entry.issues = [f"{CHECK_FAILED} ({type(exc).__name__})"]
     return entry
 
 
@@ -195,7 +196,8 @@ def scan(root: Path, *, cache: Optional[Path] = None, use_cache: bool = True,
         check(cancel)
         rel = folder.relative_to(root).as_posix()
         old = known.get(rel)
-        if old and old.get("signature") == signature(files):
+        failed = any(str(i).startswith(CHECK_FAILED) for i in (old or {}).get("issues", []))   # retried, not remembered
+        if old and not failed and old.get("signature") == signature(files):
             entry = AlbumEntry(**{k: v for k, v in old.items() if k in fields})
         else:
             entry = read_album(root, folder, files)

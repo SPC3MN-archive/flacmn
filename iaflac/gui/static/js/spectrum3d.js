@@ -1,28 +1,25 @@
-// The deep test's 3D spectrogram: a waterfall of spectrum slices across the whole track, drawn back to front on a
+// A track's 3D spectrogram: a waterfall of spectrum slices across the whole track, drawn back to front on a
 // canvas. Front edge = start of the track, back = end; the slice under the playhead is outlined in white.
 // Data comes from /api/track/spectrum3d: levels[slice][bin] in 0..1 over -90..0 dB, bins linear from 0 Hz to Nyquist.
 
 import { fmtTime } from "./ui.js";
 
 const LOUD = [[0, "#23305A"], [0.35, "#5C53A2"], [0.62, "#BC3843"], [0.85, "#F4B73E"], [1, "#FADFA8"]];
-const C = { text3: "#7B7782", border: "#CFC9DA", floor: "#F0EDF2", grid: "#E3DEE7", amber: "#F4B73E",
-            amberTint: "#F5BD4C", text: "#0F0D1A", slice: "#9D98C7", white: "#FFFFFF" };
+const C = { text3: "#7B7782", border: "#CFC9DA", floor: "#F0EDF2", grid: "#E3DEE7",
+            text: "#0F0D1A", slice: "#9D98C7", white: "#FFFFFF" };
 const FONT = '500 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
-const BOLD = '700 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 export class Spectrum3D {
   constructor(canvas) {
     this.canvas = canvas;
     this.data = null;
     this.playhead = 0;          // 0..1 of the track
-    this.cutoffHz = null;
     this.current = 0;           // seconds, for the playhead label
     new ResizeObserver(() => this.draw()).observe(canvas);
   }
 
-  set(data, cutoffHz) {
+  set(data) {
     this.data = data;
-    this.cutoffHz = cutoffHz || null;
     this.draw();
   }
 
@@ -108,17 +105,6 @@ export class Spectrum3D {
       ctx.fillText(lab, bx - 17, yy + 3.5);
     }
 
-    // cutoff marker on the floor
-    const cutoff = this.cutoffHz ? this.cutoffHz / 1000 : null;
-    if (cutoff && cutoff < nyq) {
-      const fj = (cutoff / nyq) * (nF - 1);
-      const [x0, y0] = pt(0, fj, 0), [x1, y1] = pt(nT - 1, fj, 0);
-      ctx.save();
-      ctx.strokeStyle = C.amber; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
-      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-      ctx.restore();
-    }
-
     // slices, back to front so nearer ones cover farther ones
     const playI = Math.round(this.playhead * (nT - 1));
     for (let ti = nT - 1; ti >= 0; ti--) {
@@ -144,20 +130,6 @@ export class Spectrum3D {
       ctx.stroke();
     }
 
-    // cutoff label
-    if (cutoff && cutoff < nyq) {
-      const fj = (cutoff / nyq) * (nF - 1);
-      const [px, py] = pt(0, fj, 0);
-      const t = `cutoff ${cutoff.toFixed(1)} kHz`;
-      ctx.font = BOLD;
-      const tw = ctx.measureText(t).width + 12;
-      ctx.fillStyle = C.amberTint;
-      roundRect(ctx, px - tw + 18, py + 22, tw, 18, 5);
-      ctx.fill();
-      ctx.fillStyle = C.text;
-      ctx.textAlign = "right";
-      ctx.fillText(t, px + 12, py + 34.5);
-    }
     this._pt = pt;
     this._nT = nT;
     this._nF = nF;

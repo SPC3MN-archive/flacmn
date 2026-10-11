@@ -126,7 +126,7 @@ class App:
     def options(self, **over) -> Options:
         s = self.settings
         o = Options(top=50, include_live=s.include_live, free_only=s.free_only, rip_only=s.rip_only, deep="none",
-                    max_candidates=s.max_candidates, max_deep_bytes=s.max_deep_mb * 2**20,
+                    max_candidates=s.max_candidates,
                     spectrogram_dir=paths.cache_dir() / "spectrograms", fallback=("wav", "vbr"),
                     all_formats=s.all_formats)
         for k, v in over.items():
@@ -231,30 +231,12 @@ class App:
                 "excluded": dict(getattr(res, "excluded", {}) or {})}
 
     def test(self, identifier: str, level: str = "quick") -> dict:
-        """level: quick (headers + rip logs, V1) | deep (full decode V2 + spectrum V3)."""
+        """The quick test (headers + rip logs, V1). There is no deep test in the app: a track's spectrogram is drawn
+        on request instead (/api/track/spectrum3d)."""
+        if level != "quick":
+            raise ValueError("level must be quick")
         c = self.cand(identifier)
-        want = self.wants.get(identifier)
-        if level == "quick":
-            return {"job_id": self._quick_test([c], want, None).id}
-        if level != "deep":
-            raise ValueError("level must be quick or deep")
-
-        def run(job: Job):
-            pipe = self.pipeline(job)
-            if c.tier == "?":
-                pipe.inspect(c, want)
-            pipe.deep_verify(c, self.options(), integrity_check=True, spectral_check=True)
-            summary = serialize.candidate_summary(c, want, self.library)
-            self.broadcast({"type": "candidate", "candidate": summary})
-            return summary
-
-        return {"job_id": self.jobs.submit("deep", f"deep test: {c.item.title or identifier}", run).id}
-
-    def spectrogram_file(self, identifier: str) -> Path:
-        c = self.cand(identifier)
-        if not c.spectral or not c.spectral.png or not Path(c.spectral.png).exists():
-            raise NotFound("no spectrogram yet: run the deep test")
-        return Path(c.spectral.png)
+        return {"job_id": self._quick_test([c], self.wants.get(identifier), None).id}
 
     # ---- metadata ----------------------------------------------------------------------------------------------
     def meta(self, identifier: str, fresh: bool = False) -> dict:

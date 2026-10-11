@@ -106,16 +106,17 @@ class Api(unittest.TestCase):
                          ("Lossless · CD rip", "FLAC 16/44.1", True))
         self.assertTrue(res["results"][1]["quality"]["format"].startswith("MP3"))
 
-    def test_item_detail_and_deep_test(self):
+    def test_item_detail_and_only_the_quick_test(self):
         self.search()
         d = self.http.get("/api/items/flac-1").json()
         self.assertEqual(len(d["track_list"]), 3)
         self.assertEqual(d["track_list"][0]["probe"]["sample_rate"], 44100)
         self.assertTrue(d["provenance"]["reasons"])
-        job = self.http.post("/api/items/flac-1/test", json={"level": "deep"}).json()
-        summary = self.wait(job["job_id"])
-        self.assertIn("V2", summary["levels"])
-        self.assertEqual(summary["integrity"]["all_ok"], True)
+        done = self.wait(self.http.post("/api/items/flac-1/test", json={"level": "quick"}).json()["job_id"])
+        self.assertEqual(done["tested"], ["flac-1"])
+        r = self.http.post("/api/items/flac-1/test", json={"level": "deep"})
+        self.assertEqual(r.status_code, 400, "the app has no deep test; a track's spectrogram is drawn on request")
+        self.assertEqual(self.http.get("/api/items/flac-1/spectrogram.png").status_code, 404)
 
     def test_unknown_item_is_404(self):
         with mock.patch.object(self.core.client, "metadata", side_effect=__import__("iaflac").ia_client.IAError("gone")):

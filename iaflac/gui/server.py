@@ -132,10 +132,6 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def test(identifier: str, body: dict = Body(default={})):
         return core.test(identifier, body.get("level", "quick"))
 
-    @api.get("/api/items/{identifier}/spectrogram.png")
-    def item_spectrogram(identifier: str):
-        return FileResponse(core.spectrogram_file(identifier), media_type="image/png")
-
     # ---- metadata and saving ---------------------------------------------------------------------------------
     @api.get("/api/items/{identifier}/meta")
     def get_meta(identifier: str, fresh: bool = False):

@@ -73,11 +73,6 @@ export function mountSearch(card, { select }) {
   setTimeout(() => els.artist.focus(), 50);
 }
 
-export function updateCandidate(c) {
-  const i = state.results.findIndex((r) => r.identifier === c.identifier);
-  if (i >= 0) { state.results[i] = c; renderTable(); }
-}
-
 function describe(e) {
   if (e.stage === "search") return `Searching archive.org · ${e.rung || ""}${e.hits ? ` · ${e.hits} hits` : ""}`;
   if (e.stage === "inspecting") return `Reading ${e.identifier}…`;

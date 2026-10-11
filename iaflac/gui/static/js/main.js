@@ -2,8 +2,8 @@
 
 import { connect, on } from "./api.js";
 import { h, hydrateIcons, toast } from "./ui.js";
-import { mountSearch, updateCandidate as updateRow } from "./search.js";
-import { mountDeepTest, loadCandidate, updateCandidate as updateDeep } from "./deeptest.js";
+import { mountSearch } from "./search.js";
+import { mountSpectrogram, loadCandidate, updateCandidate as updateSpec } from "./spectrogram.js";
 import { mountTags, loadTags } from "./tags.js";
 import { mountLibrary, load as loadLibrary } from "./library.js";
 import { mountCdArt, openAlbum, refresh as refreshArt } from "./cdart.js";
@@ -22,17 +22,17 @@ function show(view) {
 }
 for (const b of document.querySelectorAll("[data-view]")) b.addEventListener("click", () => show(b.dataset.view));
 
-// ---- Album Search: one wide block on top, deep test and tags below --------------------------------------------------
+// ---- Album Search: one wide block on top, spectrogram and tags below ------------------------------------------------
 const search = document.getElementById("view-search");
 const searchCard = h("div.card", { id: "search-card" });
-const deepCard = h("div.card.deep-card");
+const specCard = h("div.card.spec-card");
 const tagsCard = h("div.card.tags-card");
-search.append(searchCard, deepCard, tagsCard);
+search.append(searchCard, specCard, tagsCard);
 
 mountSearch(searchCard, { select: (c) => { loadCandidate(c); loadTags(c); } });
-mountDeepTest(deepCard, { updated: (c) => updateRow(c), openSettings: () => show("settings") });
+mountSpectrogram(specCard, { openSettings: () => show("settings") });
 mountTags(tagsCard, { settings: getSettings });
-on("candidate", (e) => updateDeep(e.candidate));
+on("candidate", (e) => updateSpec(e.candidate));
 
 // ---- CD Art ----------------------------------------------------------------------------------------------------------
 const art = document.getElementById("view-cdart");

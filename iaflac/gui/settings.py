@@ -19,7 +19,6 @@ class Settings:
     free_only: bool = False
     rip_only: bool = False
     all_formats: bool = True               # list WAV and MP3 next to FLAC
-    max_deep_mb: int = 1500                # skip the full decode test above this album size
     art: str = "cover"                     # cover | all | none
     rip_files: str = "skip"                # skip | keep (.log/.cue/.accurip; a .cue makes Volumio list the album twice)
     embed_art: bool = True

@@ -91,6 +91,23 @@ class ArtApi(unittest.TestCase):
         saved = self.wait(self.http.post("/api/art/save", json={"folder": folder}).json()["job_id"])
         self.assertEqual(sorted(Path(p).name for p in saved["written"]), ["back.jpg", "disc.jpg", "front.jpg"])
 
+    def test_gaps_are_filled_in_the_albums_colours_and_can_be_changed(self):
+        folder = "Test Artist/Test Album (1999)"
+        art = self.wait(self.http.post("/api/art/find", json={"folder": folder}).json()["job_id"])
+        self.assertTrue(art["palette"], "colours taken from the chosen front cover")
+        main = art["palette"][0]
+        self.assertEqual(art["completeness"]["tray"], 0)
+        self.assertEqual(art["selection"]["tray"], f"colour:{main}", "no under-tray scan: the album's main colour")
+        sel = {**art["selection"], "inside": "colour:#000000", "disc": next(i["id"] for i in art["images"] if i["kind"] == "front")}
+        state = self.http.put("/api/art/selection", json={"folder": folder, "selection": sel}).json()
+        self.assertEqual(state["selection"]["inside"], "colour:#000000")
+        self.assertEqual(self.http.put("/api/art/selection", json={"folder": folder, "selection": {"inside": "colour:red"}}).status_code, 400)
+        printed = self.wait(self.http.post("/api/art/print", json={"folder": folder}).json()["job_id"])
+        src = {p["name"]: p["source"] for p in printed["pieces"]}
+        self.assertEqual(src["inside of front insert"], "generated: tracklist on the album colour #000000")
+        self.assertEqual(src["under-tray image"], f"album colour {main}")
+        self.assertFalse(src["disc label"].startswith("generated"), "a front cover image fills the disc")
+
     def test_whole_library_checklist(self):
         summary = self.wait(self.http.post("/api/art/scan-all").json()["job_id"])
         row = summary["albums"][0]

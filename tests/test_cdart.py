@@ -193,6 +193,20 @@ class FindArt(unittest.TestCase):
         self.assertEqual(len(self.mb.fetched), 4, "only the chosen scans were downloaded")
         self.assertTrue((self.folder / "cover.jpg").exists(), "the player's cover is left alone")
 
+    def test_saving_scans_skips_colours_and_images_borrowed_from_another_part(self):
+        art = self.find()
+        sel = cdart.default_selection(art)
+        sel.update(tray=sel["front"], inside="colour:#123456")       # the front cover fills the under-tray gap
+        fetcher = cdart.ArtFetcher(self.mb, self.ia, cache=self.library / ".art-cache")
+        names = sorted(Path(p).name for p in cdart.save_to_folder(art, sel, self.folder, fetcher))
+        self.assertEqual(names, ["back.jpg", "disc.jpg", "front.jpg"], "no tray.jpg that is really the front cover")
+
+    def test_the_palette_comes_from_the_chosen_front_cover(self):
+        art = self.find()
+        sel = cdart.default_selection(art)
+        self.assertEqual(cdart.palette_source(art, sel).id, sel["front"])
+        self.assertEqual(cdart.palette_source(art, {**sel, "front": None}).kind, "front", "else the best front scan")
+
     def test_an_untagged_album_is_matched_on_musicbrainz_first(self):
         from iaflac import musicbrainz as mb
 
@@ -225,6 +239,51 @@ class FindArt(unittest.TestCase):
         report = jc.render(self.library / "gen.pdf", artist="Nobody", album="Nothing", tracks=art.tracks)
         self.assertEqual([p.source.split(":")[0] for p in report.pieces],
                          ["generated", "generated", "generated", "none found", "generated"])
+
+
+
+def two_tone(main=(30, 60, 140), accent=(240, 200, 40), split=0.75) -> bytes:
+    """A cover mostly in `main` with a band of `accent`."""
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (400, 400), main)
+    ImageDraw.Draw(im).rectangle((0, int(400 * split), 400, 400), fill=accent)
+    buf = io.BytesIO()
+    im.save(buf, "PNG")
+    return buf.getvalue()
+
+
+class Gaps(unittest.TestCase):
+    def test_the_palette_is_the_covers_colours_most_used_first(self):
+        colours = cdart.palette(two_tone())
+        self.assertEqual(colours[:2], ["#1e3c8c", "#f0c828"])
+        flat = cdart.palette(jpeg(color=(200, 30, 30)))
+        self.assertEqual(len(flat), 1, "a flat cover is one colour")
+        rgb = [int(flat[0][i:i + 2], 16) for i in (1, 3, 5)]
+        self.assertTrue(all(abs(a - b) <= 4 for a, b in zip(rgb, (200, 30, 30))), flat)      # within JPEG's rounding
+
+    def test_missing_parts_take_the_main_colour_and_the_disc_keeps_the_front_cut(self):
+        sel = {"front": "f1", "back": None, "inside": None, "tray": None, "disc": None}
+        filled = cdart.fill_gaps(sel, ["#1e3c8c", "#f0c828"])
+        self.assertEqual(filled, {"front": "f1", "back": "colour:#1e3c8c", "inside": "colour:#1e3c8c",
+                                  "tray": "colour:#1e3c8c", "disc": None})
+        self.assertEqual(cdart.fill_gaps(sel, []), sel, "no colours: generated on white, as before")
+        self.assertTrue(cdart.is_colour("colour:#1e3c8c"))
+        self.assertFalse(cdart.is_colour("colour:red"))
+        self.assertFalse(cdart.is_colour("f1"))
+
+    def test_colour_fills_print_with_the_title_or_tracklist_on_them(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "case.pdf"
+            blue, gold = jc.Colour("#1e3c8c"), jc.Colour("#f0c828")
+            report = jc.render(out, artist="A", album="B", tracks=[{"disc": 1, "track": 1, "title": "One", "length": 60}],
+                               front=jc.Art(two_tone(), "cover.png"), back=blue, inside=gold, tray=blue, disc=gold)
+            self.assertEqual(out.read_bytes()[:5], b"%PDF-")
+        src = {p.name: p.source for p in report.pieces}
+        self.assertEqual(src["back + spines"], "generated: tracklist on the album colour #1e3c8c")
+        self.assertEqual(src["inside of front insert"], "generated: tracklist on the album colour #f0c828")
+        self.assertEqual(src["under-tray image"], "album colour #1e3c8c")
+        self.assertEqual(src["disc label"], "generated: title on the album colour #f0c828")
+        self.assertEqual(jc.Colour("#ffffff").rgb, (1.0, 1.0, 1.0))
 
 
 if __name__ == "__main__":

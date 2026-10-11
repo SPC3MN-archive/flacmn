@@ -338,6 +338,13 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .alts button img { width: 100%; height: 100%; object-fit: cover; }
 .alts button:hover { border-color: var(--primary); }
 .alts button.on { border: 2px solid var(--primary); }
+.alts.fill { margin-top: 8px; }
+.alts button.swatch { width: 26px; height: 26px; border-radius: 13px; }
+.alts button.swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary); border-color: transparent; }
+.part .main-img.swatch { display: flex; align-items: flex-end; justify-content: center; padding: 8px; font-size: 10.5px; text-align: center;
+                         box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.case-page .piece .gen.filled { white-space: pre-line; }
+.case-page .piece:has(.gen.filled) .spine { background: rgba(0,0,0,.10); }
 
 .case-card .page-wrap { flex: 1 1 auto; min-height: 0; background: var(--surface-alt); border-radius: 10px; display: flex;
                         align-items: center; justify-content: center; padding: 12px; position: relative; }

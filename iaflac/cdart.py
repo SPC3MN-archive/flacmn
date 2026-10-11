@@ -436,6 +436,55 @@ def default_selection(art: ArtSet) -> dict:
     return {part: pick(part) for part in PARTS}
 
 
+# ---- filling the gaps ----------------------------------------------------------------------------------------------
+# A part with no scan can be filled with another image of the album (any kind: the front cover behind the tray, a
+# booklet page inside) or with a solid colour taken from the album's cover. In a selection a colour is "colour:#rrggbb".
+
+COLOUR = re.compile(r"^colour:#[0-9a-f]{6}$")
+PART_KIND = {"front": "front", "back": "back", "inside": "booklet", "tray": "tray", "disc": "disc"}
+
+
+def is_colour(value) -> bool:
+    return isinstance(value, str) and bool(COLOUR.match(value))
+
+
+def palette(data: bytes, n: int = 6) -> list:
+    """The album's colours: up to `n` clearly different colours of an image, the most used first, as "#rrggbb"."""
+    from PIL import Image
+    img = Image.open(io.BytesIO(data)).convert("RGB")
+    img.thumbnail((96, 96))
+    q = img.quantize(colors=16, method=Image.Quantize.MEDIANCUT)
+    pal = q.getpalette() or []
+    out: list = []
+    for _count, idx in sorted(q.getcolors() or [], reverse=True):
+        rgb = tuple(pal[idx * 3: idx * 3 + 3])
+        if len(rgb) == 3 and all(sum((a - b) ** 2 for a, b in zip(rgb, o)) > 45 ** 2 for o in out):
+            out.append(rgb)
+        if len(out) == n:
+            break
+    return ["#%02x%02x%02x" % rgb for rgb in out]
+
+
+def palette_source(art: ArtSet, selection: dict) -> Optional[ArtImage]:
+    """The image the album's colours come from: the chosen front cover, else the best front, else any scan."""
+    chosen = art.get(selection.get("front") or "")
+    if chosen is not None:
+        return chosen
+    for kind in ("front", "back", "booklet", "disc", "tray", "other", "spine"):
+        if art.of(kind):
+            return art.of(kind)[0]
+    return None
+
+
+def fill_gaps(selection: dict, colours: list) -> dict:
+    """With no scan for the front, back, inside or under-tray image, use the album's main colour there instead of
+    plain white (generated text goes on top, in black or white, whichever reads). The disc keeps falling back to a
+    cut of the front cover."""
+    if not colours:
+        return dict(selection)
+    return {part: (f"colour:{colours[0]}" if not iid and part != "disc" else iid) for part, iid in selection.items()}
+
+
 # ---- fetching ----------------------------------------------------------------------------------------------------
 
 class ArtFetcher:
@@ -488,8 +537,8 @@ def save_to_folder(art: ArtSet, selection: dict, folder: Path, fetcher: ArtFetch
     written = []
     for name, iid in ((k, selection.get(k)) for k in PARTS):
         im = art.get(iid) if iid else None
-        if im is None or (im.source == "folder" and Path(im.ref).parent == out_dir):
-            continue
+        if im is None or im.kind != PART_KIND[name] or (im.source == "folder" and Path(im.ref).parent == out_dir):
+            continue                                 # a colour, or another part's image filling a gap: not a scan of it
         data = fetcher.get(im)
         ext = ".png" if data[:8] == b"\x89PNG\r\n\x1a\n" else ".jpg"
         target = out_dir / f"{name}{ext}"

@@ -88,7 +88,8 @@ class App:
         self.matches: dict = {}               # identifier -> [ReleaseMatch]
         self.library: Optional[library_index.LibraryIndex] = None
         self.arts: dict = {}                  # library folder -> cdart.ArtSet
-        self.art_selections: dict = {}        # library folder -> {front, back, disc, tray, booklet: [...]}
+        self.art_selections: dict = {}        # library folder -> {front, back, inside, tray, disc}: image id, "colour:#rrggbb" or None
+        self.art_palettes: dict = {}          # library folder -> {"from": image id, "colours": ["#rrggbb", ...]}
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
                                    concurrency=self.settings.download_concurrency)
@@ -404,7 +405,8 @@ class App:
                                  search_archive=self.settings.art_search_archive, library_root=self._library(),
                                  progress=self.jobs.progress(job), cancel=job.cancelled)
             self.arts[folder] = art
-            self.art_selections[folder] = cdart.default_selection(art)
+            sel = cdart.default_selection(art)
+            self.art_selections[folder] = cdart.fill_gaps(sel, self._palette(folder, art, sel, cancel=job.cancelled))
             out = self.art_state(folder)
             self.broadcast({"type": "art", "folder": folder, "completeness": out["completeness"]})
             return out
@@ -413,15 +415,32 @@ class App:
 
     def art_state(self, folder: str) -> dict:
         art = self._art(folder)
-        return {**art.to_dict(), "selection": self.art_selections.get(folder) or cdart.default_selection(art),
+        sel = self.art_selections.get(folder) or cdart.default_selection(art)
+        return {**art.to_dict(), "selection": sel, "palette": self._palette(folder, art, sel),
                 "pdf": str(self._pdf_path(art)) if self._pdf_path(art).exists() else None}
+
+    def _palette(self, folder: str, art: cdart.ArtSet, selection: dict, cancel=None) -> list:
+        """The album's colours, from the chosen front cover (else any scan); worked out once per source image."""
+        src = cdart.palette_source(art, selection)
+        if src is None:
+            self.art_palettes.pop(folder, None)
+            return []
+        known = self.art_palettes.get(folder)
+        if known and known["from"] == src.id:
+            return known["colours"]
+        try:
+            colours = cdart.palette(cdart.ArtFetcher(self.mb, self.client).get(src, cancel=cancel))
+        except (mb.MBError, IAError, OSError, ValueError):     # no colours is fine: the parts stay generated on white
+            colours = []
+        self.art_palettes[folder] = {"from": src.id, "colours": colours}
+        return colours
 
     def art_select(self, folder: str, selection: dict) -> dict:
         art = self._art(folder)
         clean = {}
         for part in cdart.PARTS:
             iid = selection.get(part)
-            if iid is not None and art.get(iid) is None:
+            if iid is not None and not cdart.is_colour(iid) and art.get(iid) is None:
                 raise ValueError(f"{part}: unknown image {iid}")
             clean[part] = iid
         self.art_selections[folder] = clean
@@ -463,9 +482,11 @@ class App:
         def run(job: Job):
             fetcher = cdart.ArtFetcher(self.mb, self.client)
             emit = self.jobs.progress(job)
-            wanted = [k for k in cdart.PARTS if sel.get(k)]
+            wanted = [k for k in cdart.PARTS if sel.get(k) and not cdart.is_colour(sel[k])]
 
             def load(part):
+                if cdart.is_colour(sel[part]):
+                    return jewelcase.Colour(sel[part].split(":", 1)[1])
                 im = art.get(sel[part])
                 emit({"stage": "art", "step": "fetching", "part": part, "label": im.label,
                       "index": wanted.index(part) + 1, "total": len(wanted)})

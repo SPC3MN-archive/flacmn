@@ -11,8 +11,17 @@ const PARTS = [
 ];
 const SOURCE = { folder: "Album folder", "archive.org": "archive.org upload", coverartarchive: "Cover Art Archive",
   "coverartarchive-sibling": "Cover Art Archive · other pressing", "archive.org-search": "Other archive.org upload" };
-const MISSING = { front: "a title-only cover", back: "a generated tracklist", inside: "left blank", tray: "left blank",
+const MISSING = { front: "a title-only cover", back: "a generated tracklist", inside: "a tracklist on white", tray: "left blank",
   disc: "cut from the front cover" };
+// what gets generated on a part filled with a solid colour
+const ON_COLOUR = { front: "title", back: "tracklist and spines", inside: "tracklist", tray: "", disc: "title" };
+const KIND_NAME = { front: "Front cover", back: "Back cover", booklet: "Booklet page", disc: "Disc", tray: "Tray image",
+  spine: "Spine", other: "Image" };
+const colourOf = (v) => (typeof v === "string" && v.startsWith("colour:") ? v.slice(7) : null);
+function inkOn(hex) {             // black or white text, whichever reads on the colour (as the PDF does)
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.55 ? "#000" : "#fff";
+}
 const PAPER = { letter: [215.9, 279.4, "Letter"], a4: [210, 297, "A4"] };
 const FRONT = 120, TRAY_W = 151, TRAY_H = 118, SPINE = 6.5, DISC = 118;
 
@@ -170,23 +179,36 @@ function renderParts(box) {
     return;
   }
   const sel = state.art.selection || {};
+  const swatches = [...new Set([...(state.art.palette || []), "#ffffff", "#000000"])];
   clear(box, ...PARTS.map(([part, title, kind]) => {
-    const chosen = sel[part] ? img(sel[part]) : null;
+    const value = sel[part], colour = colourOf(value);
+    const chosen = !colour && value ? img(value) : null;
+    const borrowed = chosen && chosen.kind !== kind;          // another of the album's images filling this gap
     const alts = imagesOf(kind);
+    const others = (state.art.images || []).filter((i) => i.kind !== kind && i.kind !== "spine").slice(0, 8);
     const soft = chosen && chosen.dpi && chosen.dpi < 200;
+    const thumb = (a) => h("button" + (chosen && a.id === chosen.id ? ".on" : ""), {
+      title: `${a.kind !== kind ? KIND_NAME[a.kind] + " · " : ""}${a.label || SOURCE[a.source] || a.source}${a.dpi ? ` · ${a.dpi} dpi` : ""}`,
+      onclick: () => choose(part, a.id),
+    }, h("img", { src: imgUrl(a.id), alt: "", loading: "lazy" }));
     return h("div.part" + (soft ? ".warn" : ""),
       chosen ? h("img.main-img", { src: imgUrl(chosen.id), alt: title, loading: "lazy" })
+        : colour ? h("div.main-img.swatch", { style: { background: colour, color: inkOn(colour) } }, ON_COLOUR[part] ? `Generated ${ON_COLOUR[part]}` : "")
         : h("div.main-img.missing", "Not found: " + MISSING[part]),
       h("div", { style: { minWidth: 0 } },
         h("h4", title),
-        h("div.src.ellipsis", chosen ? chosen.label || SOURCE[chosen.source] || chosen.source : "No scan found"),
+        h("div.src.ellipsis", chosen ? (borrowed ? `${KIND_NAME[chosen.kind]} used here · ` : "") + (chosen.label || SOURCE[chosen.source] || chosen.source)
+          : colour ? `Album colour ${colour}` + (ON_COLOUR[part] ? ` · generated ${ON_COLOUR[part]} on it` : "")
+          : (alts.length ? "" : "No scan found · ") + "Generated: " + MISSING[part]),
         chosen ? h("div.meta", dpiChip(chosen), chosen.width ? h("span", `${chosen.width} × ${chosen.height} px`) : null) : h("div.meta"),
-        alts.length > 1 || (alts.length && !chosen) ? h("div.alts", h("span.section-label", "Other scans"),
-          ...alts.slice(0, 10).map((a) => h("button" + (chosen && a.id === chosen.id ? ".on" : ""), {
-            title: `${a.label || SOURCE[a.source] || a.source}${a.dpi ? ` · ${a.dpi} dpi` : ""}`,
-            onclick: () => choose(part, a.id),
-          }, h("img", { src: imgUrl(a.id), alt: "", loading: "lazy" }))),
-          chosen ? h("button.btn.ghost.sm", { onclick: () => choose(part, null), title: "Print a generated piece instead" }, "None") : null) : null));
+        alts.length > 1 || (alts.length && !chosen) ? h("div.alts", h("span.section-label", "Other scans"), ...alts.slice(0, 10).map(thumb)) : null,
+        h("div.alts.fill", h("span.section-label", "Fill with"),
+          ...swatches.map((hex) => h("button.swatch" + (colour === hex ? ".on" : ""), {
+            style: { background: hex }, title: hex + (state.art.palette?.includes(hex) ? " · from the album cover" : ""),
+            onclick: () => choose(part, `colour:${hex}`),
+          })),
+          value ? h("button.btn.ghost.sm", { onclick: () => choose(part, null), title: `Generated: ${MISSING[part]}` }, "Plain") : null),
+        others.length ? h("div.alts.fill", h("span.section-label", "Or another image"), ...others.map(thumb)) : null));
   }));
 }
 
@@ -229,6 +251,7 @@ function warningChips() {
   const sel = state.art.selection || {};
   const out = [];
   for (const [part, title] of PARTS) {
+    if (colourOf(sel[part])) continue;                         // filled in an album colour: nothing to warn about
     const im = sel[part] ? img(sel[part]) : null;
     if (!im) out.push(chip(`${title}: ${MISSING[part]}`, "", { icon: "info" }));
     else if (im.dpi && im.dpi < 200) out.push(chip(`${title} is soft (${im.dpi} dpi)`, "warn", { icon: "alert" }));
@@ -245,34 +268,37 @@ function drawPage() {
   const mm = (v) => `${v * k}px`;
   const page = h("div.case-page", { style: { width: mm(pw), height: mm(ph) } });
   const sel = state.art?.selection || {};
-  const piece = (x, y, w, hgt, id, gen) => {
+  const piece = (x, y, w, hgt, value, gen, part) => {
+    const colour = colourOf(value);
     const p = h("div.piece", { style: { left: mm(x), top: mm(y), width: mm(w), height: mm(hgt) } },
-      id ? h("img", { src: imgUrl(id), alt: "" }) : h("div.gen", gen));
+      colour ? h("div.gen.filled", { style: { background: colour, color: inkOn(colour) } }, ON_COLOUR[part] ? `(generated ${ON_COLOUR[part]})` : "")
+        : value ? h("img", { src: imgUrl(value), alt: "" }) : h("div.gen", gen));
     page.append(p);
     return p;
   };
   const fx = (pw - FRONT) / 2, fy = 12, tx = (pw - TRAY_W) / 2, ty = fy + FRONT + 10;
   if (state.page === "outside") {
-    piece(fx, fy, FRONT, FRONT, sel.front, "Front cover\n(generated: title)");
-    const back = piece(tx, ty, TRAY_W, TRAY_H, sel.back, "Back tray card\n(generated tracklist)");
+    piece(fx, fy, FRONT, FRONT, sel.front, "Front cover\n(generated: title)", "front");
+    const back = piece(tx, ty, TRAY_W, TRAY_H, sel.back, "Back tray card\n(generated tracklist)", "back");
     for (const x of [0, TRAY_W - SPINE]) back.append(h("div.spine", { style: { left: mm(x), width: mm(SPINE) } }));
     page.append(h("div.cap", { style: { left: mm(fx + FRONT + 2), top: mm(fy) } }, "Front 120 × 120"),
       h("div.cap", { style: { left: mm(tx), top: mm(ty + TRAY_H + 2) } }, "Tray card 151 × 118 mm · 2 spines"));
   } else if (state.page === "inside") {
-    const inside = piece(fx, fy, FRONT, FRONT, sel.inside, "Inside of the insert\n(left blank)");
-    const im = sel.inside ? img(sel.inside) : null;
+    const inside = piece(fx, fy, FRONT, FRONT, sel.inside, "Inside of the insert\n(generated tracklist)", "inside");
+    const im = sel.inside && !colourOf(sel.inside) ? img(sel.inside) : null;
     if (im && im.width / im.height >= 1.6) {          // an opened booklet: the left page prints, as in the PDF
       Object.assign(inside.firstChild.style, { width: "200%", maxWidth: "none", objectPosition: "left center" });
     }
-    piece(tx, ty, TRAY_W, TRAY_H, sel.tray, "Under-tray\n(left blank)");
+    piece(tx, ty, TRAY_W, TRAY_H, sel.tray, "Under-tray\n(left blank)", "tray");
     page.append(h("div.cap", { style: { left: mm(fx + FRONT + 2), top: mm(fy) } }, "Print on the back of page 1"));
   } else {
     const dx = (pw - DISC) / 2, dy = 12;
-    const disc = h("div.disc", { style: { left: mm(dx), top: mm(dy), width: mm(DISC), height: mm(DISC) } },
-      sel.disc ? h("img", { src: imgUrl(sel.disc), alt: "" }) : sel.front ? h("img", { src: imgUrl(sel.front), alt: "", style: { opacity: 0.85 } }) : null);
+    const discColour = colourOf(sel.disc), frontImg = sel.front && !colourOf(sel.front) ? sel.front : null;
+    const disc = h("div.disc", { style: { left: mm(dx), top: mm(dy), width: mm(DISC), height: mm(DISC), ...(discColour ? { background: discColour } : {}) } },
+      discColour ? null : sel.disc ? h("img", { src: imgUrl(sel.disc), alt: "" }) : frontImg ? h("img", { src: imgUrl(frontImg), alt: "", style: { opacity: 0.85 } }) : null);
     const hole = settings().disc_hole_mm || 41;
     page.append(disc, h("div.hole", { style: { left: mm(dx + (DISC - hole) / 2), top: mm(dy + (DISC - hole) / 2), width: mm(hole), height: mm(hole) } }),
-      h("div.cap", { style: { left: mm(dx), top: mm(dy + DISC + 3) } }, `Disc label Ø ${DISC} mm · hole ${hole} mm${sel.disc ? "" : " · cut from the front cover"}`));
+      h("div.cap", { style: { left: mm(dx), top: mm(dy + DISC + 3) } }, `Disc label Ø ${DISC} mm · hole ${hole} mm${discColour ? ` · title on ${discColour}` : sel.disc ? "" : " · cut from the front cover"}`));
   }
   const n = { outside: 1, inside: 2, disc: 3 }[state.page];
   clear(pageWrap, page, h("div.page-no", `Page ${n} of 3`));

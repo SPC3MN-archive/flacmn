@@ -80,6 +80,20 @@ class Art:
         return img.convert("RGB")
 
 
+@dataclass
+class Colour:
+    """A solid fill in one of the album's colours, for a part with no scan; generated text goes on top of it."""
+    hex: str                                             # "#rrggbb"
+
+    @property
+    def rgb(self) -> tuple:
+        return tuple(int(self.hex[i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+    @property
+    def label(self) -> str:
+        return f"album colour {self.hex}"
+
+
 # ---- fonts -------------------------------------------------------------------------------------------------------
 
 _FONT = None
@@ -265,7 +279,8 @@ def draw_tracklist(sh: Sheet, x: float, y: float, w: float, h: float, artist: st
     c.restoreState()
 
 
-def draw_disc(sh: Sheet, img: Optional[Image.Image], cx: float, cy: float, title: str, subtitle: str) -> Optional[int]:
+def draw_disc(sh: Sheet, img: Optional[Image.Image], cx: float, cy: float, title: str, subtitle: str,
+              bg: Optional[tuple] = None) -> Optional[int]:
     """A disc label centred on (cx, cy): the image clipped to the ring, plus cut circles."""
     c, o = sh.c, sh.opts
     r_out, r_in = o.disc_outer / 2, o.disc_inner / 2
@@ -280,9 +295,9 @@ def draw_disc(sh: Sheet, img: Optional[Image.Image], cx: float, cy: float, title
         fitted, dpi = fit_cover(img, d, d)
         c.drawImage(reader(fitted), (cx - d / 2) * mm, (cy - d / 2) * mm, d * mm, d * mm)
     else:
-        c.setFillColorRGB(0.95, 0.95, 0.95)
+        c.setFillColorRGB(*(bg or (0.95, 0.95, 0.95)))
         c.rect((cx - r_out - 2) * mm, (cy - r_out - 2) * mm, (2 * r_out + 4) * mm, (2 * r_out + 4) * mm, stroke=0, fill=1)
-        c.setFillColorRGB(0.1, 0.1, 0.1)
+        c.setFillColorRGB(*(text_colour(bg) if bg else (0.1, 0.1, 0.1)))
         name, size, t = sh.fit_text(title, 12, o.disc_outer * 0.7, bold=True)
         c.setFont(name, size)
         c.drawCentredString(cx * mm, (cy + r_in + 10) * mm, t)
@@ -302,14 +317,15 @@ def draw_disc(sh: Sheet, img: Optional[Image.Image], cx: float, cy: float, title
 # ---- the document ------------------------------------------------------------------------------------------------
 
 def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optional[list] = None,
-           front: Optional[Art] = None, back: Optional[Art] = None, inside: Optional[Art] = None,
-           tray: Optional[Art] = None, disc: Optional[Art] = None, opts: Optional[PrintOptions] = None) -> PrintReport:
+           front=None, back=None, inside=None, tray=None, disc=None, opts: Optional[PrintOptions] = None) -> PrintReport:
     """Write the print PDF to `path`:
       page 1  OUTSIDE  front cover (front insert) above the tray card (back + both spines)
       page 2  INSIDE   print on the back of page 1: the inside of the front insert behind the front cover, and the
                        under-tray image (seen through the clear tray) behind the tray card's back panel
       page 3  DISC     the disc label(s), for label stock or a printable disc
-    Both inserts are centred, so a double-sided print flipped on the long edge lines the inside up with the outside."""
+    Both inserts are centred, so a double-sided print flipped on the long edge lines the inside up with the outside.
+    Each part is an Art (an image: a scan of it, or another of the album's images filling the gap), a Colour (a solid
+    album colour, with the title or tracklist generated on it) or None (generated on white, as before)."""
     opts = opts or PrintOptions()
     tracks = tracks or []
     report = PrintReport(paper=opts.paper)
@@ -320,7 +336,7 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
     c.setAuthor("iaflac")
     sh = Sheet(c, opts)
     title = f"{artist} — {album}" + (f" ({year})" if year else "")
-    front_img = front.image() if front else None
+    front_img = front.image() if isinstance(front, Art) else None
     page = [1]
 
     def piece(name, source, dpi=None):
@@ -341,11 +357,18 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
     # ---- page 1: outside
     if front_img is not None:
         piece("front cover", front.label, sh.image(front_img, fx, fy, FRONT_W, FRONT_H))
+    elif isinstance(front, Colour):
+        draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, [], front.rgb)
+        piece("front cover", f"generated: title on the {front.label}")
     else:
         draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, [], (1, 1, 1))
         piece("front cover", "generated: title only (no front cover found)")
     sh.marks(fx, fy, FRONT_W, FRONT_H)
-    if back is not None:
+    if isinstance(back, Colour):
+        draw_tracklist(sh, tx + SPINE, ty, TRAY_W - 2 * SPINE, TRAY_H, artist, album, year, tracks, back.rgb)
+        draw_spines(sh, tx, ty, f"{artist}  ·  {album}", back.rgb)
+        piece("back + spines", f"generated: tracklist on the {back.label}")
+    elif back is not None:
         img = back.image()
         if img.size[0] / img.size[1] >= (SPINE_RATIO + BACK_RATIO) / 2:       # the scan includes its spines
             piece("back + spines", back.label, sh.image(img, tx, ty, TRAY_W, TRAY_H))
@@ -366,12 +389,22 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
 
     # ---- page 2: inside, on the back of page 1 (no crop marks: cut from the outside)
     saved_marks, opts.crop_marks = opts.crop_marks, False
-    if inside is not None:
+    if isinstance(inside, Colour):
+        draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, tracks, inside.rgb)
+        piece("inside of front insert", f"generated: tracklist on the {inside.label}")
+    elif inside is not None:
         piece("inside of front insert", inside.label, sh.image(split_spread(inside.image())[0], fx, fy, FRONT_W, FRONT_H))
     else:
         draw_tracklist(sh, fx, fy, FRONT_W, FRONT_H, artist, album, year, tracks, (1, 1, 1))
         piece("inside of front insert", "generated: tracklist from your tags")
-    if tray is not None:
+    if isinstance(tray, Colour):
+        b = opts.bleed
+        c.saveState()
+        c.setFillColorRGB(*tray.rgb)
+        c.rect((tx + SPINE - b) * mm, (ty - b) * mm, (TRAY_W - 2 * SPINE + 2 * b) * mm, (TRAY_H + 2 * b) * mm, stroke=0, fill=1)
+        c.restoreState()
+        piece("under-tray image", tray.label)
+    elif tray is not None:
         piece("under-tray image", tray.label, sh.image(tray.image(), tx + SPINE, ty, TRAY_W - 2 * SPINE, TRAY_H))
     else:
         piece("under-tray image", "none found: left blank")
@@ -380,15 +413,17 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
     next_page()
 
     # ---- page 3: disc label(s)
-    disc_img = disc.image() if disc else front_img
-    src = disc.label if disc else ("generated: cut from the front cover" if front_img else "generated: title only")
+    disc_bg = disc.rgb if isinstance(disc, Colour) else None
+    disc_img = disc.image() if isinstance(disc, Art) else (None if disc_bg else front_img)
+    src = (disc.label if isinstance(disc, Art) else f"generated: title on the {disc.label}" if disc_bg
+           else "generated: cut from the front cover" if front_img else "generated: title only")
     count = max(1, opts.discs)
     per_page = 2 if ph - 26 >= 2 * opts.disc_outer + 14 else 1
     for n in range(count):
         k = n % per_page
         cy = ph - 14 - opts.disc_outer / 2 - k * (opts.disc_outer + 14)
         name = f"disc label{f' {n + 1}' if count > 1 else ''}"
-        dpi = draw_disc(sh, disc_img, pw / 2, cy, album, artist + (f" · disc {n + 1}" if count > 1 else ""))
+        dpi = draw_disc(sh, disc_img, pw / 2, cy, album, artist + (f" · disc {n + 1}" if count > 1 else ""), disc_bg)
         piece(name, src, dpi)
         sh.label(f"{name} · {opts.disc_outer:g} mm, hole {opts.disc_inner:g} mm", pw / 2 - opts.disc_outer / 2,
                  cy + opts.disc_outer / 2 + 2)

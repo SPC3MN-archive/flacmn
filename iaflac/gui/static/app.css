@@ -402,10 +402,14 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .toast.bad { background: var(--red); }
 .toast.good { background: var(--good-text); }
 
-/* narrower windows: stack the bottom row of Album Search, and the CD Art preview */
-@media (max-width: 1180px) {
+/* Album Search keeps the spectrogram and the tags side by side in the bottom half at every window size the app
+   allows (its minimum width is 1000 px); only a narrower browser tab stacks them */
+@media (max-width: 900px) {
   #view-search { grid-template-columns: minmax(0, 1fr); grid-template-rows: 440px minmax(480px, auto) minmax(460px, auto); }
+  .spec-body .spec-box { min-height: 240px; }
+}
+/* narrower windows: stack the CD Art preview, and Settings */
+@media (max-width: 1180px) {
   #view-cdart { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(500px, auto) minmax(600px, auto); }
   #view-settings { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
-  .spec-body .spec-box { min-height: 240px; }
 }

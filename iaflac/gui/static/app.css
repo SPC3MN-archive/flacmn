@@ -1,5 +1,6 @@
 /* iaflac desktop UI: Option A "Workspace" from design/iaflac-mockups-v3.svg.
-   Palette: #DFD9E2 lavender, #F4B73E amber, #BC3843 red, #5C53A2 indigo, #20A76B green, plus black and white. */
+   Palette: #DFD9E2 lavender, #F4B73E amber, #BC3843 red, #5C53A2 indigo, #20A76B green, plus black and white.
+   The page and its text follow the spcmn site: off-white #F6F4EE background, charcoal #2E2E33 text. */
 
 /* Bundled TeX Gyre Heros (free Helvetica clone, GUST Font License): see fonts/README.txt */
 @font-face { font-family: "Heros"; src: url("/static/fonts/texgyreheros-regular.otf") format("opentype"); font-weight: 100 549; font-style: normal; }
@@ -9,17 +10,17 @@
 
 :root {
   --lavender: #DFD9E2; --amber: #F4B73E; --red: #BC3843; --indigo: #5C53A2; --green: #20A76B;
-  --white: #FFFFFF; --ink: #13102A;
+  --white: #FFFFFF; --ink: #2E2E33; --paper: #F6F4EE; --charcoal: #2E2E33;
 
-  --app-bg: var(--lavender);
-  --surface: var(--white);
-  --surface-alt: #F7F6F8;
-  --surface-sunk: #EDEAEF;
-  --border: #CFC9DA;
-  --border-soft: #E9E4EB;
-  --text: #0F0D1A;
-  --text-2: #2C284E;
-  --text-3: #7B7782;
+  --app-bg: var(--paper);
+  --surface: #FCFBF8;
+  --surface-alt: #F9F8F4;
+  --surface-sunk: #EEEBE4;
+  --border: #D9D5CC;
+  --border-soft: #E9E6DF;
+  --text: var(--charcoal);
+  --text-2: #4F4E55;
+  --text-3: #77767D;
   --primary: var(--indigo);
   --primary-dark: #463F7E;
   --primary-tint: #F0F0F7;
@@ -99,7 +100,7 @@ main { flex: 1 1 auto; min-height: 0; position: relative; }
 .view.active { display: grid; }
 .card {
   background: var(--surface); border-radius: var(--radius); min-width: 0; min-height: 0;
-  display: flex; flex-direction: column; padding: 16px; box-shadow: 0 1px 2px rgba(19, 16, 42, .06);
+  display: flex; flex-direction: column; padding: 16px; box-shadow: 0 1px 2px rgba(46, 46, 51, .06);
 }
 .card-head { display: flex; align-items: center; gap: 10px; min-height: 32px; margin-bottom: 12px; flex: none; }
 .card-title { font-size: 15px; font-weight: 650; }
@@ -171,7 +172,7 @@ main { flex: 1 1 auto; min-height: 0; position: relative; }
 .segmented { display: inline-flex; background: var(--surface-sunk); border-radius: 8px; padding: 3px; gap: 2px; flex: none; }
 .segmented button { border: 0; background: transparent; height: 26px; padding: 0 14px; border-radius: 6px; cursor: pointer;
                     font-size: 12.5px; font-weight: 500; color: var(--text-2); }
-.segmented button.on { background: var(--white); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(19,16,42,.12); }
+.segmented button.on { background: var(--white); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(46,46,51,.12); }
 
 /* ---- chips and badges --------------------------------------------------------------------------------------- */
 .chip {
@@ -280,7 +281,7 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .mb-bar .score { font-weight: 700; color: var(--primary-text); }
 .mb-bar .src { color: var(--primary-text); font-weight: 500; }
 .mb-menu { position: absolute; top: 34px; left: 0; right: 0; z-index: 20; background: var(--white); border-radius: 10px;
-           box-shadow: 0 8px 28px rgba(19,16,42,.22); padding: 6px; max-height: 280px; overflow: auto; }
+           box-shadow: 0 8px 28px rgba(46,46,51,.22); padding: 6px; max-height: 280px; overflow: auto; }
 .mb-menu button { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 8px; align-items: center; width: 100%; border: 0;
                   background: none; text-align: left; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
 .mb-menu button:hover { background: var(--primary-tint); }
@@ -308,7 +309,7 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .album-picker .t { font-weight: 650; font-size: 13.5px; }
 .album-picker .s { font-size: 12px; color: var(--text-2); }
 .album-menu { position: absolute; top: 52px; left: 0; width: 100%; z-index: 30; background: var(--white); border-radius: 10px;
-              box-shadow: 0 8px 28px rgba(19,16,42,.22); padding: 6px; max-height: 420px; overflow: auto; }
+              box-shadow: 0 8px 28px rgba(46,46,51,.22); padding: 6px; max-height: 420px; overflow: auto; }
 .album-menu .field { margin: 2px 2px 6px; height: 30px; }
 .album-menu button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 5px 6px;
                      border-radius: 6px; cursor: pointer; text-align: left; }
@@ -396,7 +397,7 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 
 /* ---- queue popover and toasts -------------------------------------------------------------------------------- */
 .popover { position: fixed; top: 52px; right: 16px; width: 420px; max-height: calc(100vh - 80px); z-index: 50; background: var(--white);
-           border-radius: 12px; box-shadow: 0 12px 40px rgba(19,16,42,.3); display: flex; flex-direction: column; padding: 14px; }
+           border-radius: 12px; box-shadow: 0 12px 40px rgba(46,46,51,.3); display: flex; flex-direction: column; padding: 14px; }
 .q-item { padding: 10px 0; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 6px; }
 .q-item:last-child { border-bottom: 0; }
 .q-item .t { font-weight: 600; }
@@ -404,7 +405,7 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .job-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 5px 0; }
 .toasts { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100;
           align-items: center; pointer-events: none; }
-.toast { background: var(--ink); color: var(--white); padding: 9px 14px; border-radius: 8px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(19,16,42,.3);
+.toast { background: var(--ink); color: var(--white); padding: 9px 14px; border-radius: 8px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(46,46,51,.3);
          max-width: 640px; pointer-events: auto; }
 .toast.bad { background: var(--red); }
 .toast.good { background: var(--good-text); }

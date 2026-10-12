@@ -5,8 +5,8 @@
 import { fmtTime } from "./ui.js";
 
 const LOUD = [[0, "#23305A"], [0.35, "#5C53A2"], [0.62, "#BC3843"], [0.85, "#F4B73E"], [1, "#FADFA8"]];
-const C = { text3: "#7B7782", border: "#CFC9DA", floor: "#F0EDF2", grid: "#E3DEE7",
-            text: "#0F0D1A", slice: "#9D98C7", white: "#FFFFFF" };
+const C = { text3: "#77767D", border: "#D9D5CC", floor: "#F1EFE9", grid: "#E3E0D8",
+            text: "#2E2E33", slice: "#9D98C7", white: "#FFFFFF" };
 const FONT = '500 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 export class Spectrum3D {

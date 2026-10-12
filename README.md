@@ -25,6 +25,40 @@ Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,
 `candidates.json`, `spectrograms/`). `SKILL.md` teaches Claude to drive it.
 
+## flacmn walkthrough: the desktop app
+
+The same steps as the walkthrough below, in the window instead of the terminal.
+
+**1. Search archive.org.** Type an artist and an album in Album Search. Every format is ranked together, best quality
+first; here a CD rip of Kind of Blue tops the list.
+
+![Album Search: every upload of Kind of Blue ranked by quality](docs/flacmn/1-search.jpg)
+
+**2. Check the spectrogram.** Pick a result and a track, and its 3D spectrogram draws on its own (press play to listen).
+The tags on the right are checked against MusicBrainz.
+
+![A track's spectrogram beside its MusicBrainz-checked tags](docs/flacmn/2-spectrogram.jpg)
+
+**3. Add it to your library.** Downloads queue up and are checked against archive.org's checksums before they are filed
+as `Artist/Album (Year)/NN - Title.flac`.
+
+![The download queue after Add to library](docs/flacmn/3-library.jpg)
+
+**4. Find the CD case scans.** CD Art looks in the album folder, on archive.org and in the Cover Art Archive, including
+other pressings of the same CD.
+
+![CD Art: front, back and inside scans from several pressings of Illmatic](docs/flacmn/4-scans.jpg)
+
+**5. Fill in what's missing.** No back or inside scan? Those parts take colours from the cover, with the tracklist
+printed on them, or any other image found for the album.
+
+![Missing parts filled with the cover's colour and a generated tracklist](docs/flacmn/5-fill.jpg)
+
+**6. Print the case.** Make PDF writes one true-size PDF: the front insert, the tray card with spines, the inside, and
+the disc label.
+
+![The print preview's disc label page](docs/flacmn/6-print.jpg)
+
 ## Walkthrough: from a wish list to a verified album in your library
 
 This takes one album from a search to your library and inventory, in one command. Nothing is tested until you pick it,

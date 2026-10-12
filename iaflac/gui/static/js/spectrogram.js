@@ -88,7 +88,7 @@ function render() {
   clear(els.card, els.head, els.player, h("div.spec-body", els.specBox));
   spec = new Spectrum3D(els.canvas);
   if (scope) scope.stop();
-  scope = new Scope(els.scope);
+  scope = new Scope(els.scope, player());
   renderHead();
   renderPlayer();
   showSpectrum();

@@ -1,9 +1,12 @@
 // Library: every album in the library folder with what a player like Volumio would trip over, and one album's tracks.
+// While a track plays, a live oscilloscope (waveform or stereo XY) sits above the album's track list.
 
 import { api, url, on, waitJob } from "./api.js";
 import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText } from "./ui.js";
+import { Scope, wireAudio } from "./scope.js";
 
-const state = { data: null, filter: "", selected: null, album: null, scanning: false, playing: null };
+const state = { data: null, filter: "", selected: null, album: null, scanning: false, playing: null, scopeView: "wave" };
+let scope = null;
 let top = null, bottom = null, hooks = {};
 const audio = new Audio();
 
@@ -137,6 +140,7 @@ function play(t) {
     audio.src = url("/audio", { path: t.path });
   }
   document.getElementById("player").pause();
+  wireAudio(audio);                                               // from this click, so the scope can tap the sound
   audio.play().catch((e) => toast(`Cannot play: ${errorText(e)}`, "bad"));
 }
 
@@ -166,6 +170,22 @@ function renderAlbum() {
     })));
   const fmtChip = entry.format_label ? chip(entry.format_label, "", {}) : null;
   const kind = entry.lossless === false ? chip("Lossy", "bad", { dot: true }) : entry.lossless ? chip("Lossless", "good", { dot: true }) : null;
+  // the oscilloscope, while one of this album's tracks is playing or paused
+  const now = state.playing && tracks.find((t) => t.path === state.playing);
+  if (scope) scope.stop();
+  scope = null;
+  let scopeBlock = null;
+  if (now) {
+    const canvas = h("canvas");
+    scope = new Scope(canvas, audio);
+    scope.mode = state.scopeView;
+    const seg = h("div.segmented", ...[["wave", "Scope"], ["xy", "XY"]].map(([v, t]) =>
+      h("button", { class: state.scopeView === v ? "on" : "", onclick: () => { state.scopeView = v; renderAlbum(); } }, t)));
+    scopeBlock = h("div.lib-scope",
+      h("div.row", icon(audio.paused ? "play" : "music"), h("span.strong.ellipsis.grow", now.title || now.path.split("/").pop()), seg),
+      canvas);
+    scope.start();
+  }
   clear(bottom,
     h("div.album-head", cover,
       h("div.grow",
@@ -173,5 +193,6 @@ function renderAlbum() {
         h("div.s", [entry.artist, entry.year, `${tracks.length} tracks`, fmtTime(total), al.folder + "/"].filter(Boolean).join(" · "))),
       h("button.btn.secondary", { onclick: () => hooks.openArt && hooks.openArt(al.folder) }, icon("disc"), "CD art")),
     al.issues.length ? h("div.issue-line", { style: { marginTop: 0, marginBottom: "10px" } }, ...al.issues.map((t) => chip(t, "warn", { icon: "alert" }))) : null,
+    scopeBlock,
     h("div.scroll.grow", h("div.two-col", table(tracks.slice(0, half)), tracks.length > half ? table(tracks.slice(half)) : h("div"))));
 }

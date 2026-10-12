@@ -1,6 +1,6 @@
-// A live oscilloscope of whatever the player is playing. The <audio> element is routed through Web Audio once, the
-// first time a scope view is opened (it then plays through that graph for good: a media element can only be wired
-// up once). A channel splitter feeds one analyser per channel, and the scope draws the samples on its canvas.
+// A live oscilloscope of an <audio> element. Each element is routed through Web Audio once, from a click, the first
+// time it needs a scope (it then plays through that graph for good: a media element can only be wired up once).
+// A channel splitter feeds one analyser per channel, and each Scope draws the samples of its own element.
 //
 // Two views:
 //   wave  about 20 ms of the left channel, triggered on a rising zero crossing so the trace holds still
@@ -9,21 +9,22 @@
 //         rosettes. Each axis has its own automatic gain, so the figure fills the box, and the older part of the
 //         trace fades like phosphor so the newest line reads clearly.
 
-let ctx = null, anL = null, anR = null, wired = null;
+let ctx = null;
+const taps = new Map();                                          // audio element -> its two analysers
 
 // Call from a click (browsers only start audio from a user gesture).
 export function wireAudio(audioEl) {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return false;
   if (!ctx) ctx = new AC();
-  if (wired !== audioEl) {
+  if (!taps.has(audioEl)) {
     const src = ctx.createMediaElementSource(audioEl);
     const split = ctx.createChannelSplitter(2);
-    anL = ctx.createAnalyser(); anR = ctx.createAnalyser();
-    anL.fftSize = anR.fftSize = 2048;
+    const l = ctx.createAnalyser(), r = ctx.createAnalyser();
+    l.fftSize = r.fftSize = 2048;
     src.connect(ctx.destination);
-    src.connect(split); split.connect(anL, 0); split.connect(anR, 1);
-    wired = audioEl;
+    src.connect(split); split.connect(l, 0); split.connect(r, 1);
+    taps.set(audioEl, { l, r });
   }
   if (ctx.state === "suspended") ctx.resume();
   return true;
@@ -32,8 +33,9 @@ export function wireAudio(audioEl) {
 export function resumeAudio() { if (ctx && ctx.state === "suspended") ctx.resume(); }
 
 export class Scope {
-  constructor(canvas) {
+  constructor(canvas, audioEl) {
     this.canvas = canvas;
+    this.audio = audioEl;
     this.mode = "wave";
     this.gx = 2; this.gy = 2;
     this.l = new Float32Array(2048); this.r = new Float32Array(2048);
@@ -58,7 +60,8 @@ export class Scope {
     const x = c.getContext("2d");
     x.clearRect(0, 0, W, H);
     const l = this.l, r = this.r;
-    if (anL) { anL.getFloatTimeDomainData(l); anR.getFloatTimeDomainData(r); } else { l.fill(0); r.fill(0); }
+    const tap = taps.get(this.audio);
+    if (tap) { tap.l.getFloatTimeDomainData(l); tap.r.getFloatTimeDomainData(r); } else { l.fill(0); r.fill(0); }
     const css = getComputedStyle(document.documentElement);
     x.strokeStyle = css.getPropertyValue("--primary").trim() || "#5C53A2";
     x.lineJoin = "round"; x.lineCap = "round";

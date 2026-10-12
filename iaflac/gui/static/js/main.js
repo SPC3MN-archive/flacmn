@@ -42,10 +42,11 @@ mountCdArt(artLeft, artRight, { settings: getSettings });
 
 // ---- Library ---------------------------------------------------------------------------------------------------------
 const lib = document.getElementById("view-library");
-const libTop = h("div.card"), libBottom = h("div.card");
-lib.append(libTop, libBottom);
+const libTop = h("div.card.lib-top"), libBottom = h("div.card"), libScope = h("div.card");
+lib.append(libTop, libBottom, libScope);
 const badge = document.getElementById("lib-badge");
 mountLibrary(libTop, libBottom, {
+  scopeCard: libScope,
   openArt: (folder) => { show("cdart"); openAlbum(folder); },
   openSettings: () => show("settings"),
   count: (n) => { badge.hidden = !n; badge.textContent = n; },

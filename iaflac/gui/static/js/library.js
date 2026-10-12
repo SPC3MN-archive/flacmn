@@ -1,5 +1,6 @@
 // Library: every album in the library folder with what a player like Volumio would trip over, and one album's tracks.
-// While a track plays, a live oscilloscope (waveform or stereo XY) sits above the album's track list.
+// Below the list, the open album and its tracks on the left, and a live oscilloscope (waveform or stereo XY) of the
+// playing track on the right.
 
 import { api, url, on, waitJob } from "./api.js";
 import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText } from "./ui.js";
@@ -7,19 +8,40 @@ import { Scope, wireAudio } from "./scope.js";
 
 const state = { data: null, filter: "", selected: null, album: null, scanning: false, playing: null, scopeView: "wave" };
 let scope = null;
-let top = null, bottom = null, hooks = {};
+let top = null, bottom = null, scopeCard = null, hooks = {};
 const audio = new Audio();
 
 export function mountLibrary(topCard, bottomCard, opts) {
   top = topCard;
   bottom = bottomCard;
   hooks = opts;
-  audio.addEventListener("ended", () => { state.playing = null; renderAlbum(); });
-  audio.addEventListener("pause", () => renderAlbum());
-  audio.addEventListener("play", () => renderAlbum());
+  scopeCard = opts.scopeCard;
+  audio.addEventListener("ended", () => { state.playing = null; renderAlbum(); renderScope(); });
+  audio.addEventListener("pause", () => { renderAlbum(); renderScope(); });
+  audio.addEventListener("play", () => { renderAlbum(); renderScope(); });
   on("library", () => load());
   renderTop();
   renderAlbum();
+  renderScope();
+}
+
+// ---- the oscilloscope card: what is playing, a Scope / XY switch, and the live trace -------------------------------
+function renderScope() {
+  if (!scopeCard) return;
+  const t = state.playing && state.album && state.album.tracks.find((x) => x.path === state.playing);
+  const name = t ? (t.title || t.path.split("/").pop()) : state.playing ? state.playing.split("/").pop() : "";
+  const seg = h("div.segmented", ...[["wave", "Scope"], ["xy", "XY"]].map(([v, label]) =>
+    h("button", { class: state.scopeView === v ? "on" : "", onclick: () => { state.scopeView = v; renderScope(); } }, label)));
+  const canvas = h("canvas");
+  clear(scopeCard,
+    h("div.card-head", h("span.card-title", "Oscilloscope"),
+      h("span.card-sub.ellipsis.grow", name ? `${audio.paused ? "Paused" : "Playing"}: ${name}` : "Click a track to play it"), seg),
+    h("div.spec-box.lib-scope", canvas));
+  if (scope) scope.stop();
+  scope = new Scope(canvas, audio);
+  scope.mode = state.scopeView;
+  if (state.playing && !audio.paused) scope.start();
+  else requestAnimationFrame(() => scope && scope.draw());     // a still, flat trace
 }
 
 export async function load() {
@@ -128,6 +150,7 @@ async function select(folder) {
   try {
     state.album = await api("/library/album", { query: { folder } });
     renderAlbum();
+    renderScope();
   } catch (e) {
     clear(bottom, h("div.empty", icon("alert"), h("b", "Could not read the album"), errorText(e)));
   }
@@ -155,7 +178,6 @@ function renderAlbum() {
   const tracks = al.tracks;
   const total = tracks.reduce((s, t) => s + (t.length || 0), 0);
   const cover = al.cover ? h("img.thumb.lg", { src: url("/library/file", { path: al.cover }), alt: "" }) : h("div.thumb.lg", icon("image"));
-  const half = Math.ceil(tracks.length / 2);
   const table = (list, offset) => h("table.grid.two-col-table",
     h("thead", h("tr", h("th", "#"), h("th", "Title"), h("th", "Artist"), h("th.r", "Length"), h("th.r", "Tags"))),
     h("tbody", ...list.map((t) => {
@@ -170,22 +192,6 @@ function renderAlbum() {
     })));
   const fmtChip = entry.format_label ? chip(entry.format_label, "", {}) : null;
   const kind = entry.lossless === false ? chip("Lossy", "bad", { dot: true }) : entry.lossless ? chip("Lossless", "good", { dot: true }) : null;
-  // the oscilloscope, while one of this album's tracks is playing or paused
-  const now = state.playing && tracks.find((t) => t.path === state.playing);
-  if (scope) scope.stop();
-  scope = null;
-  let scopeBlock = null;
-  if (now) {
-    const canvas = h("canvas");
-    scope = new Scope(canvas, audio);
-    scope.mode = state.scopeView;
-    const seg = h("div.segmented", ...[["wave", "Scope"], ["xy", "XY"]].map(([v, t]) =>
-      h("button", { class: state.scopeView === v ? "on" : "", onclick: () => { state.scopeView = v; renderAlbum(); } }, t)));
-    scopeBlock = h("div.lib-scope",
-      h("div.row", icon(audio.paused ? "play" : "music"), h("span.strong.ellipsis.grow", now.title || now.path.split("/").pop()), seg),
-      canvas);
-    scope.start();
-  }
   clear(bottom,
     h("div.album-head", cover,
       h("div.grow",
@@ -193,6 +199,5 @@ function renderAlbum() {
         h("div.s", [entry.artist, entry.year, `${tracks.length} tracks`, fmtTime(total), al.folder + "/"].filter(Boolean).join(" · "))),
       h("button.btn.secondary", { onclick: () => hooks.openArt && hooks.openArt(al.folder) }, icon("disc"), "CD art")),
     al.issues.length ? h("div.issue-line", { style: { marginTop: 0, marginBottom: "10px" } }, ...al.issues.map((t) => chip(t, "warn", { icon: "alert" }))) : null,
-    scopeBlock,
-    h("div.scroll.grow", h("div.two-col", table(tracks.slice(0, half)), tracks.length > half ? table(tracks.slice(half)) : h("div"))));
+    h("div.scroll.grow", table(tracks)));
 }

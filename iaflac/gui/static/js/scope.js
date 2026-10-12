@@ -1,0 +1,113 @@
+// A live oscilloscope of whatever the player is playing. The <audio> element is routed through Web Audio once, the
+// first time a scope view is opened (it then plays through that graph for good: a media element can only be wired
+// up once). A channel splitter feeds one analyser per channel, and the scope draws the samples on its canvas.
+//
+// Two views:
+//   wave  about 20 ms of the left channel, triggered on a rising zero crossing so the trace holds still
+//   xy    a stereo figure that keeps its shape open: x is the mid (L+R) a quarter-cycle later plus some of the side
+//         (L-R), y is the mid now; the delay follows the dominant pitch, so a tone draws a loop and chords draw
+//         rosettes. Each axis has its own automatic gain, so the figure fills the box, and the older part of the
+//         trace fades like phosphor so the newest line reads clearly.
+
+let ctx = null, anL = null, anR = null, wired = null;
+
+// Call from a click (browsers only start audio from a user gesture).
+export function wireAudio(audioEl) {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+  if (!ctx) ctx = new AC();
+  if (wired !== audioEl) {
+    const src = ctx.createMediaElementSource(audioEl);
+    const split = ctx.createChannelSplitter(2);
+    anL = ctx.createAnalyser(); anR = ctx.createAnalyser();
+    anL.fftSize = anR.fftSize = 2048;
+    src.connect(ctx.destination);
+    src.connect(split); split.connect(anL, 0); split.connect(anR, 1);
+    wired = audioEl;
+  }
+  if (ctx.state === "suspended") ctx.resume();
+  return true;
+}
+
+export function resumeAudio() { if (ctx && ctx.state === "suspended") ctx.resume(); }
+
+export class Scope {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.mode = "wave";
+    this.gx = 2; this.gy = 2;
+    this.l = new Float32Array(2048); this.r = new Float32Array(2048);
+    this.running = false;
+    this.frame = this.frame.bind(this);
+  }
+
+  start() { if (!this.running) { this.running = true; requestAnimationFrame(this.frame); } }
+  stop() { this.running = false; }
+
+  frame() {
+    if (!this.running || !this.canvas.isConnected) { this.running = false; return; }
+    this.draw();
+    requestAnimationFrame(this.frame);
+  }
+
+  draw() {
+    const c = this.canvas, dpr = window.devicePixelRatio || 1;
+    const W = Math.round(c.clientWidth * dpr), H = Math.round(c.clientHeight * dpr);
+    if (!W || !H) return;
+    if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+    const x = c.getContext("2d");
+    x.clearRect(0, 0, W, H);
+    const l = this.l, r = this.r;
+    if (anL) { anL.getFloatTimeDomainData(l); anR.getFloatTimeDomainData(r); } else { l.fill(0); r.fill(0); }
+    const css = getComputedStyle(document.documentElement);
+    x.strokeStyle = css.getPropertyValue("--primary").trim() || "#5C53A2";
+    x.lineJoin = "round"; x.lineCap = "round";
+    if (this.mode === "xy") this.drawXY(x, W, H, dpr);
+    else this.drawWave(x, W, H, dpr);
+  }
+
+  drawWave(x, W, H, dpr) {
+    const l = this.l, n = 882;                                  // 20 ms at 44.1 kHz
+    let s0 = 0;
+    for (let i = 1; i < 1100; i++) if (l[i - 1] < 0 && l[i] >= 0) { s0 = i; break; }
+    x.lineWidth = 2 * dpr;
+    x.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const px = (i / n) * W, py = H / 2 - l[s0 + i] * H * 0.45 * 1.6;
+      i ? x.lineTo(px, py) : x.moveTo(px, py);
+    }
+    x.stroke();
+  }
+
+  drawXY(x, W, H, dpr) {
+    const l = this.l, r = this.r, n = 360, STEP = 3;
+    let cross = 0;
+    for (let i = 1; i < l.length; i++) if (l[i - 1] + r[i - 1] < 0 && l[i] + r[i] >= 0) cross++;
+    const rate = ctx ? ctx.sampleRate : 44100;
+    const f0 = Math.max(30, (cross * rate) / l.length), D = Math.max(6, Math.min(200, Math.round(rate / (4 * f0))));
+    const at = (a, i) => { i = Math.min(a.length - 2, i); return (a[i] + a[i + 1]) / 2; };
+    const xs = new Float32Array(n), ys = new Float32Array(n);
+    let mx = 1e-4, my = 1e-4;
+    for (let j = 0; j < n; j++) {
+      const i = j * STEP, k = i + D, mid = (at(l, k) + at(r, k)) / 2, side = (at(l, k) - at(r, k)) / 2;
+      xs[j] = mid + side * 0.9; ys[j] = (at(l, i) + at(r, i)) / 2 - side * 0.5;
+      mx = Math.max(mx, Math.abs(xs[j])); my = Math.max(my, Math.abs(ys[j]));
+    }
+    const tx = Math.min(40, 0.95 / mx), ty = Math.min(40, 0.95 / my);
+    this.gx += (tx - this.gx) * (tx < this.gx ? 0.5 : 0.08);  // shrink fast on peaks, grow back slowly
+    this.gy += (ty - this.gy) * (ty < this.gy ? 0.5 : 0.08);
+    const P = (i) => [W / 2 + xs[i] * this.gx * W * 0.47, H / 2 - ys[i] * this.gy * H * 0.45];
+    const parts = 6, per = Math.ceil(n / parts);
+    x.lineWidth = 2.5 * dpr;
+    for (let p = 0; p < parts; p++) {
+      x.globalAlpha = 0.15 + 0.85 * ((p + 1) / parts) ** 2;
+      x.beginPath();
+      for (let i = p * per; i <= Math.min(n - 1, (p + 1) * per); i++) {
+        const [px, py] = P(i);
+        i === p * per ? x.moveTo(px, py) : x.lineTo(px, py);
+      }
+      x.stroke();
+    }
+    x.globalAlpha = 1;
+  }
+}

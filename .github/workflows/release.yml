@@ -27,15 +27,17 @@ jobs:
         run: powershell -ExecutionPolicy Bypass -File packaging\tools\fetch_windows.ps1
       - name: build app
         run: pyinstaller packaging/iaflac-gui.spec --noconfirm
-      - name: smoke test the built app
-        shell: bash
+      - name: smoke test the built app (started like a double-click: no console, no stdout or stderr)
+        shell: pwsh
         run: |
-          ./dist/flacmn/flacmn.exe --server-only --url-file url.txt &
-          for i in $(seq 1 60); do [ -s url.txt ] && break; sleep 1; done
-          URL=$(tr -d '\r\n' < url.txt); TOKEN=${URL##*token=}; BASE=${URL%%/?token*}
-          curl -sf -H "x-iaflac-token: $TOKEN" "$BASE/api/health" | tee health.json
-          grep -q '_internal' health.json
-          taskkill //F //IM flacmn.exe || true
+          Start-Process -FilePath "dist\flacmn\flacmn.exe" -ArgumentList "--server-only", "--url-file", "$PWD\url.txt"
+          for ($i = 0; $i -lt 60 -and -not ((Test-Path url.txt) -and (Get-Item url.txt).Length -gt 0)); $i++) { Start-Sleep 1 }
+          $url = (Get-Content url.txt -Raw).Trim()
+          $token = $url.Substring($url.IndexOf("token=") + 6); $base = $url.Substring(0, $url.IndexOf("/?token"))
+          $health = (Invoke-WebRequest -UseBasicParsing -Headers @{ "x-iaflac-token" = $token } "$base/api/health").Content
+          $health
+          if ($health -notmatch "_internal") { throw "the app is not using its bundled tools" }
+          Stop-Process -Name flacmn -Force -ErrorAction SilentlyContinue
       - name: installer
         run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" /DAppVersion=${{ env.VERSION }} packaging\windows\iaflac.iss'
       - uses: actions/upload-artifact@v4

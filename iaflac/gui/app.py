@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import secrets
 import socket
 import sys
@@ -52,7 +53,27 @@ class Bridge:
         return picked[0] if picked else None
 
 
+def give_streams() -> None:
+    """A windowed build (Windows, console=False) starts with no stdout or stderr: sys.stdout is None, and uvicorn's
+    logging fails on it before the server starts. Send them to a log file in the app's data folder instead (the place
+    to look when the window build misbehaves), or nowhere if that cannot be opened."""
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    try:
+        from ..paths import data_dir
+        log = data_dir() / "flacmn.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        stream = open(log, "a", encoding="utf-8", buffering=1)
+    except OSError:
+        stream = open(os.devnull, "w", encoding="utf-8")
+    if sys.stdout is None:
+        sys.stdout = stream
+    if sys.stderr is None:
+        sys.stderr = stream
+
+
 def main(argv=None) -> int:
+    give_streams()
     p = argparse.ArgumentParser(prog="iaflac-gui", description="iaflac desktop app")
     p.add_argument("--browser", action="store_true", help="open in the default web browser instead of a window")
     p.add_argument("--server-only", action="store_true", help="run the server and print its URL")

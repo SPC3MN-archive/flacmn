@@ -1,7 +1,8 @@
 # iaflac
 
-Find FLAC albums on the [Internet Archive](https://archive.org), prefer CD rips, and check that the files
-really are FLAC. Give it a list of artists/albums, or a genre.
+Find high-quality lossless albums on the [Internet Archive](https://archive.org), from any source (CD rips, lossless
+and hi-res downloads, vinyl and tape transfers), and check that the files really are lossless. Give it a list of
+artists/albums, or a genre.
 
 ```bash
 python3 -m iaflac find -f wanted.example.txt          # look up a list (one "Artist - Album" or "Artist" per line)
@@ -30,7 +31,7 @@ Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`
 The same steps as the walkthrough below, in the window instead of the terminal.
 
 **1. Search archive.org.** Type an artist and an album in Album Search. Every format is ranked together, best quality
-first; here a CD rip of Kind of Blue tops the list.
+first (lossless and hi-res alike, then lossy); here a lossless copy of Kind of Blue tops the list.
 
 ![Album Search: every upload of Kind of Blue ranked by quality](docs/flacmn/1-search.jpg)
 
@@ -87,8 +88,9 @@ python3 -m iaflac find "Miles Davis - Kind of Blue"
 
 You get a numbered list of everything archive.org has for the request. Each entry shows the FLAC count, runtime, size,
 year, downloads, which rip files it ships (`log`, `cue`, `.accurip`), cover art, licence, track names, and what the
-uploader's description claims. Read it for the signs of a real CD rip: a `log` and a `cue`, a track count and runtime
-that match the album, and a name that matches ("exact match", not "weak match"). Entries marked "another upload or
+uploader's description claims. Read it for the signs of a complete, genuine album: a track count and runtime that match
+the album, a name that matches ("exact match", not "weak match"), and any evidence of its source (a rip log and cue for
+a CD, a named store or label for a download, a transfer note for vinyl or tape). Entries marked "another upload or
 edition of #1" are duplicates of the same album. To stop here, add `--search-only`.
 
 **4. Choose what to test.** At the prompt, press Enter to test the top entry, type numbers such as `1,3` or `2-4`,
@@ -101,14 +103,14 @@ tested item has a tier and the evidence behind it:
 
 | Tier | Meaning |
 |---|---|
-| **A** | CD rip, strong evidence: rip log plus CD-format, sector-aligned tracks |
-| **B** | CD rip, likely |
-| **C** | Real lossless, but not shown to come from a CD (48 kHz, 24-bit, vinyl rip, plain upload with no rip log) |
+| **A** | Genuine lossless, strong evidence: a verified rip log with aligned tracks, or a clean spectrum and decode test with corroboration (such as real content above 22 kHz) |
+| **B** | Genuine lossless, likely |
+| **C** | Lossless, little evidence either way |
 | **L** | Lossy VBR MP3, offered only when no FLAC or WAV exists (see "When there is no FLAC") |
 | **D** | Failed or suspect: not FLAC, failed the decode test, or a lossy spectrum |
 
-Tiers describe how sure the tool is that the source was a CD, not how good the audio is. A tier C item can be a
-perfectly good lossless file. Also look for `V2 ✓ n/n files decode cleanly` (every file passed `flac -t` and matched archive.org's
+Tiers describe how sure the tool is that the audio is genuinely lossless, from any source; no source or resolution is
+preferred. A tier C item can be a perfectly good lossless file that simply hasn't been checked deeply yet. Also look for `V2 ✓ n/n files decode cleanly` (every file passed `flac -t` and matched archive.org's
 checksum) and the spectrum verdict; open the PNG in `spectrograms/` if it says `SUSPECT`.
 
 **6. Confirm the save.** After the tests, a **Save** section lists the albums you tested that can be saved (tiers A to
@@ -209,21 +211,24 @@ Each item is verified in levels; a report row says which it reached.
 `find` runs V0+V1 on every candidate and V2+V3 on the top pick per request (`--deep all` for everything).
 `genre` runs V0+V1 only (`--deep top` to add the deep checks to the best few).
 
-Tiers (ranking, best first): **A** CD rip with strong evidence (rip log + CD-format, sector-aligned tracks) ·
-**B** CD rip, likely · **C** real lossless, source not verified as CD (48 kHz, 24-bit, vinyl, no evidence) ·
-**L** lossy MP3 (fallback only) · **D** failed or suspect. The weights are constants in `iaflac/provenance.py`, pinned by tests against four real items.
+Tiers (ranking, best first) say how sure we are the audio is genuinely lossless, whatever its source: **A** strong
+evidence · **B** likely · **C** little evidence either way · **L** lossy MP3 (fallback only) · **D** failed or suspect.
+A clean spectrum, a passed decode test and real hi-res content earn points for any source; a rip log, AccurateRip and
+sector-aligned tracks earn points as evidence of a clean CD extraction. No format or source loses points. The weights
+are constants in `iaflac/provenance.py`, pinned by tests against real items.
 
-CD-origin evidence: a CD track is a whole number of 588-sample sectors, so a real rip's tracks all have
+CD-extraction evidence: a CD track is a whole number of 588-sample sectors, so a real rip's tracks all have
 `total_samples % 588 == 0`. In real items: an EAC rip 12/12 and 14/14, a 48 kHz "(FLAC)" upload 0/12. Only meaningful
 in aggregate (three or more tracks, 90%+).
 
 ## Vinyl rips, plain FLAC, and when there is no FLAC
 
-**Every kind of FLAC upload is searched, not just CD rips.** A name search always runs both the CD-rip query (uploads that
-ship a rip log or cue sheet) and the plain-FLAC query, and a few result slots are kept for the non-CD uploads so a pile
-of CD rips can't crowd them out. Each result says what kind of upload it looks like: `CD rip (ships a rip log or cue)`,
-`CD rip (claimed by the uploader)`, `vinyl rip (claimed by the uploader)`, or `plain FLAC (source not stated)`. Vinyl rips
-and plain FLAC get tier C: real lossless, just not provably CD. Use `--rip-only` to see CD rips only.
+**Every kind of lossless upload is searched alike.** The goal is any high-quality audio, so a name search asks for any
+FLAC, whatever its source, and a few result slots are kept for uploads without a rip log so those can't crowd each
+other out either way. Each result says what kind of upload it looks like (a claim, not a check): `CD rip (ships a rip
+log or cue)`, `CD rip (claimed by the uploader)`, `vinyl rip (claimed by the uploader)`, `web/store source (claimed by
+the uploader)`, or `plain FLAC (source not stated)`. All are tiered on the same evidence of genuine lossless audio. Use
+`--rip-only` to see only uploads that ship a rip log or cue sheet.
 
 **When there is no FLAC at all**, the search automatically looks again for two other kinds of upload:
 

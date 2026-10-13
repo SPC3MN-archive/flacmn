@@ -47,9 +47,9 @@ class Confidence(unittest.TestCase):
         self.assertEqual(g.confidence({"subject": "rock", "title": "Dream Pop Hits"}, self.terms), "title")
         self.assertEqual(g.confidence({"subject": "rock", "title": "x"}, self.terms), "description")
 
-    def test_pre_score_prefers_subject_and_rip_shaped(self):
+    def test_pre_score_prefers_a_subject_match_and_no_source(self):
         best = g.GenreHit({"downloads": 10}, "", True, "subject").pre_score()
-        self.assertGreater(best, g.GenreHit({"downloads": 10}, "", False, "subject").pre_score())
+        self.assertEqual(best, g.GenreHit({"downloads": 10}, "", False, "subject").pre_score())   # rip log or not
         self.assertGreater(best, g.GenreHit({"downloads": 10}, "", True, "title").pre_score())
 
     def test_matched_subjects(self):

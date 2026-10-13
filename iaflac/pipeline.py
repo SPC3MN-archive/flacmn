@@ -18,6 +18,12 @@ from .model import ItemInfo, as_list
 from .queries import Want
 
 LOG_MAX_BYTES = 300_000
+
+
+def ships_rip_files(doc: dict) -> bool:
+    """The search hit lists a rip log or cue sheet among its formats. Not a preference: choose_hits uses it only so
+    uploads of one kind can't fill every slot."""
+    return any(f in ("Log", "Cue Sheet") for f in as_list(doc.get("format")))
 TIER_RANK = {"A": 0, "B": 1, "C": 2, "L": 3, "D": 4, "?": 5}
 WANTS_LIVE = re.compile(r"\b(live|concert|unplugged|bootleg|sbd|soundboard)\b", re.I)
 
@@ -27,7 +33,7 @@ class Options:
     top: int = 3                        # candidates listed per request
     include_live: bool = False
     free_only: bool = False
-    rip_only: bool = False              # only the CD-rip-shaped rung (Log or Cue Sheet present)
+    rip_only: bool = False              # opt-in: only items that ship a rip log or cue sheet
     deep: str = "top"                   # none | top | all
     spectral: bool = True
     max_candidates: int = 10            # how many search hits get fully inspected
@@ -260,8 +266,8 @@ class Pipeline:
                  else queries.artist_rungs(want.artist, opts.rip_only))
         pool: dict = {}
         for rung in rungs:
-            # CD-rip-shaped and plain-FLAC (including vinyl rips) are always both searched, so a pile of CD rips can't hide
-            # the rest; only the loosest word-matching rung is skipped once there are enough exact matches.
+            # every lossless source is searched alike (CD rips, downloads, vinyl and tape transfers); only the loosest
+            # word-matching rung is skipped once there are enough exact matches.
             if want.album and rung.label.startswith("relaxed") and sum(1 for h in pool.values() if h.quick.bucket == 0) >= 3:
                 break
             check(self.cancel)
@@ -270,7 +276,7 @@ class Pipeline:
             self.log(f"  [{want.label}] {rung.label}: {len(docs)} hit(s)")
             self.emit("search", want=want.label, rung=rung.label, hits=len(docs))
             for d in docs:
-                pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), "rip-shaped" in rung.label))
+                pool.setdefault(d["identifier"], Hit(d, rung.label, self._quick_match(want, d), ships_rip_files(d)))
         return pool
 
     @staticmethod
@@ -291,8 +297,7 @@ class Pipeline:
         list is what the user gets to look at (and choose from) before `verify_selected` does any testing."""
         res = WantResult(want=want)
         pool = self._search_pool(want, opts, res)
-        ranked_docs = sorted(pool.values(), key=lambda h: (-round(h.quick.score, 1), not h.rip_shaped,
-                                                           -int(h.doc.get("downloads") or 0)))
+        ranked_docs = sorted(pool.values(), key=lambda h: (-round(h.quick.score, 1), -int(h.doc.get("downloads") or 0)))
         plausible = [h for h in ranked_docs if h.quick.bucket < 2]
         res.near_misses = [{"identifier": h.doc["identifier"], "title": first(h.doc.get("title")),
                             "creator": first(h.doc.get("creator")), "downloads": int(h.doc.get("downloads") or 0)}
@@ -552,15 +557,14 @@ class Pipeline:
                 pool.setdefault(d["identifier"], GenreHit(d, label, rip_shaped, genre_mod.confidence(d, spec.terms, default_conf)))
 
         kw = dict(years=spec.years, exclude=tuple(spec.exclude), collections=tuple(spec.collections))
-        tag = ", CD-rip-shaped" if spec.cd_only else ""
+        tag = ", with a rip log or cue sheet" if spec.cd_only else ""
         run(f"subject/title match{tag}", queries.genre_query(spec.terms, fields=("subject", "title"), rip_shaped=spec.cd_only, **kw),
             spec.cd_only, "title", 300)
         if len(pool) < spec.enrich_n:
             run(f"description match{tag}", queries.genre_query(spec.terms, fields=("description",), rip_shaped=spec.cd_only, **kw),
                 spec.cd_only, "description", 150)
         if spec.cd_only and len(pool) < spec.top * 2:
-            res.notes.append(f"only {len(pool)} CD-rip-shaped hits, so the search was widened to any FLAC "
-                             "(those items have no rip log or cue sheet, so expect lower tiers)")
+            res.notes.append(f"only {len(pool)} hits with a rip log or cue sheet, so the search was widened to any FLAC")
             run("subject/title match, any FLAC", queries.genre_query(spec.terms, fields=("subject", "title"), rip_shaped=False, **kw),
                 False, "title", 200)
 

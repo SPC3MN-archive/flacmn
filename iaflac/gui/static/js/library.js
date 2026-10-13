@@ -1,52 +1,28 @@
-// Library: every album in the library folder with what a player like Volumio would trip over, and one album's tracks.
-// Below the list, the open album and its tracks on the left, and a live oscilloscope (waveform or stereo XY) of the
-// playing track on the right.
+// Library: every album in the library folder with its quality and what a player like Volumio would trip over, and one
+// album's tracks. Below the list, the open album and its tracks on the left, and the Now playing card on the right
+// (nowplaying.js). Playing a track plays the album on from there (player.js).
 
 import { api, url, on, waitJob } from "./api.js";
-import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText } from "./ui.js";
-import { Scope, wireAudio } from "./scope.js";
+import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText, albumQualityChip } from "./ui.js";
+import { now, onChange, playAlbum, toggle, playingPath } from "./player.js";
 
-const state = { data: null, filter: "", selected: null, album: null, scanning: false, playing: null, scopeView: "wave" };
-let scope = null;
-let top = null, bottom = null, scopeCard = null, hooks = {};
-const audio = new Audio();
+const state = { data: null, filter: "", selected: null, album: null, scanning: false, colw: null };
+let top = null, bottom = null, hooks = {};
 
 export function mountLibrary(topCard, bottomCard, opts) {
   top = topCard;
   bottom = bottomCard;
   hooks = opts;
-  scopeCard = opts.scopeCard;
-  audio.addEventListener("ended", () => { state.playing = null; renderAlbum(); renderScope(); });
-  audio.addEventListener("pause", () => { renderAlbum(); renderScope(); });
-  audio.addEventListener("play", () => { renderAlbum(); renderScope(); });
+  onChange(renderAlbum);
   on("library", () => load());
   renderTop();
   renderAlbum();
-  renderScope();
-}
-
-// ---- the oscilloscope card: what is playing, a Scope / XY switch, and the live trace -------------------------------
-function renderScope() {
-  if (!scopeCard) return;
-  const t = state.playing && state.album && state.album.tracks.find((x) => x.path === state.playing);
-  const name = t ? (t.title || t.path.split("/").pop()) : state.playing ? state.playing.split("/").pop() : "";
-  const seg = h("div.segmented", ...[["wave", "Scope"], ["xy", "XY"]].map(([v, label]) =>
-    h("button", { class: state.scopeView === v ? "on" : "", onclick: () => { state.scopeView = v; renderScope(); } }, label)));
-  const canvas = h("canvas");
-  clear(scopeCard,
-    h("div.card-head", h("span.card-title", "Oscilloscope"),
-      h("span.card-sub.ellipsis.grow", name ? `${audio.paused ? "Paused" : "Playing"}: ${name}` : "Click a track to play it"), seg),
-    h("div.spec-box.lib-scope", canvas));
-  if (scope) scope.stop();
-  scope = new Scope(canvas, audio);
-  scope.mode = state.scopeView;
-  if (state.playing && !audio.paused) scope.start();
-  else requestAnimationFrame(() => scope && scope.draw());     // a still, flat trace
 }
 
 export async function load() {
   try {
     state.data = await api("/library");
+    state.colw = null;                                           // measure the columns again for this library
   } catch (e) {
     state.data = { error: errorText(e), albums: [] };
   }
@@ -93,7 +69,6 @@ async function rescan() {
 
 function issueChips(a) {
   const out = [];
-  if (!a.lossless) out.push(chip("Lossy copy: a FLAC may exist", "bad", { dot: true }));
   for (const t of a.issues || []) out.push(chip(t.charAt(0).toUpperCase() + t.slice(1), "warn", { icon: "alert" }));
   return out;
 }
@@ -131,16 +106,55 @@ function renderRows() {
   const q = state.filter.trim().toLowerCase();
   const rows = d.albums.filter((a) => !q || `${a.artist} ${a.album}`.toLowerCase().includes(q));
   clear(els.rows, h("table.grid.lib-table",
-    h("thead", h("tr", h("th", ""), h("th", "Artist"), h("th", "Album"), h("th", "Year"), h("th", "Format"),
-      h("th.r", "Tracks"), h("th", "Cover"), h("th", "Issues"))),
+    h("thead", h("tr", h("th", ""), h("th", "Artist"), h("th", "Album"), h("th", { "data-fit": "all" }, "Quality"),
+      h("th", "Cover"), h("th", "Issues"))),
     h("tbody", ...rows.map((a) => h("tr" + (a.folder === state.selected ? ".selected" : ""), { onclick: () => select(a.folder), title: a.folder },
       h("td", { style: { width: "56px" } }, coverThumb(a)),
-      h("td", a.artist), h("td.strong", a.album), h("td.num", a.year || "—"), h("td.dim", a.format_label),
-      h("td.r.num", a.tracks),
+      h("td", a.artist), h("td.strong", a.album), h("td", albumQualityChip(a.quality)),
       h("td", a.has_cover ? icon("check", "ok-icon") : icon("x", "bad-icon")),
       h("td", h("div.issues", ...(issueChips(a).length ? issueChips(a) : [h("span.row", { style: { color: "var(--good-text)" } }, icon("check"), "No issues")]))))))));
+  const table = els.rows.querySelector("table");
+  if (!state.colw && !q && table.offsetParent) state.colw = measureColumns(table);   // over the whole library
+  if (state.colw) fitColumns(table, state.colw);
   for (const el of els.rows.querySelectorAll(".ok-icon")) el.style.color = "var(--green)";
   for (const el of els.rows.querySelectorAll(".bad-icon")) el.style.color = "var(--red)";
+}
+
+// Each column as wide as the median of its contents across the library (at least its heading), so a few long names
+// don't push the rest of the table off the card; longer entries end in "…" and show in full on hover. A column marked
+// data-fit="all" (Quality) is as wide as its widest entry, so every chip shows whole. The cover thumbnail keeps its
+// size, and the last column (Issues) takes whatever is left.
+function measureColumns(table) {
+  const rows = [...table.tBodies[0].rows], heads = [...table.tHead.rows[0].cells];
+  const ctx = document.createElement("canvas").getContext("2d");
+  const textWidth = (el) => {                                   // as drawn: font, case and letter spacing
+    const cs = getComputedStyle(el);                              // (cs.font is "" once numbers are tabular)
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    let s = el.textContent.trim();
+    if (cs.textTransform === "uppercase") s = s.toUpperCase();
+    return ctx.measureText(s).width + (parseFloat(cs.letterSpacing) || 0) * s.length;
+  };
+  const median = (a) => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const content = (td) => {
+    const kids = [...td.children];
+    return kids.length ? Math.max(...kids.map((k) => k.getBoundingClientRect().width)) : textWidth(td);
+  };
+  return heads.map((th, c) => {
+    if (c === 0) return 56;
+    if (c === heads.length - 1) return null;
+    const pad = parseFloat(getComputedStyle(th).paddingLeft) + parseFloat(getComputedStyle(th).paddingRight);
+    const widths = rows.map((r) => content(r.cells[c]));
+    const w = th.dataset.fit === "all" ? Math.max(0, ...widths) : median(widths);
+    return Math.ceil(Math.max(w, textWidth(th)) + pad + 1);
+  });
+}
+
+function fitColumns(table, widths) {
+  table.prepend(h("colgroup", ...widths.map((w) => h("col", w ? { style: { width: w + "px" } } : null))));
+  table.classList.add("fitted");
+  for (const td of table.querySelectorAll("tbody td")) {
+    if (!td.children.length && td.scrollWidth > td.clientWidth) td.title = td.textContent;   // the whole name on hover
+  }
 }
 
 async function select(folder) {
@@ -150,21 +164,19 @@ async function select(folder) {
   try {
     state.album = await api("/library/album", { query: { folder } });
     renderAlbum();
-    renderScope();
   } catch (e) {
     clear(bottom, h("div.empty", icon("alert"), h("b", "Could not read the album"), errorText(e)));
   }
 }
 
-function play(t) {
-  if (state.playing === t.path && !audio.paused) { audio.pause(); return; }
-  if (state.playing !== t.path) {
-    state.playing = t.path;
-    audio.src = url("/audio", { path: t.path });
-  }
-  document.getElementById("player").pause();
-  wireAudio(audio);                                               // from this click, so the scope can tap the sound
-  audio.play().catch((e) => toast(`Cannot play: ${errorText(e)}`, "bad"));
+// a click: the track plays, and the album plays on from it; clicking the playing track pauses it
+function play(index) {
+  if (now.album && now.album.folder === state.album.folder && now.index === index) { toggle(); return; }
+  playAlbum(state.album, entryOf(state.album), index);
+}
+
+function entryOf(al) {
+  return albums().find((a) => a.folder === al.folder) || { folder: al.folder, has_cover: !!al.cover, artist: "", album: al.folder };
 }
 
 function renderAlbum() {
@@ -174,16 +186,16 @@ function renderAlbum() {
     clear(bottom, h("div.empty", icon("library"), h("b", "Choose an album"), "Its tracks and tag issues show here. Click a track to play it."));
     return;
   }
-  const entry = albums().find((a) => a.folder === al.folder) || { folder: al.folder, has_cover: !!al.cover, artist: "", album: al.folder };
+  const entry = entryOf(al);
   const tracks = al.tracks;
   const total = tracks.reduce((s, t) => s + (t.length || 0), 0);
   const cover = al.cover ? h("img.thumb.lg", { src: url("/library/file", { path: al.cover }), alt: "" }) : h("div.thumb.lg", icon("image"));
   const table = (list, offset) => h("table.grid.two-col-table",
     h("thead", h("tr", h("th", "#"), h("th", "Title"), h("th", "Artist"), h("th.r", "Length"), h("th.r", "Tags"))),
-    h("tbody", ...list.map((t) => {
+    h("tbody", ...list.map((t, i) => {
       const bad = !t.title || !t.track || t.error;
-      const playing = state.playing === t.path && !audio.paused;
-      return h("tr" + (bad ? ".changed" : "") + (playing ? ".selected" : ""), { onclick: () => play(t), title: t.path },
+      const playing = playingPath() === t.path;
+      return h("tr" + (bad ? ".changed" : "") + (playing ? ".selected" : ""), { onclick: () => play(i + (offset || 0)), title: t.path },
         h("td.num", playing ? icon("pause") : (t.disc > 1 ? `${t.disc}-` : "") + (t.track || "–")),
         h("td.strong", h("div.row", h("span.ellipsis", t.title || t.path.split("/").pop()),
           bad ? chip(t.error ? "unreadable" : !t.title ? "no title" : "no track number", "solid-warn") : null)),
@@ -191,12 +203,14 @@ function renderAlbum() {
         h("td.r", bad ? h("span", { style: { color: "var(--warn-text)" } }, icon("alert")) : h("span", { style: { color: "var(--green)" } }, icon("check"))));
     })));
   const fmtChip = entry.format_label ? chip(entry.format_label, "", {}) : null;
-  const kind = entry.lossless === false ? chip("Lossy", "bad", { dot: true }) : entry.lossless ? chip("Lossless", "good", { dot: true }) : null;
+  const kind = albumQualityChip(entry.quality);
+  const playBtn = h("button.btn.primary.sm", { onclick: () => playAlbum(al, entry, 0) }, icon("play"), "Play album");
   clear(bottom,
     h("div.album-head", cover,
       h("div.grow",
         h("h2", entry.album || al.folder, kind, fmtChip),
         h("div.s", [entry.artist, entry.year, `${tracks.length} tracks`, fmtTime(total), al.folder + "/"].filter(Boolean).join(" · "))),
+      playBtn,
       h("button.btn.secondary", { onclick: () => hooks.openArt && hooks.openArt(al.folder) }, icon("disc"), "CD art")),
     al.issues.length ? h("div.issue-line", { style: { marginTop: 0, marginBottom: "10px" } }, ...al.issues.map((t) => chip(t, "warn", { icon: "alert" }))) : null,
     h("div.scroll.grow", table(tracks)));

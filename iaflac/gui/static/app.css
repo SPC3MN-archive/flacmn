@@ -223,6 +223,8 @@ table.grid th { position: sticky; top: 0; background: var(--white); z-index: 1; 
                 letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); padding: 0 8px 8px; white-space: nowrap;
                 border-bottom: 1px solid var(--border); }
 table.grid td { padding: 0 8px; height: 32px; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+table.grid.fitted { table-layout: fixed; }     /* columns at the library's median widths (library.js) */
+table.grid.fitted td { overflow: hidden; text-overflow: ellipsis; }
 table.grid th.r, table.grid td.r { text-align: right; }
 table.grid tbody tr { cursor: pointer; }
 table.grid tbody tr:hover td { background: var(--surface-alt); }
@@ -259,6 +261,26 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .spec-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* Library: the oscilloscope card, bottom right */
 .lib-scope { flex: 1 1 auto; min-height: 120px; }
+/* Now playing (nowplaying.js): the art tab, and the scope tabs */
+.np-card { min-width: 0; }
+.np-card .card-title { white-space: nowrap; }
+.np-scope { flex: 1 1 auto; min-height: 120px; }
+.np-art { flex: 1 1 auto; min-height: 0; display: flex; gap: 18px; align-items: center; }
+.np-cover { height: 100%; max-height: 100%; aspect-ratio: 1; width: auto; max-width: 52%; object-fit: cover; border-radius: 10px; flex: none;
+  box-shadow: 0 1px 3px rgba(46,46,51,.18); }
+div.np-cover { display: flex; align-items: center; justify-content: center; }
+.np-info { flex: 1; min-width: 0; align-self: stretch; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 6px;
+  overflow-wrap: anywhere; }
+.np-track { font-weight: 700; line-height: 1.2; color: var(--text); }
+.np-album { line-height: 1.25; color: var(--text-2); }
+.np-artist { line-height: 1.25; color: var(--text-3); }
+.np-chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; font-size: 12px; }
+.np-foot { flex: none; margin-top: 14px; }
+.np-bar { height: 6px; background: var(--border-soft); border-radius: 3px; cursor: pointer; position: relative; }
+.np-bar-fill { height: 100%; width: 0; background: var(--text); border-radius: 3px; }
+.np-times { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-3);
+  font-variant-numeric: tabular-nums; margin-top: 6px; }
+.np-buttons { display: flex; gap: 6px; }
 .spec-box .legend { position: absolute; left: 16px; top: 14px; width: 130px; font-size: 10px; color: var(--text-3); pointer-events: none; }
 .spec-box .legend i { display: block; height: 8px; border-radius: 4px; margin-bottom: 4px;
                       background: linear-gradient(90deg, #23305A 0%, #5C53A2 35%, #BC3843 62%, #F4B73E 85%, #FADFA8 100%); }

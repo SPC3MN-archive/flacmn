@@ -1,6 +1,6 @@
 ---
 name: ia-flac-finder
-description: Find and verify FLAC (ideally CD-rip) albums on the Internet Archive from a list of artists/albums, or discover albums by genre. Use when the user gives artists or albums to look up on archive.org, asks for CD rips or lossless FLAC, wants to check that FLAC files are genuine (not renamed MP3s or transcodes), or wants to explore a genre.
+description: Find and verify high-quality lossless albums (FLAC, any source) on the Internet Archive from a list of artists/albums, or discover albums by genre. Use when the user gives artists or albums to look up on archive.org, asks for lossless or hi-res FLAC or CD rips, wants to check that FLAC files are genuine (not renamed MP3s or transcodes), or wants to explore a genre.
 ---
 
 # Internet Archive FLAC finder
@@ -46,18 +46,19 @@ cached for 24 h).
 
 ## Reading the tiers
 
-- **A** CD rip, strong evidence: a rip log (EAC/XLD/...) plus sector-aligned CD-format tracks, or several
-  independent signs.
-- **B** CD rip, likely: 44.1 kHz/16-bit tracks that are whole CD sectors (588 samples), or an unconfirmed log/cue.
-- **C** real lossless, source not verified as CD: 48 kHz, 24-bit, unaligned tracks, or no evidence. Often a web/store
-  release or vinyl rip. Not fake, just not provably CD.
+Tiers say how sure we are the audio is genuinely lossless, from any source: the goal is any high-quality audio, and no
+source (CD, download, vinyl, tape) or resolution is ranked above another.
+- **A** genuine lossless, strong evidence: a verified rip log (EAC/XLD/...) with aligned tracks, or a clean spectrum and
+  a passed decode test with corroboration such as real content above 22 kHz.
+- **B** genuine lossless, likely: some evidence, such as a clean spectrum, sector-aligned tracks, or an unconfirmed log.
+- **C** lossless, little evidence either way: real FLAC that hasn't earned trust yet (often just not deep-checked).
 - **L** lossy VBR MP3, only offered by the fallback below when no FLAC or WAV exists.
 - **D** failed or suspect: not real FLAC, fails `flac -t`, or the spectrum shows a lossy-codec lowpass.
 
 Verification levels in each report row: V0 metadata, V1 header of every (or a sample of) FLAC is real, V2 the whole
 file decodes and matches archive.org's checksums, V3 spectral check.
 
-Be honest about limits: sector alignment shows CD *origin*, not losslessness; the spectral check misses very
+Be honest about limits: sector alignment shows a CD *extraction*, not losslessness; the spectral check misses very
 high-bitrate lossy (MP3 V0) and can flag band-limited old masters; logs and auCDtect reports are
 uploader-supplied. A tier is a ranking with reasons, not a guarantee. If an uploader's description says "CD rip" but
 the report says 48 kHz, tell the user the claim is contradicted.
@@ -74,7 +75,7 @@ and the album is added to the inventory workbook found in the library folder (`-
 
 ## Vinyl rips, plain FLAC, and no-FLAC fallback
 
-`find` searches CD rips, vinyl rips and plain FLAC together and labels each result's source (a claim, not a check). If no
+`find` searches every lossless source alike (CD rips, downloads, vinyl and tape transfers, plain FLAC) and labels each result's source (a claim, not a check). If no
 FLAC exists it searches again for WAV (lossless: encoded to FLAC and verified when saved) and VBR MP3 (lossy: saved as
 MP3, clearly marked). Say which kind of file it is when you show the user a fallback result, and never present VBR MP3 as
 lossless. `--fallback wav|vbr|both|none` controls it; `replace` uses WAV only.

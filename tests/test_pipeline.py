@@ -125,7 +125,7 @@ class FakeIA:
             else:                                     # album / artist query: every phrase in title+creator
                 ok = all(p in title_creator for p in phrases)
             if ok:
-                yield doc
+                yield {**doc, "format": sorted(have)}
                 count += 1
                 if count >= max_hits:
                     return
@@ -183,11 +183,13 @@ class FindFlow(unittest.TestCase):
         self.assertEqual(alts["ta-fake"], "D", "an MP3 named .flac must be flagged, not silently listed as good")
         self.assertNotEqual(alts["ta-dup"], "D")
 
-    def test_ladder_tries_the_rip_shaped_query_first(self):
+    def test_the_ladder_asks_for_any_flac_and_only_filters_on_rip_logs_when_asked(self):
         pipe = self.pipe()
         pipe.find_one(Want("x", "Test Artist", "Test Album"), Options(deep="none"))
-        self.assertIn(queries.RIP_SHAPED, pipe.client.queries[0])
-        self.assertNotIn(queries.RIP_SHAPED, pipe.client.queries[1])
+        self.assertFalse(any(queries.RIP_SHAPED in q for q in pipe.client.queries))
+        pipe = self.pipe()
+        pipe.find_one(Want("x", "Test Artist", "Test Album"), Options(deep="none", rip_only=True))
+        self.assertTrue(all(queries.RIP_SHAPED in q for q in pipe.client.queries))
 
     def test_live_tapes_are_excluded_unless_asked_for(self):
         res = self.find()
@@ -291,8 +293,8 @@ class GenreFlow(unittest.TestCase):
         self.assertTrue(any("fewer than 5" in k for k in res.excluded))
         self.assertTrue(any(k.startswith("live recording") for k in res.excluded))
 
-    def test_cd_only_widens_to_any_flac_with_a_visible_note(self):
-        res = self.run_genre()
+    def test_rip_only_widens_to_any_flac_with_a_visible_note(self):
+        res = self.run_genre(cd_only=True)
         self.assertIn("e1", [c.identifier for c in res.candidates])
         self.assertTrue(any("widened to any FLAC" in n for n in res.notes))
         tiers = [c.tier for c in res.candidates]

@@ -29,7 +29,7 @@ RANGE_TTL = 7 * 24 * 3600
 
 SEARCH_FIELDS = [
     "identifier", "title", "creator", "year", "date", "downloads", "item_size",
-    "files_count", "collection", "subject", "licenseurl", "venue", "taper",
+    "files_count", "collection", "subject", "licenseurl", "venue", "taper", "format",
 ]
 
 

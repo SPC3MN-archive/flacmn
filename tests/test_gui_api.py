@@ -103,7 +103,7 @@ class Api(unittest.TestCase):
         self.assertEqual(ids, ["flac-1", "vbr-1"])
         top = res["results"][0]
         self.assertEqual((top["quality"]["label"], top["quality"]["format"], top["tested"]),
-                         ("Lossless · CD rip", "FLAC 16/44.1", True))
+                         ("Lossless", "FLAC 16/44.1", True))
         self.assertTrue(res["results"][1]["quality"]["format"].startswith("MP3"))
 
     def test_item_detail_and_only_the_quick_test(self):
@@ -202,6 +202,9 @@ class Api(unittest.TestCase):
         self.assertEqual(r["settings"]["auto_test_top"], 6)
         self.assertEqual(sorted(r["rejected"]), ["art", "nope"])
         self.assertEqual(self.http.get("/api/settings").json()["auto_test_top"], 6)
+        r = self.http.put("/api/settings", json={"idle_scope": 45}).json()        # Now playing's idle timer
+        self.assertEqual(r["settings"]["idle_scope"], 45)
+        self.assertEqual(self.http.put("/api/settings", json={"idle_scope": "soon"}).json()["rejected"], ["idle_scope"])
 
     def test_events_arrive_over_the_websocket(self):
         with self.http.websocket_connect("/api/events") as ws:

@@ -233,7 +233,7 @@ def cmd_genre(args, client: IAClient) -> int:
     if not check_select(args):
         return 2
     terms, exclude = genre_mod.resolve(args.genre, genre_mod.split_csv(args.terms), genre_mod.split_csv(args.exclude))
-    spec = GenreSpec(genre=args.genre, terms=terms, exclude=exclude, years=years, cd_only=not args.any_flac,
+    spec = GenreSpec(genre=args.genre, terms=terms, exclude=exclude, years=years, cd_only=getattr(args, "rip_only", False),
                      min_tracks=args.min_tracks, per_artist=args.per_artist, top=args.top, probe_n=args.probe,
                      collections=tuple(genre_mod.split_csv(args.collections)), include_live=args.include_live,
                      free_only=args.free_only)
@@ -973,7 +973,7 @@ def add_layout(p: argparse.ArgumentParser) -> None:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="iaflac", description="Find and verify FLAC (ideally CD-rip) albums on the Internet Archive.")
+    ap = argparse.ArgumentParser(prog="iaflac", description="Find and verify high-quality lossless albums (FLAC, any source) on the Internet Archive.")
     ap.add_argument("--cache", help="cache directory (default: .cache next to the package, or $IAFLAC_CACHE)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -995,7 +995,8 @@ def main(argv=None) -> int:
     g.add_argument("--terms", help="extra subject/title words, comma-separated (synonyms, subgenres)")
     g.add_argument("--exclude", help="words that disqualify an item, comma-separated")
     g.add_argument("--years", help="1988-1996, or a single year")
-    g.add_argument("--any-flac", action="store_true", help="don't require a rip log or cue sheet (default requires one, widening if too few)")
+    g.add_argument("--rip-only", action="store_true", help="only items that ship a rip log or cue sheet (default: any lossless source)")
+    g.add_argument("--any-flac", action="store_true", help=argparse.SUPPRESS)      # the default now; kept so old commands work
     g.add_argument("--min-tracks", type=int, default=5, help="minimum FLAC files for an album-shaped item (default 5)")
     g.add_argument("--per-artist", type=int, default=2, help="max items per artist (default 2)")
     g.add_argument("--top", type=int, default=25, help="how many to list (default 25)")

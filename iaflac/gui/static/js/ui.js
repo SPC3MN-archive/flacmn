@@ -62,6 +62,8 @@ const PATHS = {
   pausecircle: '<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>',
   playcircle: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5z"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  prev: '<path d="M19 5v14L9 12z"/><path d="M6 5v14"/>',
+  next: '<path d="M5 5v14l10-7z"/><path d="M18 5v14"/>',
 };
 
 export function icon(name, cls = "") {
@@ -101,22 +103,29 @@ export function chip(text, kind = "", opts = {}) {
   return c;
 }
 
-/** The quality class of a result, coloured as in the design. q = candidate.quality */
+/** An album's quality, from its format: lossless or hi-res (both high quality, shown alike) or lossy. */
+export function albumQualityChip(q) {
+  if (q === "hires") return chip("Hi-res", "good", { dot: true });
+  if (q === "lossless") return chip("Lossless", "good", { dot: true });
+  if (q === "lossy") return chip("Lossy", "bad", { dot: true });
+  return null;
+}
+
+/** The quality class of a result. q = candidate.quality. Lossless and Hi-res are one class, shown alike: the goal is any
+ *  high-quality audio, from any source. */
 export function qualityBadge(q) {
   const label = q.label.replace("Failed / suspect", "Failed");
   switch (q.rank) {
-    case 0: return chip(label, "solid-good", { icon: "disc" });
-    case 1: return chip(label, "warn", { dot: true });
-    case 2: return chip(label, "good", { dot: true });
-    case 3: return chip(label, "outline-bad", { dot: true });
-    case 4: return chip(label, "bad", { dot: true });
-    default: return chip(label, "solid-bad", { icon: "x" });
+    case 0: return chip(label, "good", { dot: true });             // Lossless or Hi-res
+    case 1: return chip(label, "outline-bad", { dot: true });      // Lossy, high bitrate
+    case 2: return chip(label, "bad", { dot: true });              // Lossy
+    default: return chip(label, "solid-bad", { icon: "x" });       // Failed / suspect
   }
 }
 
 export function tierBadge(tier) {
   const t = tier || "?";
-  const titles = { A: "strong CD-rip evidence", B: "likely a CD rip", C: "real lossless, source unknown",
+  const titles = { A: "genuine lossless, strong evidence", B: "genuine lossless, likely", C: "lossless, little evidence either way",
     L: "lossy", D: "failed or fake", "?": "not tested yet" };
   return h("span.tier." + (t === "?" ? "q" : t), { title: titles[t] || "" }, t);
 }

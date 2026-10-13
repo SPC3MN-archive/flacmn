@@ -13,12 +13,12 @@
 
 ## Results (one row per upload, best quality first)
 
-- **Quality class**: Lossless · CD rip / Lossless · hi-res / Lossless / Lossy · high bitrate / Lossy / Failed.
+- **Quality class**: Lossless / Hi-res (one class, ranked alike) / Lossy · high bitrate / Lossy / Failed.
 - **Format**: measured once tested, e.g. FLAC 24/96, MP3 VBR ~245 kbps.
-- **Tier**: A strong CD-rip evidence, B likely CD rip, C real lossless with source unknown, L lossy, D failed or fake, ? untested.
+- **Tier**: how sure we are the audio is genuinely lossless, from any source: A strong evidence, B likely, C little evidence either way, L lossy, D failed or fake, ? untested.
 - **Match**: exact or close match to what you typed.
 - **Tracks, length, size, year**: track count, total length, download size and release year.
-- **Rip files**: rip log / cue sheet / AccurateRip present (signs of a careful CD rip).
+- **Rip files**: rip log / cue sheet / AccurateRip present (evidence of a clean CD extraction, when the source is a CD).
 - **Source**: CD rip, vinyl rip, web/store, or plain (not stated).
 - **Tested**: which checks have run (V0–V3).
 - **In library**: marks albums you already have, with the format of your copy.
@@ -106,7 +106,7 @@
 
 ## Albums
 
-- **Album table**: artist, album, year, format (e.g. FLAC 16/44.1, MP3 320), track count, cover present, number of tag issues.
+- **Album table**: cover, artist, album, quality (Lossless / Hi-res / Lossy), cover present, tag issues. Each column is the median width of its contents across the library (Quality fits its widest label); longer names end in "…" and show in full on hover.
 - **Filter box**: narrows the table by artist or album.
 - **Rescan**: re-reads the library folder (only changed albums are re-read).
 
@@ -114,6 +114,14 @@
 
 - **Tracks**: title, artist, length, format per track.
 - **Tag issues**: what a player like Volumio would trip over: missing titles or track numbers, gaps, mismatched album names, no cover, or a .cue file that can make it list the album twice.
+- **Play album / CD art**: play the album from the first track (clicking a track plays the album on from there), or open it in CD Art.
+
+## Now playing
+
+- **Art tab**: the cover, with the track, album and artist beside it (wrapped and shrunk to fit, never cut off), a progress bar you can click to seek, and previous / play-pause / next.
+- **Scope and XY tabs**: just the live oscilloscope (waveform or stereo XY) in the album's colour; its gain backs off on loud passages so the trace never clips.
+- **Keys**: Space plays and pauses, ←/→ seek 10 s, +/- volume.
+- **Idle**: left alone while music plays, the card turns to the Scope tab (Settings → Now playing).
 
 # App-wide
 
@@ -125,12 +133,13 @@
 ## Settings
 
 - **Library folder**: where albums are saved and scanned (local folder, USB drive or Volumio network share).
-- **Search options**: include live recordings; free licences only; CD rips only; all formats (off = FLAC first, WAV/MP3 only if there's no FLAC).
+- **Search options**: include live recordings; free licences only; only uploads with a rip log or cue sheet; all formats (off = FLAC first, WAV/MP3 only if there's no FLAC).
 - **Cover art**: save the front cover only, every image in the upload, or none.
 - **Rip files**: skip or keep logs and cue sheets (skip by default so Volumio doesn't list albums twice).
 - **Art options**: embed the cover in the files, write cover.jpg, use the Cover Art Archive when the upload has no cover.
 - **Auto MusicBrainz**: look the album up automatically when it is opened for saving.
 - **Audio cache size**: space used for streamed tracks.
+- **Now playing**: how long without input, while music plays, before the card shows the oscilloscope (or never).
 - **Simultaneous downloads**: how many albums download at the same time.
 - **CD print**: paper (Letter/A4), bleed, disc hole size, output folder.
 - **Tool status**: confirms flac and ffmpeg were found.

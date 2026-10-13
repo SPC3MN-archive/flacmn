@@ -26,6 +26,7 @@ class Settings:
     online_cover: bool = True
     auto_musicbrainz: bool = True          # look the album up on MusicBrainz when it is opened for saving
     audio_cache_mb: int = 2048
+    idle_scope: int = 30                   # seconds without input, while playing, before Now playing shows the scope (0: never)
     download_concurrency: int = 1          # albums downloading at once (archive.org is happiest with 1-2)
     # CD artwork printing
     paper: str = "letter"                  # letter | a4

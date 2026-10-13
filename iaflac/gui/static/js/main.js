@@ -6,6 +6,7 @@ import { mountSearch } from "./search.js";
 import { mountSpectrogram, loadCandidate, updateCandidate as updateSpec } from "./spectrogram.js";
 import { mountTags, loadTags } from "./tags.js";
 import { mountLibrary, load as loadLibrary } from "./library.js";
+import { mountNowPlaying } from "./nowplaying.js";
 import { mountCdArt, openAlbum, refresh as refreshArt } from "./cdart.js";
 import { mountSettings, showSettings, loadSettings, getSettings } from "./settings.js";
 import { mountQueue } from "./queue.js";
@@ -42,11 +43,11 @@ mountCdArt(artLeft, artRight, { settings: getSettings });
 
 // ---- Library ---------------------------------------------------------------------------------------------------------
 const lib = document.getElementById("view-library");
-const libTop = h("div.card.lib-top"), libBottom = h("div.card"), libScope = h("div.card");
-lib.append(libTop, libBottom, libScope);
+const libTop = h("div.card.lib-top"), libBottom = h("div.card"), libNow = h("div.card.np-card");
+lib.append(libTop, libBottom, libNow);
 const badge = document.getElementById("lib-badge");
+mountNowPlaying(libNow);
 mountLibrary(libTop, libBottom, {
-  scopeCard: libScope,
   openArt: (folder) => { show("cdart"); openAlbum(folder); },
   openSettings: () => show("settings"),
   count: (n) => { badge.hidden = !n; badge.textContent = n; },

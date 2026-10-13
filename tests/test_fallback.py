@@ -75,12 +75,11 @@ class VinylAndPlainAreIncluded(unittest.TestCase):
             make_item("plain-1", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=4, rip=False, downloads=5, seed=10),
         ]
 
-    def test_the_plain_flac_query_always_runs_even_with_plenty_of_cd_rips(self):
+    def test_every_source_is_searched_alike_and_cd_rips_cannot_fill_every_slot(self):
         pipe = Pipeline(FakeIA(self.items))
         res = pipe.search_one(Want("Test Artist - Test Album", "Test Artist", "Test Album"), Options(max_candidates=4))
         labels = [label for label, _ in res.rungs]
-        self.assertTrue(any(l.startswith("exact title, CD-rip-shaped") for l in labels))
-        self.assertIn("exact title", labels)
+        self.assertEqual(labels[0], "exact title")              # one query for any FLAC, whatever its source
         ids = [c.identifier for c in res.found]
         self.assertEqual(len(ids), 4)
         self.assertTrue({"lp-1", "plain-1"} & set(ids), "four CD rips would have filled every slot before")

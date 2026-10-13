@@ -46,8 +46,9 @@ class FindFlow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.items = [
-            make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=6, rip=True, downloads=50, seed=1),
-            make_item("ta-dup", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=5, rip=False, downloads=900, seed=2),
+            # ta-log is listed first because more people downloaded it, not because it ships a rip log
+            make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=6, rip=True, downloads=900, seed=1),
+            make_item("ta-dup", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=5, rip=False, downloads=50, seed=2),
             make_item("ta-second", "Test Artist - Second Record", "Test Artist", tracks=6, rip=True, downloads=10, seed=6, album_tag="Second Record"),
             make_item("zz-log", "Zed Zed - Other Album", "Zed Zed", tracks=6, rip=True, downloads=5, seed=7, album_tag="Other Album"),
         ]

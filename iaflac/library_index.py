@@ -53,9 +53,24 @@ class AlbumEntry:
         top = max(self.formats, key=self.formats.get)
         return top + (" (mixed)" if len(self.formats) > 1 else "")
 
+    @property
+    def quality(self) -> str:
+        """"lossless" (up to 16 bit and 48 kHz), "hires" (lossless above that) or "lossy"; "" when the format isn't
+        known. Lossless and hi-res are both high quality: neither is ranked above the other."""
+        if not self.formats:
+            return ""
+        if not self.lossless:
+            return "lossy"
+        for f in self.formats:
+            m = re.search(r"(\d+)/(\d+(?:\.\d+)?)$", f)
+            if m and (int(m.group(1)) > 16 or float(m.group(2)) > 48):
+                return "hires"
+        return "lossless"
+
     def to_dict(self) -> dict:
         d = asdict(self)
         d["format_label"] = self.format_label
+        d["quality"] = self.quality
         return d
 
 

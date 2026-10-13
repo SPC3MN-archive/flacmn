@@ -98,3 +98,17 @@ class Scan(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Quality(unittest.TestCase):
+    """The album quality the Library's Quality column and Now playing show: any high-quality audio is the goal, so
+    lossless and hi-res are labelled apart but neither ranks above the other."""
+
+    def test_lossless_hires_lossy_and_unknown(self):
+        from iaflac.library_index import AlbumEntry
+        q = lambda formats, lossless: AlbumEntry("A/B", "A", "B", formats=formats, lossless=lossless).quality
+        self.assertEqual(q({"FLAC 16/44.1": 10}, True), "lossless")
+        self.assertEqual(q({"FLAC 24/96": 10}, True), "hires")
+        self.assertEqual(q({"FLAC 16/48": 9, "FLAC 16/88.2": 1}, True), "hires")
+        self.assertEqual(q({"MP3 320": 10}, False), "lossy")
+        self.assertEqual(q({}, False), "")

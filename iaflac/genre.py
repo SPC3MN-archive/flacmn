@@ -23,7 +23,7 @@ class GenreSpec:
     terms: list
     exclude: list = field(default_factory=list)
     years: Optional[tuple] = None
-    cd_only: bool = True
+    cd_only: bool = False                # opt-in (--rip-only): only items that ship a rip log or cue sheet
     min_tracks: int = 5
     per_artist: int = 2
     top: int = 25
@@ -43,7 +43,7 @@ class GenreHit:
 
     def pre_score(self) -> float:
         downloads = int(self.doc.get("downloads") or 0)
-        return CONFIDENCE[self.conf] + (2.0 if self.rip_shaped else 0.0) + math.log10(1 + downloads)
+        return CONFIDENCE[self.conf] + math.log10(1 + downloads)      # no source is preferred
 
 
 @dataclass

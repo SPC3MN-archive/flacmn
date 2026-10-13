@@ -12,7 +12,8 @@ from typing import Optional
 from .matching import normalize, tokens
 
 BASE = "mediatype:audio AND format:Flac AND -access-restricted-item:true"
-# IA labels rip sidecars as item formats, so "looks like a CD rip" can be filtered server-side
+# IA labels rip sidecars as item formats, so "ships a rip log or cue sheet" can be filtered server-side (only when
+# the user asks for it: any genuine lossless source is as welcome as a CD rip)
 RIP_SHAPED = '(format:Log OR format:"Cue Sheet")'
 OTHER_LOSSLESS_Q = ('(format:"Apple Lossless Audio" OR format:WAVE OR format:"Monkey\'s Audio" '
                     'OR format:WavPack OR format:Shorten)')
@@ -89,10 +90,9 @@ def _artist_clause(artist: str) -> str:
 def album_rungs(artist: str, album: str, rip_only: bool = False) -> list:
     artist, album = clean_title(artist), clean_title(album)
     exact = f"{BASE} AND {_artist_clause(artist)} AND title:{phrase(album)}"
-    rungs = [Rung("exact title, CD-rip-shaped (has Log or Cue Sheet)", f"{exact} AND {RIP_SHAPED}")]
     if rip_only:
-        return rungs
-    rungs.append(Rung("exact title", exact))
+        return [Rung("exact title, with a rip log or cue sheet", f"{exact} AND {RIP_SHAPED}")]
+    rungs = [Rung("exact title", exact, rows=60)]
     at, bt = _and_tokens(artist), _and_tokens(album)
     if at and bt:
         rungs.append(Rung("relaxed words in title/description",
@@ -103,10 +103,9 @@ def album_rungs(artist: str, album: str, rip_only: bool = False) -> list:
 def artist_rungs(artist: str, rip_only: bool = False) -> list:
     artist = clean_title(artist)
     base = f"{BASE} AND {_artist_clause(artist)}"
-    rungs = [Rung("artist, CD-rip-shaped (has Log or Cue Sheet)", f"{base} AND {RIP_SHAPED}", rows=50)]
-    if not rip_only:
-        rungs.append(Rung("artist, any FLAC", base, rows=50))
-    return rungs
+    if rip_only:
+        return [Rung("artist, with a rip log or cue sheet", f"{base} AND {RIP_SHAPED}", rows=50)]
+    return [Rung("artist, any FLAC", base, rows=100)]
 
 
 def near_miss_rung(artist: str) -> Rung:

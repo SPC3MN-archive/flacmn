@@ -106,7 +106,8 @@ def _candidate_md(c: Candidate, heading: str, rel_png_dir: str = "spectrograms")
 def render_markdown(title: str, results: list, meta: dict) -> str:
     out = [f"# iaflac report — {title}", "",
            f"Generated {meta.get('generated', '')} · {meta.get('stats', '')}", "",
-           "Tiers: **A** CD rip with strong evidence · **B** CD rip, likely · **C** real lossless, source not verified as CD "
+           "Tiers say how sure we are the audio is genuinely lossless, from any source (CD, download, vinyl, tape): "
+           "**A** strong evidence · **B** likely · **C** little evidence either way "
            "· **L** lossy MP3, only when no FLAC or WAV exists · **D** failed or suspect. Evidence is uploader-supplied or heuristic, so a tier is a ranking, not a guarantee.", ""]
     for note in meta.get("notes", []):
         out.append(f"- {note}")

@@ -133,8 +133,9 @@ class SearchPhaseTouchesNoFiles(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.items = [
-            make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=6, rip=True, downloads=50, seed=1),
-            make_item("ta-dup", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=5, rip=False, downloads=900, seed=2),
+            # ta-log is listed first because more people downloaded it, not because it ships a rip log
+            make_item("ta-log", "Test Artist - Test Album", "Test Artist", tracks=6, rip=True, downloads=900, seed=1),
+            make_item("ta-dup", "Test Artist - Test Album (FLAC)", "Test Artist", tracks=5, rip=False, downloads=50, seed=2),
             make_item("ta-live", "Test Artist - Test Album 1999-05-05 live", "Test Artist", tracks=6, rip=False,
                       extra={"venue": "The Roxy"}, seed=3),
             make_item("ta-second", "Test Artist - Second Record", "Test Artist", tracks=6, rip=True, downloads=10, seed=6, album_tag="Second Record"),
@@ -158,7 +159,7 @@ class SearchPhaseTouchesNoFiles(unittest.TestCase):
 
     def test_found_items_are_listed_in_preview_order_with_a_quick_match(self):
         res = self.pipe.search_one(self.want, Options())
-        self.assertEqual(res.found[0].identifier, "ta-log", "rip-shaped copy first")
+        self.assertEqual(res.found[0].identifier, "ta-log", "the most-downloaded copy first")
         self.assertTrue(all(c.match is not None for c in res.found))
         self.assertNotIn("ta-live", [c.identifier for c in res.found])
         self.assertTrue(any(k.startswith("live recording") for k in res.excluded))

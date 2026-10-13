@@ -1,13 +1,17 @@
 """Turn raw evidence (header probes, rip logs, sidecar files, tags, descriptions) into a tier.
 
-Tiers, best first:
-  A  CD rip, strong evidence      (rip log + aligned CD-format tracks, or several independent signs)
-  B  CD rip, likely               (aligned 44.1/16/2ch tracks, or a log/cue that we could not confirm)
-  C  lossless, non-CD or unknown  (real FLAC, but nothing says CD: 48 kHz, 24-bit, unaligned, no log)
-  D  failed or suspect            (not FLAC, integrity failure, lossy-codec spectrum, "fake" claims)
+A tier says how sure we are that the audio is genuinely lossless, whatever its source. The goal is any
+high-quality audio: a CD rip, a lossless or hi-res download, a vinyl or tape transfer are all equally welcome, and no
+source or format is ranked above another. Tiers, best first:
+  A  genuine lossless, strong evidence  (a verified rip log with aligned tracks; or a clean spectrum and a passed
+                                         decode test with corroboration, such as real content above 22 kHz)
+  B  genuine lossless, likely           (some evidence: a clean spectrum, aligned tracks, a log we could not confirm)
+  C  lossless, little evidence          (real FLAC, but nothing yet speaks for or against it)
+  D  failed or suspect                  (not FLAC, integrity failure, lossy-codec spectrum, "fake" claims)
 
-Everything here is evidence, not proof: logs and descriptions are uploader-supplied. The weights
-are named constants so they can be tuned in one place; tests pin four real-world calibration items.
+Evidence of a clean CD extraction (rip logs, AccurateRip, sector-aligned tracks) still counts, as evidence; it is
+not a preference for CDs. Everything here is evidence, not proof: logs and descriptions are uploader-supplied. The
+weights are named constants so they can be tuned in one place; tests pin real-world calibration items.
 """
 
 from __future__ import annotations
@@ -23,9 +27,10 @@ from .model import ItemInfo
 WEIGHTS = dict(
     log_verified=40, log_clean=25, log_present=15, log_unrecognised=5, log_errors=-25,
     accurip_file=8, cue_file=12, checksum_file=2, aucdtect_cdda=10,
-    aligned_strong=25, aligned_weak=8, cd_native=8, not_cd_native=-20,
-    ripper_tags=10, cuesheet_block=5, media_tag_cd=4, claims_cd=6, claim_contradicted=-10,
-    claims_other=-25, claims_fake=-20, live=-10, spectral_suspect=-15, upsampled=-5,
+    aligned_strong=25, aligned_weak=8,
+    ripper_tags=10, cuesheet_block=5, media_tag_cd=4, claims_source=6, claim_contradicted=-10,
+    claims_fake=-20, live=-10, spectral_suspect=-15, upsampled=-5,
+    spectral_pass=30, decode_pass=15, hires_content=20,
 )
 A_MIN, B_MIN = 70, 22
 ALIGNED_MIN_TRACKS = 3      # alignment is only convincing in aggregate
@@ -33,8 +38,8 @@ ALIGNED_MIN_RATIO = 0.9
 AUCDTECT_MPEG_FAIL = 80     # % confidence that a track is MPEG-derived
 
 TIER_LABELS = {
-    "A": "CD rip, strong evidence",
-    "B": "CD rip, likely",
+    "A": "Genuine lossless, strong evidence",
+    "B": "Genuine lossless, likely",
     "C": "Lossless, source not verified as CD",
     "L": "Lossy MP3 (no FLAC or WAV exists)",
     "D": "Failed or suspect",
@@ -315,11 +320,8 @@ def assess(item: ItemInfo, stats: ProbeStats, logs: list, aucdtect: dict, *,
         elif stats.aligned == stats.ok and stats.ok >= 1 and stats.ok < ALIGNED_MIN_TRACKS:
             add(w["aligned_weak"], f"{stats.aligned}/{stats.ok} track(s) sector-aligned (too few to be conclusive)")
         elif stats.ok >= ALIGNED_MIN_TRACKS and stats.aligned_ratio < 0.5:
-            add(0, f"only {stats.aligned}/{stats.ok} tracks sector-aligned: not a straight CD rip, or re-cut")
-        if stats.cd_native == stats.ok:
-            add(w["cd_native"], "44.1 kHz / 16-bit / stereo (CD format)")
-        else:
-            add(w["not_cd_native"], f"{stats.format_label()}: not the CD format")
+            add(0, f"{stats.aligned}/{stats.ok} tracks sector-aligned (not a straight CD extraction, which is fine)")
+        add(0, f"format: {stats.format_label()}")                # no format is preferred over another
         if stats.ripper_tags:
             add(w["ripper_tags"], "ripper fingerprints in the files: " + ", ".join(stats.ripper_tags[:3]))
         if stats.has_cuesheet_block:
@@ -334,6 +336,9 @@ def assess(item: ItemInfo, stats: ProbeStats, logs: list, aucdtect: dict, *,
 
     # what the uploader says
     claims = scan_claims(item)
+    sources = claims["cd"][:3] + claims["other"]
+    if sources:
+        add(w["claims_source"], "description names its source: " + ", ".join(sources))
     if claims["cd"]:
         contradiction = ""
         if stats.ok and stats.cd_native < stats.ok:
@@ -342,10 +347,6 @@ def assess(item: ItemInfo, stats: ProbeStats, logs: list, aucdtect: dict, *,
             contradiction = f"only {stats.aligned}/{stats.ok} tracks are sector-aligned"
         if contradiction:
             add(w["claim_contradicted"], f"description says {', '.join(claims['cd'][:2])}, but {contradiction}")
-        else:
-            add(w["claims_cd"], "description mentions " + ", ".join(claims["cd"][:4]))
-    if claims["other"]:
-        add(w["claims_other"], "description points to a non-CD source: " + ", ".join(claims["other"]))
     if claims["fake"]:
         add(w["claims_fake"], "description mentions " + ", ".join(claims["fake"]))
     if item.is_live:
@@ -356,9 +357,11 @@ def assess(item: ItemInfo, stats: ProbeStats, logs: list, aucdtect: dict, *,
     elif spectral_verdict == "UPSAMPLED":
         add(w["upsampled"], "spectrum ends near 22 kHz although the file claims a higher sample rate")
     elif spectral_verdict == "PASS":
-        add(0, "spectrum shows no lossy-codec lowpass")
+        add(w["spectral_pass"], "spectrum shows no lossy-codec lowpass")
+        if stats.ok and stats.cd_native < stats.ok:
+            add(w["hires_content"], "real content above 22 kHz: genuine hi-res, not upsampled")
     if integrity_ok:
-        add(0, "full decode test passed")
+        add(w["decode_pass"], "full decode test passed")
 
     if hard:
         tier = "D"

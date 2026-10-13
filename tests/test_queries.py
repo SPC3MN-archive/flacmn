@@ -6,12 +6,11 @@ from iaflac import queries as q
 class AlbumLadder(unittest.TestCase):
     def test_rungs_in_order_and_shape(self):
         rungs = q.album_rungs("Miles Davis", "Kind of Blue (Legacy Edition)")
-        self.assertEqual(len(rungs), 3)
-        first, second, third = (r.query for r in rungs)
-        self.assertTrue(first.startswith(q.BASE))
-        self.assertIn(q.RIP_SHAPED, first)
+        self.assertEqual(len(rungs), 2)                        # any FLAC first: no source is searched ahead of another
+        second, third = (r.query for r in rungs)
+        self.assertTrue(second.startswith(q.BASE))
         self.assertNotIn(q.RIP_SHAPED, second)
-        self.assertEqual(first, f"{second} AND {q.RIP_SHAPED}")
+        self.assertEqual(q.album_rungs("Miles Davis", "Kind of Blue", rip_only=True)[0].query, f"{second} AND {q.RIP_SHAPED}")
         self.assertIn('(creator:"Miles Davis" OR title:"Miles Davis")', second)
         self.assertIn('title:"Kind of Blue"', second)          # edition tag stripped
         self.assertNotIn("Legacy", second)
@@ -32,9 +31,10 @@ class AlbumLadder(unittest.TestCase):
 
     def test_artist_only_ladder(self):
         rungs = q.artist_rungs("Boards of Canada")
-        self.assertEqual(len(rungs), 2)
-        self.assertIn(q.RIP_SHAPED, rungs[0].query)
-        self.assertNotIn("title:\"\"", rungs[1].query)
+        self.assertEqual(len(rungs), 1)                        # any FLAC: no source is searched first
+        self.assertNotIn(q.RIP_SHAPED, rungs[0].query)
+        self.assertNotIn("title:\"\"", rungs[0].query)
+        self.assertIn(q.RIP_SHAPED, q.artist_rungs("Boards of Canada", rip_only=True)[0].query)
 
     def test_other_lossless_rung_excludes_flac_requirement(self):
         query = q.other_lossless_rung("Miles Davis", "Kind of Blue").query

@@ -41,19 +41,21 @@ def cand(it, tier=None, bits=16, rate=44100, kbps=0.0, mode="VBR", match_bucket=
 
 
 class Classes(unittest.TestCase):
-    def test_a_cd_rip_is_lossless_cd(self):
-        q = quality.assess(cand(item("a", files=flacs(log=True)), "A"))
-        self.assertEqual((q.rank, q.format, q.lossless, q.tested), (quality.CD_LOSSLESS, "FLAC 16/44.1", True, True))
+    """Any genuine lossless is one class, whatever its source or resolution: labelled Lossless or Hi-res, ranked alike."""
 
-    def test_hi_res_ranks_above_plain_16_44_lossless_of_unknown_source(self):
+    def test_a_cd_rip_is_lossless(self):
+        q = quality.assess(cand(item("a", files=flacs(log=True)), "A"))
+        self.assertEqual((q.rank, q.label, q.format, q.lossless, q.tested),
+                         (quality.LOSSLESS, "Lossless", "FLAC 16/44.1", True, True))
+
+    def test_hi_res_and_plain_lossless_rank_together_labelled_apart(self):
         hi = quality.assess(cand(item("h", files=flacs()), "C", bits=24, rate=96000))
         plain = quality.assess(cand(item("p", files=flacs()), "C"))
-        self.assertEqual(hi.rank, quality.HIRES_LOSSLESS)
-        self.assertEqual(hi.format, "FLAC 24/96")
-        self.assertEqual(plain.rank, quality.LOSSLESS)
+        self.assertEqual((hi.rank, hi.label, hi.format), (quality.LOSSLESS, "Hi-res", "FLAC 24/96"))
+        self.assertEqual((plain.rank, plain.label), (quality.LOSSLESS, "Lossless"))
 
-    def test_untested_items_are_classed_from_the_file_list(self):
-        self.assertEqual(quality.assess(cand(item("r", files=flacs(log=True)))).rank, quality.CD_LOSSLESS)
+    def test_untested_items_are_classed_from_the_file_list_with_no_preference_for_rip_logs(self):
+        self.assertEqual(quality.assess(cand(item("r", files=flacs(log=True)))).rank, quality.LOSSLESS)
         self.assertEqual(quality.assess(cand(item("f", files=flacs()))).rank, quality.LOSSLESS)
         untested = quality.assess(cand(item("m", "mp3", mp3s())))
         self.assertEqual((untested.rank, untested.tested, untested.format), (quality.MP3_HIGH, False, "MP3"))
@@ -69,7 +71,12 @@ class Classes(unittest.TestCase):
 
     def test_wav_reports_its_pcm_format(self):
         q = quality.assess(cand(item("w", "wav", [FileInfo("01.wav", size=50_000_000)]), "B"))
-        self.assertEqual((q.rank, q.format), (quality.CD_LOSSLESS, "WAV 16/44.1"))
+        self.assertEqual((q.rank, q.format), (quality.LOSSLESS, "WAV 16/44.1"))
+
+    def test_a_rip_log_does_not_outrank_an_equally_trusted_hi_res_download(self):
+        cd = cand(item("cd", files=flacs(log=True), downloads=10), "A")
+        hi = cand(item("hi", files=flacs(), downloads=900), "A", bits=24, rate=96000)
+        self.assertEqual([c.identifier for c in quality.rank([cd, hi])], ["hi", "cd"])     # popularity decides
 
 
 class Ordering(unittest.TestCase):

@@ -164,8 +164,9 @@ def build_stats(media: str, probes: dict) -> AltStats:
 
 
 def assess(item, stats: AltStats, issues: list) -> prov.Provenance:
-    """Tier for a WAV / VBR MP3 candidate: B when the WAVs look like CD rips (CD format, sector-aligned tracks), C for
-    other real lossless, L for MP3 (lossy: usable, but not lossless), D when the files are not what they claim to be."""
+    """Tier for a WAV / VBR MP3 candidate: B for real PCM WAVs with some evidence of a clean source (sector-aligned
+    tracks, or a named source of any kind), C for other real lossless, L for MP3 (lossy: usable, but not lossless), D
+    when the files are not what they claim to be. No lossless source is preferred over another."""
     reasons, hard = [], []
     if stats.bad:
         kinds = ", ".join(sorted({k for _, k, _ in stats.bad}))
@@ -173,11 +174,15 @@ def assess(item, stats: AltStats, issues: list) -> prov.Provenance:
     if stats.media == "wav":
         if stats.ok:
             reasons.append(f"✓ {stats.ok}/{stats.n} headers are real PCM WAV ({stats.format_label()}); will be encoded to FLAC")
+        named = prov.scan_claims(item)
         if stats.ok >= prov.ALIGNED_MIN_TRACKS and stats.aligned_ratio >= prov.ALIGNED_MIN_RATIO:
-            reasons.append(f"✓ {stats.aligned}/{stats.ok} tracks are a whole number of CD sectors (588 samples), CD format")
+            reasons.append(f"✓ {stats.aligned}/{stats.ok} tracks are a whole number of CD sectors (588 samples): a clean extraction")
             tier, score = "B", 30
+        elif named["cd"] or named["other"]:
+            reasons.append("✓ the uploader names the source")
+            tier, score = "B", 25
         else:
-            reasons.append(f"• not shown to be a CD rip ({stats.aligned}/{stats.ok} tracks sector-aligned)")
+            reasons.append(f"• {stats.aligned}/{stats.ok} tracks sector-aligned; source not stated")
             tier, score = "C", 10
     else:
         reasons.append(f"• lossy: {stats.format_label()}; it can never be better than the MP3 it is")
@@ -186,7 +191,7 @@ def assess(item, stats: AltStats, issues: list) -> prov.Provenance:
     if claims["cd"]:
         reasons.append("• description mentions " + ", ".join(claims["cd"][:3]))
     if claims["other"]:
-        reasons.append("• description points to " + ", ".join(claims["other"]))
+        reasons.append("• description names its source: " + ", ".join(claims["other"]))
     if claims["fake"]:
         reasons.append("• description mentions " + ", ".join(claims["fake"]))
     reasons += [f"• {i}" for i in issues]

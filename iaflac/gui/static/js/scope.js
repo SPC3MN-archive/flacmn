@@ -8,6 +8,9 @@
 //         (L-R), y is the mid now; the delay follows the dominant pitch, so a tone draws a loop and chords draw
 //         rosettes. Each axis has its own automatic gain, so the figure fills the box, and the older part of the
 //         trace fades like phosphor so the newest line reads clearly.
+//
+// Nothing clips: the wave's gain backs off at once on loud passages (recovering slowly), and the XY figure is never
+// drawn past this frame's fit. The trace can take an album's colour (Scope.colour), as on the Pi library player.
 
 let ctx = null;
 const taps = new Map();                                          // audio element -> its two analysers
@@ -37,7 +40,8 @@ export class Scope {
     this.canvas = canvas;
     this.audio = audioEl;
     this.mode = "wave";
-    this.gx = 2; this.gy = 2;
+    this.gx = 2; this.gy = 2; this.gw = 1.6;
+    this.colour = "";                                             // "" for the theme's primary colour
     this.l = new Float32Array(2048); this.r = new Float32Array(2048);
     this.running = false;
     this.frame = this.frame.bind(this);
@@ -63,7 +67,7 @@ export class Scope {
     const tap = taps.get(this.audio);
     if (tap) { tap.l.getFloatTimeDomainData(l); tap.r.getFloatTimeDomainData(r); } else { l.fill(0); r.fill(0); }
     const css = getComputedStyle(document.documentElement);
-    x.strokeStyle = css.getPropertyValue("--primary").trim() || "#5C53A2";
+    x.strokeStyle = this.colour || css.getPropertyValue("--primary").trim() || "#5C53A2";
     x.lineJoin = "round"; x.lineCap = "round";
     if (this.mode === "xy") this.drawXY(x, W, H, dpr);
     else this.drawWave(x, W, H, dpr);
@@ -73,10 +77,14 @@ export class Scope {
     const l = this.l, n = 882;                                  // 20 ms at 44.1 kHz
     let s0 = 0;
     for (let i = 1; i < 1100; i++) if (l[i - 1] < 0 && l[i] >= 0) { s0 = i; break; }
-    x.lineWidth = 2 * dpr;
+    let peak = 1e-4;
+    for (let i = 0; i <= n; i++) peak = Math.max(peak, Math.abs(l[s0 + i] || 0));
+    const fit = Math.min(1.6, 0.95 / (0.9 * peak));            // never past 95% of the half-height
+    this.gw = fit < this.gw ? fit : this.gw + (fit - this.gw) * 0.08;
+    const pad = x.lineWidth = 2 * dpr;
     x.beginPath();
     for (let i = 0; i <= n; i++) {
-      const px = (i / n) * W, py = H / 2 - l[s0 + i] * H * 0.45 * 1.6;
+      const px = pad + (i / n) * (W - 2 * pad), py = H / 2 - (l[s0 + i] || 0) * (H / 2 - pad) * 0.9 * this.gw;
       i ? x.lineTo(px, py) : x.moveTo(px, py);
     }
     x.stroke();
@@ -99,7 +107,8 @@ export class Scope {
     const tx = Math.min(40, 0.95 / mx), ty = Math.min(40, 0.95 / my);
     this.gx += (tx - this.gx) * (tx < this.gx ? 0.5 : 0.08);  // shrink fast on peaks, grow back slowly
     this.gy += (ty - this.gy) * (ty < this.gy ? 0.5 : 0.08);
-    const P = (i) => [W / 2 + xs[i] * this.gx * W * 0.47, H / 2 - ys[i] * this.gy * H * 0.45];
+    const ux = Math.min(this.gx, tx), uy = Math.min(this.gy, ty);  // never past this frame's fit: no clipping
+    const P = (i) => [W / 2 + xs[i] * ux * W * 0.47, H / 2 - ys[i] * uy * H * 0.45];
     const parts = 6, per = Math.ceil(n / parts);
     x.lineWidth = 2.5 * dpr;
     for (let p = 0; p < parts; p++) {

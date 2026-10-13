@@ -1,4 +1,5 @@
 import copy
+from collections import Counter
 import unittest
 
 from iaflac import provenance as prov
@@ -56,7 +57,7 @@ class CalibrationItems(unittest.TestCase):
         self.assertEqual(pv.tier, "A", pv.reasons)
         self.assertIn("auCDtect", " ".join(pv.reasons))
 
-    def test_hunting_party_is_lossless_but_not_cd(self):
+    def test_hunting_party_is_lossless_with_its_cd_claim_contradicted(self):
         pv = assess("hunting_party")
         self.assertEqual(pv.tier, "C", pv.reasons)
         text = " ".join(pv.reasons)
@@ -99,12 +100,46 @@ class TierRules(unittest.TestCase):
         self.assertEqual(assess("mars_volta", spectral_verdict="LIKELY_LOSSY").tier, "D")
         clean, suspect = assess("mars_volta", spectral_verdict="PASS"), assess("mars_volta", spectral_verdict="SUSPECT")
         self.assertEqual(clean.tier, "A")
-        self.assertEqual(suspect.score, clean.score + prov.WEIGHTS["spectral_suspect"])
+        # a clean spectrum earns points (evidence for any source); a suspect one costs them instead
+        self.assertEqual(suspect.score, clean.score - prov.WEIGHTS["spectral_pass"] + prov.WEIGHTS["spectral_suspect"])
 
     def test_auCDtect_mpeg_verdict_forces_tier_d(self):
         item, probes, logs, _ = load("mars_volta")
         pv = prov.assess(item, prov.probe_stats(probes), logs, {"cdda": 3, "mpeg": 2, "mpeg_max": 97})
         self.assertEqual(pv.tier, "D")
+
+
+class AnySource(unittest.TestCase):
+    """The goal is any genuinely lossless audio: no source or resolution is ranked above another."""
+
+    def stats(self, n=10, rate=96000, bits=24, aligned=0):
+        return prov.ProbeStats(n=n, ok=n, aligned=aligned, cd_native=n if (rate, bits) == (44100, 16) else 0,
+                               rates=Counter({rate: n}), depths=Counter({bits: n}), channels=Counter({2: n}))
+
+    def item(self, description=""):
+        from iaflac.model import ItemInfo
+        return ItemInfo(identifier="x", title="Artist - Album", description=description)
+
+    def test_a_verified_hi_res_download_reaches_tier_a(self):
+        pv = prov.assess(self.item("24-bit studio master from Qobuz"), self.stats(), [], {},
+                         integrity_ok=True, spectral_verdict="PASS")
+        self.assertEqual(pv.tier, "A", pv.reasons)
+        self.assertIn("real content above 22 kHz", " ".join(pv.reasons))
+
+    def test_hi_res_costs_nothing_and_cd_format_earns_nothing(self):
+        hi = prov.assess(self.item(), self.stats(), [], {})
+        cd = prov.assess(self.item(), self.stats(rate=44100, bits=16), [], {})
+        self.assertEqual(hi.score, cd.score)
+
+    def test_naming_a_vinyl_tape_or_web_source_counts_like_naming_a_cd(self):
+        plain = prov.assess(self.item(), self.stats(), [], {}).score
+        for words in ("needle drop from the original LP", "cassette transfer", "bought on Bandcamp", "EAC secure mode"):
+            aligned = 10 if words.startswith("EAC") else 0          # a CD claim is checked against the tracks
+            pv = prov.assess(self.item(words), self.stats(rate=44100, bits=16, aligned=aligned), [], {})
+            base = prov.assess(self.item(), self.stats(rate=44100, bits=16, aligned=aligned), [], {}).score
+            self.assertEqual(pv.score, base + prov.WEIGHTS["claims_source"], words)
+            continue
+            self.assertEqual(pv.score, plain + prov.WEIGHTS["claims_source"], words)
 
 
 class RipLogParsing(unittest.TestCase):

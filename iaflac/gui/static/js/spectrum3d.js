@@ -5,8 +5,8 @@
 import { fmtTime } from "./ui.js";
 
 const LOUD = [[0, "#5C53A2"], [1, "#F6F4EE"]];                      // spcmn purple (quiet) to off-white (loud)
-const C = { text3: "#9C9A95", border: "#4B4B53", floor: "#27272B", grid: "#3A3A40",     // the charcoal page's colours
-            text: "#F6F4EE", slice: "rgba(46, 46, 51, .45)", playhead: "#F4B73E", ink: "#2E2E33" };
+const C = { text3: "#77767D", border: "#D9D5CC", floor: "#EEEBE4", grid: "#DEDAD1",     // the off-white page's colours
+            text: "#2E2E33", slice: "rgba(46, 46, 51, .45)", playhead: "#F4B73E", ink: "#F6F4EE" };
 const FONT = '500 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 export class Spectrum3D {

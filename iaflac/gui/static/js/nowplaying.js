@@ -27,15 +27,15 @@ export function mountNowPlaying(el) {
   render();
 }
 
-// the colour as it is, unless it is too dark to read on the charcoal card: then only its lightness is raised
+// the colour as it is, unless it is too light to read on the off-white card: then only its lightness is lowered
 function readable([r, g, b]) {
   [r, g, b] = [r / 255, g / 255, b / 255];
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), dd = mx - mn, l = (mx + mn) / 2;
-  if (l >= 0.42) return `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
+  if (l <= 0.55) return `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
   let hue = 0;
   if (dd) hue = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4;
   const sat = dd ? dd / (1 - Math.abs(mx + mn - 1)) : 0;
-  return `hsl(${Math.round(hue * 60 + 360) % 360} ${Math.round(sat * 100)}% 42%)`;
+  return `hsl(${Math.round(hue * 60 + 360) % 360} ${Math.round(sat * 100)}% 50%)`;
 }
 
 function coverUrl() {
@@ -44,8 +44,8 @@ function coverUrl() {
 }
 
 // a colour taken from the cover itself, not an average of it: the cover's pixels are sorted into small colour boxes and
-// the box that is both common and colourful wins; the trace is that box's colour (a dark one is only lifted enough to
-// read on the charcoal card). A black-and-white cover gives its most common light shade.
+// the box that is both common and colourful wins; the trace is that box's colour (a light one is only darkened enough
+// to read on the off-white card). A black-and-white cover gives its most common dark shade.
 function traceColour(src) {
   if (!src) return Promise.resolve("");
   if (colours.has(src)) return Promise.resolve(colours.get(src));
@@ -68,7 +68,7 @@ function traceColour(src) {
       for (const [n, r, g, b] of boxes.values()) {
         const rgb = [r / n, g / n, b / n], mx = Math.max(...rgb), mn = Math.min(...rgb);
         const sat = mx ? (mx - mn) / mx : 0;
-        if (sat < 0.25 || mx < 60) { if (mx >= 110 && n > greyCount) { grey = rgb; greyCount = n; } continue; }
+        if (sat < 0.25 || mx < 60) { if (mx <= 150 && n > greyCount) { grey = rgb; greyCount = n; } continue; }
         const score = n * sat * sat * (mx / 255);
         if (score > bestScore) { bestScore = score; best = rgb; }
       }

@@ -100,7 +100,7 @@ def main(argv=None) -> int:
             import webview
             bridge = Bridge()
             bridge._window = webview.create_window("flacmn", url, width=1440, height=900, min_size=(1000, 680), js_api=bridge,
-                                                  background_color="#2E2E33")   # the launch screen's charcoal, no flash of white
+                                                  background_color="#F6F4EE")   # the launch screen's off-white, no flash of another colour
             # WebKit will not let the page start the launch video itself; a call from here counts as the user's, so it plays
             bridge._window.events.loaded += lambda: bridge._window.evaluate_js("window.flacmnSplash && window.flacmnSplash.play()")
             webview.start(debug=args.debug)

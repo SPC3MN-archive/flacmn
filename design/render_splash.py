@@ -1,7 +1,7 @@
-"""Render the launch screen's video: spcmn's dot wordmark as ferrofluid, off-white on black, 60 fps, 10 s.
+"""Render the launch screen's video: spcmn's dot wordmark as ferrofluid, charcoal on white, 60 fps, 10 s.
 
-The page shows it over the charcoal launch screen with `mix-blend-mode: lighten`, so the black around the letters
-becomes the page's own charcoal exactly. The motion is the one splash.js used to draw live: each droplet's rim is the
+The page shows it over the off-white launch screen with `mix-blend-mode: multiply`, so the white around the letters
+becomes the page's own off-white exactly. The motion is the one splash.js used to draw live: each droplet's rim is the
 sum of slow ripples (2 to 6 lobes), each swelling and fading on its own beat, its centre wandering around its spot;
 the droplets are blurred and the alpha thresholded (the SVG "goo" filter), so close ones meet in a neck; at 6.5 s
 the fluid dips towards the still grid and straight back out. A fixed seed keeps the render repeatable.
@@ -29,7 +29,7 @@ W, H = 1280, 388                     # twice the largest size the page shows it 
 SS = 3                               # supersampling, for clean edges
 FPS, SECONDS = 60, 10.0              # the launch screen stays up 10 s at most
 VIEW = (-1.2, -1.2, 34.4, 10.4)      # the wordmark's box, in grid units
-PAPER = (0xF6, 0xF4, 0xEE)
+INK = (0x2E, 0x2E, 0x33)                # spcmn charcoal; the ground is white (multiplied onto the page)
 
 LETTERS = [(0, ".####|#####|###..|..###|#####|####."), (6, "####.|#####|##.##|##.##|#####|####.|##...|##..."),
            (12, ".####|#####|##...|##...|#####|.####"), (18, "#.#####.|########|##.##.##|##.##.##|##.##.##|##.##.##"),
@@ -104,7 +104,7 @@ def frame(drops, t: float) -> np.ndarray:
     a = np.clip((a - 0.47) * 40 + 0.5, 0, 1)
     small = Image.fromarray((a * 255 + 0.5).astype(np.uint8)).resize((W, H), Image.LANCZOS)
     a = np.asarray(small, dtype=np.float32)[..., None] / 255.0
-    return (a * np.array(PAPER, dtype=np.float32) + 0.5).astype(np.uint8)
+    return (255 - a * (255 - np.array(INK, dtype=np.float32)) + 0.5).astype(np.uint8)
 
 
 def main() -> int:

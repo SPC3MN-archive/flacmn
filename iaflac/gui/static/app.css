@@ -1,6 +1,6 @@
 /* iaflac desktop UI: Option A "Workspace" from design/iaflac-mockups-v3.svg.
    Palette: #DFD9E2 lavender, #F4B73E amber, #BC3843 red, #5C53A2 indigo, #20A76B green, plus black and white.
-   The page is charcoal #2E2E33 with off-white #F6F4EE lettering (spcmn's two neutrals, the other way round from the site). */
+   The page follows the spcmn site: off-white #F6F4EE with charcoal #2E2E33 lettering; buttons are charcoal with off-white lettering. */
 
 /* Bundled TeX Gyre Heros (free Helvetica clone, GUST Font License): see fonts/README.txt */
 @font-face { font-family: "Heros"; src: url("/static/fonts/texgyreheros-regular.otf") format("opentype"); font-weight: 100 549; font-style: normal; }
@@ -12,37 +12,37 @@
   --lavender: #DFD9E2; --amber: #F4B73E; --red: #BC3843; --indigo: #5C53A2; --green: #20A76B;
   --white: #FFFFFF; --ink: #2E2E33; --paper: #F6F4EE; --charcoal: #2E2E33;
 
-  /* charcoal page, off-white lettering */
-  --app-bg: var(--charcoal);
-  --surface: #36363C;
-  --surface-alt: #323238;
-  --surface-sunk: #27272B;
-  --raised: #3D3D44;                    /* controls, menus and popovers on a card */
-  --hover: #4A4A52;                     /* a menu row under the pointer */
-  --border: #4B4B53;
-  --border-soft: #404047;
-  --text: var(--paper);
-  --text-2: #CFCCC5;
-  --text-3: #9C9A95;
+  /* off-white page, charcoal lettering; charcoal buttons with off-white lettering */
+  --app-bg: var(--paper);
+  --surface: #FCFBF8;
+  --surface-alt: #F9F8F4;
+  --surface-sunk: #EEEBE4;
+  --raised: #FFFFFF;                    /* controls, menus and popovers on a card */
+  --hover: #EEEBE4;                     /* a menu row under the pointer */
+  --border: #D9D5CC;
+  --border-soft: #E9E6DF;
+  --text: var(--charcoal);
+  --text-2: #4F4E55;
+  --text-3: #77767D;
   --primary: var(--indigo);
   --primary-dark: #463F7E;
-  --primary-tint: #3B3852;
-  --primary-tint-2: #4C4774;
-  --primary-text: #BDB6F0;
-  /* buttons: off-white with charcoal lettering (no purple buttons on the charcoal page) */
-  --button: var(--paper); --button-hover: #E2DFD7; --button-text: var(--charcoal);
-  --topbar: #252529;
-  --topbar-line: #3A3A40;
-  --topbar-text: var(--paper);
-  --topbar-muted: #A6A3A0;
-  --good-tint: #213A31; --good-text: #8FDCB8;
-  --warn-tint: #433822; --warn-line: #8C7038; --warn-text: #F4D08A;
-  --bad-tint: #432B2F; --bad-line: #8E4C54; --bad-text: #F0A8B0;
+  --primary-tint: #F0F0F7;
+  --primary-tint-2: #DBD9EB;
+  --primary-text: #4A4284;
+  /* buttons: charcoal with off-white lettering (no purple buttons) */
+  --button: var(--charcoal); --button-hover: #45454C; --button-text: var(--paper);
+  --topbar: #EFECE5;
+  --topbar-line: #DEDAD1;
+  --topbar-text: var(--charcoal);
+  --topbar-muted: #6B6A70;
+  --good-tint: #E2F4EC; --good-text: #1A634E;
+  --warn-tint: #FDF1D8; --warn-line: #F8D48B; --warn-text: #6D5332;
+  --bad-tint: #F8EBEC; --bad-line: #E1A5AA; --bad-text: #922E3D;
 
   --radius: 14px;
   --gap: 16px;
   --font: "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -70,7 +70,7 @@ img { display: block; }
   flex: none; height: 48px; background: var(--topbar); color: var(--topbar-text);
   display: flex; align-items: center; gap: 6px; padding: 0 16px; border-bottom: 1px solid var(--topbar-line);
 }
-.logo { height: 28px; width: auto; flex: none; color: var(--paper); margin-right: 18px; overflow: visible; }
+.logo { height: 28px; width: auto; flex: none; color: var(--charcoal); margin-right: 18px; overflow: visible; }
 .tab {
   height: 32px; padding: 0 16px 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--topbar-text);
   display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer;
@@ -83,11 +83,11 @@ img { display: block; }
   min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--topbar-line); color: var(--topbar-text);
   font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
 }
-.tab.active .badge { background: var(--charcoal); color: var(--paper); }
+.tab.active .badge { background: var(--paper); color: var(--charcoal); }
 .topbar .spacer { flex: 1; }
 .queue-chip {
   height: 24px; padding: 0 12px 0 10px; border-radius: 6px; border: 0; background: var(--topbar-line);
-  color: var(--white); font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  color: var(--topbar-text); font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
 }
 .queue-chip .dot { width: 6px; height: 6px; border-radius: 3px; background: var(--topbar-muted); }
 .queue-chip.busy .dot { background: var(--amber); }
@@ -95,7 +95,7 @@ img { display: block; }
   width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: var(--topbar-muted);
   display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin-left: 6px;
 }
-.icon-btn-dark:hover { background: var(--topbar-line); color: var(--white); }
+.icon-btn-dark:hover { background: var(--topbar-line); color: var(--topbar-text); }
 .icon-btn-dark.active { background: var(--button); color: var(--button-text); }
 .icon-btn-dark .icon { width: 18px; height: 18px; }
 
@@ -129,22 +129,22 @@ main { flex: 1 1 auto; min-height: 0; position: relative; }
   height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--raised);
   display: flex; align-items: center; gap: 8px; padding: 0 12px; min-width: 0;
 }
-.field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint-2); }
+.field:focus-within { border-color: var(--charcoal); box-shadow: 0 0 0 3px rgba(46, 46, 51, .12); }
 .field .prefix { color: var(--text-3); font-size: 12.5px; flex: none; }
 .field input, .field select { border: 0; outline: 0; background: transparent; flex: 1; min-width: 0; height: 100%; font-size: 13px; }
 .field select { cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 18px; text-overflow: ellipsis;
                 background: transparent no-repeat right 0 center / 12px
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23CFCCC5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%234F4E55' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 .field:has(select) { cursor: pointer; }
 .field:has(select):hover { border-color: var(--text-3); }
-.field.open { border-color: var(--paper); }
+.field.open { border-color: var(--charcoal); }
 /* the app's own drop-down menu for every select (ui.js): charcoal, off-white lettering, like the album picker */
 .dd-menu { position: fixed; z-index: 200; background: var(--raised); border: 1px solid var(--border); border-radius: 10px;
            box-shadow: 0 10px 30px rgba(0,0,0,.35); padding: 5px; overflow: auto; max-width: 420px; }
 .dd-item { display: flex; align-items: center; gap: 10px; width: 100%; height: 30px; border: 0; background: none; padding: 0 10px;
            border-radius: 6px; cursor: pointer; text-align: left; color: var(--text); font-size: 12.5px; white-space: nowrap; }
 .dd-item > span { flex: 1; min-width: 0; }
-.dd-item .icon { width: 14px; height: 14px; color: var(--paper); }
+.dd-item .icon { width: 14px; height: 14px; color: var(--charcoal); }
 .dd-item:hover, .dd-item:focus-visible { background: var(--hover); outline: 0; }
 .dd-item.on { font-weight: 650; }
 .dd-item:disabled { opacity: .45; cursor: default; }
@@ -162,7 +162,7 @@ main { flex: 1 1 auto; min-height: 0; position: relative; }
 .btn.secondary { background: var(--raised); border-color: var(--border); color: var(--text); }
 .btn.secondary:hover { background: var(--surface-alt); }
 .btn.danger { background: var(--raised); border-color: var(--bad-line); color: var(--bad-text); }
-.btn.ghost { background: transparent; color: var(--primary-text); padding: 0 6px; }
+.btn.ghost { background: transparent; color: var(--text); padding: 0 6px; text-decoration: underline; text-underline-offset: 3px; }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn.icon-only { width: 36px; padding: 0; }
 .btn.sm.icon-only { width: 30px; }
@@ -172,7 +172,7 @@ main { flex: 1 1 auto; min-height: 0; position: relative; }
   color: var(--text-3); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; cursor: pointer;
 }
 .toggle-chip .icon { width: 14px; height: 14px; visibility: hidden; }
-.toggle-chip.on { background: var(--primary-tint); border-color: var(--primary-tint-2); color: var(--primary-text); }
+.toggle-chip.on { background: var(--button); border-color: var(--button); color: var(--button-text); }
 .toggle-chip.on .icon { visibility: visible; }
 
 .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; user-select: none; }
@@ -274,7 +274,7 @@ table.grid.static tbody tr.changed:hover td { background: var(--warn-tint); }
 .play-btn .icon { fill: currentColor; stroke: none; width: 14px; height: 14px; }
 .play-btn:disabled { opacity: .4; cursor: default; }
 .track-pick { width: 240px; }
-.seek { flex: 1 1 120px; min-width: 100px; accent-color: var(--paper); }
+.seek { flex: 1 1 120px; min-width: 100px; accent-color: var(--charcoal); }
 .spec-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .spec-body .spec-box { flex: 1 1 auto; }
 .spec-box { background: var(--surface-alt); border-radius: 10px; position: relative; min-height: 180px; overflow: hidden; }
@@ -401,12 +401,12 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
                cursor: pointer; overflow: hidden; }
 .alts button img { width: 100%; height: 100%; object-fit: cover; }
 .alts button:hover { border-color: var(--text-2); }
-.alts button.on { border: 2px solid var(--paper); }
+.alts button.on { border: 2px solid var(--charcoal); }
 .alts.fill { margin-top: 8px; }
 .alts button.swatch { width: 26px; height: 26px; border-radius: 13px; }
-.alts button.swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--paper); border-color: transparent; }
+.alts button.swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--charcoal); border-color: transparent; }
 .part .main-img.swatch { display: flex; align-items: flex-end; justify-content: center; padding: 10px; font-size: 12px; text-align: center;
-                         box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }   /* an edge for dark colours on the charcoal page */
+                         box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }   /* an edge for light colours on the off-white page */
 .case-page .piece .gen.filled { white-space: pre-line; }
 .case-page .piece:has(.gen.filled) .spine { background: rgba(0,0,0,.10); }
 
@@ -488,7 +488,7 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .job-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 5px 0; }
 .toasts { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100;
           align-items: center; pointer-events: none; }
-.toast { background: var(--paper); color: var(--charcoal); padding: 9px 14px; border-radius: 8px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(0,0,0,.3);
+.toast { background: var(--charcoal); color: var(--paper); padding: 9px 14px; border-radius: 8px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(0,0,0,.3);
          max-width: 640px; pointer-events: auto; }
 .toast.bad { background: var(--red); }
 .toast.good { background: var(--good-text); }
@@ -505,14 +505,14 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
   #view-settings { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
 }
 
-/* ---- launch screen: spcmn's wordmark as ferrofluid, off-white on charcoal, until the app is ready (splash.js) ---- */
-.splash { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--charcoal);
+/* ---- launch screen: spcmn's wordmark as ferrofluid, charcoal on off-white, until the app is ready (splash.js) ---- */
+.splash { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--paper);
           transition: opacity .45s ease; }
-/* the video (and its poster, until it plays) are off-white on black: "lighten" keeps the letters and lets the page's
-   charcoal show for the black. Both sit in one spot and fade in, with no jump into place. The video is never fully
+/* the video (and its poster, until it plays) are charcoal on white: "multiply" keeps the letters and lets the page's
+   off-white show for the white. Both sit in one spot and fade in, with no jump into place. The video is never fully
    transparent before it plays: WebKit will not autoplay a video it cannot see */
 .splash > img, .splash > video { grid-area: 1 / 1; width: min(56vw, 640px); aspect-ratio: 1280 / 388; height: auto; display: block;
-                                 mix-blend-mode: lighten; transform: scale(.985);
+                                 mix-blend-mode: multiply; transform: scale(.985);
                                  transition: opacity .7s ease, transform 1.2s cubic-bezier(.2, .7, .2, 1); }
 .splash > img { opacity: 0; }
 .splash > video { opacity: .02; }

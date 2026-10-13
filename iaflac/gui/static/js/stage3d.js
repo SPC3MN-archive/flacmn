@@ -64,7 +64,7 @@ export class Stage {
     rim.position.set(200, 80, -200);
     this.scene.add(rim);
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), new THREE.ShadowMaterial({ opacity: 0.4 }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), new THREE.ShadowMaterial({ opacity: 0.16 }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = floorY - 0.01;
     ground.receiveShadow = true;

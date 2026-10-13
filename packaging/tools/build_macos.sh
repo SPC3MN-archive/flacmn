@@ -48,7 +48,7 @@ cd "$WORK/ffmpeg-$FFMPEG_VERSION"
   --enable-decoder=flac,mp3,mp3float,mp2,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,pcm_s16be,pcm_s24be,pcm_u8,aac,alac,vorbis,opus,ape,wavpack \
   --enable-parser=flac,mpegaudio,aac,vorbis,opus \
   --enable-encoder=pcm_f32le,pcm_s16le,pcm_s24le,png \
-  --enable-muxer=f32le,wav,image2,null \
+  --enable-muxer=pcm_f32le,wav,image2,null \
   --enable-filter=showspectrumpic,aresample,aformat,anull,format,scale,null,anullsink,nullsink \
   --enable-swresample --enable-swscale --enable-zlib >/dev/null
 make -j "$JOBS" >/dev/null
@@ -64,4 +64,19 @@ for tool in flac metaflac ffmpeg; do       # nothing may link outside the system
     echo "$tool links non-system libraries:" >&2; otool -L "$BIN/$tool" >&2; exit 1
   fi
 done
+# the app's own uses of ffmpeg, on a short test tone: a component left out (or misnamed above, as the raw float muxer
+# once was) fails the build here instead of a feature failing in the shipped app
+python3 - "$WORK/tone.wav" <<'PY'
+import math, struct, sys, wave
+w = wave.open(sys.argv[1], "wb"); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100)
+w.writeframes(b"".join(struct.pack("<hh", *(int(9000 * math.sin(i * 0.05)),) * 2) for i in range(44100))); w.close()
+PY
+"$BIN/flac" -s -f -o "$WORK/tone.flac" "$WORK/tone.wav"
+check() { "$@" >/dev/null 2>"$WORK/check.err" || { echo "ffmpeg cannot: ${*:2}" >&2; cat "$WORK/check.err" >&2; exit 1; }; }
+check "$BIN/ffmpeg" -nostdin -v error -i "$WORK/tone.flac" -ac 1 -ar 8000 -f f32le pipe:1        # spectrograms, peaks, analysis
+check "$BIN/ffmpeg" -nostdin -v error -f flac -i pipe:0 -ac 1 -f f32le pipe:1 < "$WORK/tone.flac"   # the release check
+check "$BIN/ffmpeg" -nostdin -v error -i "$WORK/tone.flac" -f wav pipe:1                          # WAV for the player
+check "$BIN/ffmpeg" -nostdin -v error -i pipe:0 -f null - < "$WORK/tone.flac"                      # the integrity check
+check "$BIN/ffmpeg" -nostdin -v error -y -i "$WORK/tone.flac" -lavfi "showspectrumpic=s=400x200:legend=0" \
+  -frames:v 1 "$WORK/tone.png"                                                                      # the 2D spectrogram
 echo "tools ready in $BIN"

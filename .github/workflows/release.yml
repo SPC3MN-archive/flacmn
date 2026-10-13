@@ -1,7 +1,7 @@
 name: release
 
 # Push a tag like v0.2.0 to build the Windows installer and the macOS disk images and attach them to a GitHub
-# Release (created as a draft, so you can read it over before publishing). "Run workflow" builds without releasing.
+# Release (published as a pre-release, for testing; mark it as the latest release by hand once it is good). "Run workflow" builds without releasing.
 on:
   push:
     tags: ["v*"]
@@ -31,7 +31,8 @@ jobs:
         shell: pwsh
         run: |
           Start-Process -FilePath "dist\flacmn\flacmn.exe" -ArgumentList "--server-only", "--url-file", "$PWD\url.txt"
-          for ($i = 0; $i -lt 60 -and -not ((Test-Path url.txt) -and (Get-Item url.txt).Length -gt 0)); $i++) { Start-Sleep 1 }
+          $i = 0
+          while ($i -lt 60 -and -not ((Test-Path url.txt) -and ((Get-Item url.txt).Length -gt 0))) { Start-Sleep 1; $i++ }
           $url = (Get-Content url.txt -Raw).Trim()
           $token = $url.Substring($url.IndexOf("token=") + 6); $base = $url.Substring(0, $url.IndexOf("/?token"))
           $health = (Invoke-WebRequest -UseBasicParsing -Headers @{ "x-iaflac-token" = $token } "$base/api/health").Content
@@ -89,7 +90,8 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
+          prerelease: true                          # test builds: published at once, marked as pre-releases
           files: artifacts/*
           body: |
             Unsigned builds. First launch:

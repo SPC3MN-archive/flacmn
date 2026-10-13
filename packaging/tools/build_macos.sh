@@ -30,7 +30,8 @@ fetch "https://github.com/xiph/flac/releases/download/$FLAC_VERSION/flac-$FLAC_V
 tar -xf "$WORK/flac.tar.xz" -C "$WORK"
 cmake -S "$WORK/flac-$FLAC_VERSION" -B "$WORK/flac-build" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
   -DWITH_OGG=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DINSTALL_MANPAGES=OFF -DBUILD_CXXLIBS=OFF \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" >/dev/null
+  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
+  -DCMAKE_IGNORE_PREFIX_PATH="/opt/homebrew;/usr/local" -DCMAKE_DISABLE_FIND_PACKAGE_Intl=ON >/dev/null   # no Homebrew libintl
 cmake --build "$WORK/flac-build" -j "$JOBS" --target flacapp metaflac >/dev/null
 cp "$(find "$WORK/flac-build" -type f -name flac -perm -u+x | head -1)" "$BIN/flac"
 cp "$(find "$WORK/flac-build" -type f -name metaflac -perm -u+x | head -1)" "$BIN/metaflac"

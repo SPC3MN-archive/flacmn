@@ -161,3 +161,72 @@ export function dismissOnOutside(el, anchor, close) {
   setTimeout(() => document.addEventListener("mousedown", fn, true), 0);
   return off;
 }
+
+// ---- drop-down menus ----------------------------------------------------------------------------------------------
+// Every <select> opens the app's own menu (charcoal, off-white lettering, like the album picker) instead of the
+// system's: the select stays in the page and keeps its value, keyboard and change events; only the pop-up is ours.
+let openMenu = null;
+
+function closeMenu() {
+  if (!openMenu) return;
+  openMenu.menu.remove();
+  openMenu.select.closest(".field")?.classList.remove("open");
+  openMenu = null;
+}
+
+function showMenu(select) {
+  closeMenu();
+  const anchor = select.closest(".field") || select;
+  const r = anchor.getBoundingClientRect();
+  const pick = (opt) => {
+    closeMenu();
+    if (select.value !== opt.value) {
+      select.value = opt.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    select.focus({ preventScroll: true });
+  };
+  const items = [...select.options].map((opt) => h("button.dd-item" + (opt.selected ? ".on" : ""), {
+    type: "button", disabled: opt.disabled, onclick: () => pick(opt),
+  }, h("span.ellipsis", opt.textContent), opt.selected ? icon("check") : null));
+  const menu = h("div.dd-menu", { role: "listbox" }, ...items);
+  document.body.append(menu);
+  const below = window.innerHeight - r.bottom - 12, above = r.top - 12;
+  const up = below < Math.min(menu.scrollHeight, 320) && above > below;
+  Object.assign(menu.style, {
+    left: `${Math.max(8, Math.min(r.left, window.innerWidth - Math.max(r.width, 180) - 8))}px`,
+    minWidth: `${r.width}px`,
+    maxHeight: `${Math.max(120, Math.min(360, up ? above : below))}px`,
+    ...(up ? { bottom: `${window.innerHeight - r.top + 4}px` } : { top: `${r.bottom + 4}px` }),
+  });
+  anchor.classList.add("open");
+  openMenu = { select, menu, items };
+  const on = items[select.selectedIndex];
+  if (on) { on.scrollIntoView({ block: "nearest" }); on.focus({ preventScroll: true }); }
+}
+
+document.addEventListener("mousedown", (e) => {
+  const select = e.target.closest?.("select");
+  if (select && !select.disabled && !select.multiple) {
+    e.preventDefault();                                          // no system pop-up
+    if (openMenu && openMenu.select === select) closeMenu(); else showMenu(select);
+    return;
+  }
+  if (openMenu && !openMenu.menu.contains(e.target)) closeMenu();
+}, true);
+document.addEventListener("keydown", (e) => {
+  if (!openMenu) {
+    const select = e.target.closest?.("select");
+    if (select && (e.key === " " || e.key === "Enter" || (e.altKey && e.key === "ArrowDown"))) { e.preventDefault(); showMenu(select); }
+    return;
+  }
+  const { items } = openMenu, i = items.indexOf(document.activeElement);
+  if (e.key === "Escape") { e.preventDefault(); const s = openMenu.select; closeMenu(); s.focus(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    const n = items[Math.max(0, Math.min(items.length - 1, (i < 0 ? openMenu.select.selectedIndex : i) + (e.key === "ArrowDown" ? 1 : -1)))];
+    n?.focus();
+  } else if (e.key === "Tab") closeMenu();
+}, true);
+window.addEventListener("resize", closeMenu);
+document.addEventListener("scroll", (e) => { if (openMenu && !openMenu.menu.contains(e.target)) closeMenu(); }, true);

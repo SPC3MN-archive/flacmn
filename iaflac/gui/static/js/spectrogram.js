@@ -1,18 +1,16 @@
 // Album Search, bottom left: the selected upload's tracks. Pick a track to see its 3D spectrogram (drawn as soon as
 // it is picked), play it (streamed from archive.org) with the playhead on the spectrogram, and add the album to the
-// library. The same box can show a live oscilloscope of the track instead: a waveform, or a stereo XY figure.
+// library. Just the spectrogram here: the oscilloscope is in the Library's Now playing card.
 
 import { api, url } from "./api.js";
 import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText } from "./ui.js";
 import { Spectrum3D } from "./spectrum3d.js";
-import { Scope, wireAudio, resumeAudio } from "./scope.js";
+import { resumeAudio } from "./scope.js";
 
 const player = () => document.getElementById("player");
-const state = { cand: null, detail: null, track: null, spectrum: {}, loading: null, view: "spectrum" };
-const VIEWS = [["spectrum", "Spectrogram"], ["wave", "Scope"], ["xy", "XY"]];
+const state = { cand: null, detail: null, track: null, spectrum: {}, loading: null };
 let els = {};
 let spec = null;
-let scope = null;
 let hooks = {};
 
 export function mountSpectrogram(card, opts) {
@@ -81,14 +79,11 @@ function render() {
   els.head = h("div.card-head");
   els.player = h("div.player-row");
   els.canvas = h("canvas");
-  els.scope = h("canvas", { hidden: true });
   els.overlay = h("div.overlay");
   els.legend = h("div.legend", h("i"), h("span", h("span", "quiet"), h("span", "loud")));
-  els.specBox = h("div.spec-box", els.canvas, els.scope, els.legend, els.overlay);
+  els.specBox = h("div.spec-box", els.canvas, els.legend, els.overlay);
   clear(els.card, els.head, els.player, h("div.spec-body", els.specBox));
   spec = new Spectrum3D(els.canvas);
-  if (scope) scope.stop();
-  scope = new Scope(els.scope, player());
   renderHead();
   renderPlayer();
   showSpectrum();
@@ -99,29 +94,8 @@ function renderHead() {
   const c = state.cand;
   const addBtn = h("button.btn.primary", { onclick: addToLibrary, disabled: c.tier === "D", title: c.tier === "D" ? "Failed uploads are not saved" : "" },
     icon("download"), "Add to library");
-  els.views = h("div.segmented", ...VIEWS.map(([v, t]) =>
-    h("button", { class: state.view === v ? "on" : "", onclick: () => setView(v), title: v === "spectrum" ? "3D spectrogram" : v === "wave" ? "Live oscilloscope" : "Live stereo XY figure" }, t)));
-  clear(els.head, h("span.card-title", state.view === "spectrum" ? "Spectrogram" : "Oscilloscope"), els.views,
+  clear(els.head, h("span.card-title", "Spectrogram"),
     h("span.card-sub.ellipsis.grow", `${c.identifier} · ${fmtBytes(c.bytes)}`), addBtn);
-  applyView();
-}
-
-// ---- views: the 3D spectrogram, or a live oscilloscope (waveform or XY) of what is playing --------------------------
-function setView(v) {
-  if (v !== "spectrum") wireAudio(player());                   // from this click: browsers only start audio on a gesture
-  state.view = v;
-  renderHead();
-}
-
-function applyView() {
-  if (!els.scope) return;
-  const live = state.view !== "spectrum";
-  els.scope.hidden = !live;
-  els.canvas.hidden = live;
-  els.legend.hidden = live;
-  if (live) { els.overlay.hidden = true; scope.mode = state.view; scope.start(); }
-  else { scope.stop(); if (els.shown !== "spectrum") showSpectrum(); }
-  els.shown = state.view;
 }
 
 function renderPlayer() {
@@ -185,7 +159,7 @@ function tick() {
 function key() { return state.cand && state.track ? `${state.cand.identifier}\n${state.track.name}` : ""; }
 
 function showSpectrum() {
-  if (!spec || state.view !== "spectrum") return;
+  if (!spec) return;
   const k = key();
   const data = state.spectrum[k];
   if (data && !(data instanceof Error)) {

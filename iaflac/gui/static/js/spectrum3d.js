@@ -1,12 +1,12 @@
 // A track's 3D spectrogram: a waterfall of spectrum slices across the whole track, drawn back to front on a
-// canvas. Front edge = start of the track, back = end; the slice under the playhead is outlined in white.
+// canvas. Front edge = start of the track, back = end; the slice under the playhead is outlined in amber.
 // Data comes from /api/track/spectrum3d: levels[slice][bin] in 0..1 over -90..0 dB, bins linear from 0 Hz to Nyquist.
 
 import { fmtTime } from "./ui.js";
 
-const LOUD = [[0, "#23305A"], [0.35, "#5C53A2"], [0.62, "#BC3843"], [0.85, "#F4B73E"], [1, "#FADFA8"]];
+const LOUD = [[0, "#5C53A2"], [1, "#F6F4EE"]];                      // spcmn purple (quiet) to off-white (loud)
 const C = { text3: "#9C9A95", border: "#4B4B53", floor: "#27272B", grid: "#3A3A40",     // the charcoal page's colours
-            text: "#F6F4EE", slice: "#9D98C7", white: "#FFFFFF", ink: "#2E2E33" };
+            text: "#F6F4EE", slice: "rgba(46, 46, 51, .45)", playhead: "#F4B73E", ink: "#2E2E33" };
 const FONT = '500 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 export class Spectrum3D {
@@ -125,7 +125,7 @@ export class Spectrum3D {
       ctx.fill();
       ctx.globalAlpha = 1;
       ctx.lineJoin = "round";
-      if (ti === playI) { ctx.strokeStyle = C.white; ctx.lineWidth = 1.6; }
+      if (ti === playI) { ctx.strokeStyle = C.playhead; ctx.lineWidth = 1.8; }
       else { ctx.strokeStyle = C.slice; ctx.lineWidth = 0.5; }
       ctx.stroke();
     }

@@ -27,7 +27,7 @@ jobs:
         run: powershell -ExecutionPolicy Bypass -File packaging\tools\fetch_windows.ps1
       - name: build app
         run: pyinstaller packaging/iaflac-gui.spec --noconfirm
-      - name: smoke test the built app (started like a double-click: no console, no stdout or stderr)
+      - name: smoke test the built app, started like a double-click (no console, no stdout or stderr)
         shell: pwsh
         run: |
           Start-Process -FilePath "dist\flacmn\flacmn.exe" -ArgumentList "--server-only", "--url-file", "$PWD\url.txt"

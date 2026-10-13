@@ -2,7 +2,7 @@
 # Run flacmn on a Mac straight from a git checkout: no installer, no disk image.
 #
 #   bash packaging/macos/dev_setup.sh            venv + packages + flac/ffmpeg, run the tests, open the app
-#   bash packaging/macos/dev_setup.sh --app      the same, then also build dist/iaflac.app with PyInstaller
+#   bash packaging/macos/dev_setup.sh --app      the same, then also build dist/flacmn.app with PyInstaller
 #   bash packaging/macos/dev_setup.sh --no-run   set up and test only
 #
 # Needs Python 3.10+ (python.org or Homebrew). flac and ffmpeg come from Homebrew when it is there (fine for running
@@ -57,7 +57,7 @@ fi
 # ---- app ----------------------------------------------------------------------------------------------------------
 if [ "$BUILD_APP" = 1 ]; then
   "$VPY" -m PyInstaller packaging/iaflac-gui.spec --noconfirm
-  echo "built: $ROOT/dist/iaflac.app  (open it with: open dist/iaflac.app; first launch: right-click > Open)"
+  echo "built: $ROOT/dist/flacmn.app  (open it with: open dist/flacmn.app; first launch: right-click > Open)"
 fi
 if [ "$RUN" = 1 ]; then
   echo "starting flacmn (close the window to stop)"

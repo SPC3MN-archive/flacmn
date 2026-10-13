@@ -1,4 +1,5 @@
-# PyInstaller spec for the iaflac desktop app (macOS .app and Windows folder build).
+# PyInstaller spec for the flacmn desktop app (macOS .app and Windows folder build). The app is named flacmn; the
+# Python package and the command line tool stay iaflac.
 #   pyinstaller packaging/iaflac-gui.spec --noconfirm
 # Expects the external tools in packaging/bin/ (flac, metaflac, ffmpeg; .exe on Windows): see packaging/README.md.
 # They end up in <bundle>/bin, where iaflac.binaries looks first.
@@ -39,23 +40,23 @@ icon_mac = ROOT / "packaging" / "icons" / "iaflac.icns"
 exe = EXE(
     pyz, a.scripts, [],
     exclude_binaries=True,
-    name="iaflac",
+    name="flacmn",
     console=False,
     icon=str(icon_win) if sys.platform == "win32" and icon_win.exists() else None,
     target_arch=None,
 )
-coll = COLLECT(exe, a.binaries, a.datas, name="iaflac")
+coll = COLLECT(exe, a.binaries, a.datas, name="flacmn")
 
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,
-        name="iaflac.app",
+        name="flacmn.app",
         icon=str(icon_mac) if icon_mac.exists() else None,
-        bundle_identifier="org.iaflac.app",
+        bundle_identifier="com.spcmn.flacmn",
         version=VERSION,
         info_plist={
-            "CFBundleName": "iaflac",
-            "CFBundleDisplayName": "iaflac",
+            "CFBundleName": "flacmn",
+            "CFBundleDisplayName": "flacmn",
             "CFBundleShortVersionString": VERSION,
             "NSHighResolutionCapable": True,
             "LSMinimumSystemVersion": "11.0",

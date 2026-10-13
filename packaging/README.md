@@ -1,6 +1,7 @@
 # Building the desktop app
 
-The app is the `iaflac.gui` package (a local FastAPI server plus a pywebview window), frozen with PyInstaller.
+The app is the `iaflac.gui` package (a local FastAPI server plus a pywebview window), frozen with PyInstaller and
+named flacmn (flacmn.app, flacmn.exe, the flacmn installers); the Python package and the command line tool stay `iaflac`.
 External tools (`flac`, `metaflac`, `ffmpeg`) ship inside the bundle in `bin/`, where `iaflac/binaries.py` looks first.
 
 ## Run from source
@@ -18,7 +19,7 @@ python -m iaflac.gui --browser    # in your browser instead (easier for UI work:
 ```bash
 git clone https://github.com/SPC3MN/iaflac && cd iaflac && git checkout gui
 bash packaging/macos/dev_setup.sh            # .venv, packages, flac + ffmpeg (Homebrew), tests, then opens the app
-bash packaging/macos/dev_setup.sh --app      # also builds dist/iaflac.app (self-contained tools via build_macos.sh)
+bash packaging/macos/dev_setup.sh --app      # also builds dist/flacmn.app (self-contained tools via build_macos.sh)
 bash packaging/macos/dev_setup.sh --no-run   # set up and test only
 ```
 
@@ -33,8 +34,8 @@ CLI) and its download queue and caches next to the code (`.gui/`, `.library-inde
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File packaging\tools\fetch_windows.ps1   # flac + LGPL ffmpeg -> packaging\bin
-pyinstaller packaging\iaflac-gui.spec --noconfirm                              # -> dist\iaflac\iaflac.exe
-& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" packaging\windows\iaflac.iss  # -> dist\iaflac-0.1.0-windows-x64-setup.exe
+pyinstaller packaging\iaflac-gui.spec --noconfirm                              # -> dist\flacmn\flacmn.exe
+& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" packaging\windows\iaflac.iss  # -> dist\flacmn-0.1.0-windows-x64-setup.exe
 ```
 
 **macOS** (needs Xcode command line tools and cmake; build on each architecture you ship)
@@ -42,7 +43,7 @@ pyinstaller packaging\iaflac-gui.spec --noconfirm                              #
 ```bash
 bash packaging/tools/build_macos.sh          # static flac + minimal LGPL ffmpeg -> packaging/bin
 pyinstaller packaging/iaflac-gui.spec --noconfirm
-bash packaging/macos/make_dmg.sh 0.1.0       # -> dist/iaflac-0.1.0-macos-arm64.dmg
+bash packaging/macos/make_dmg.sh 0.1.0       # -> dist/flacmn-0.1.0-macos-arm64.dmg
 ```
 
 ## Releases

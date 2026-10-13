@@ -30,18 +30,18 @@ jobs:
       - name: smoke test the built app
         shell: bash
         run: |
-          ./dist/iaflac/iaflac.exe --server-only --url-file url.txt &
+          ./dist/flacmn/flacmn.exe --server-only --url-file url.txt &
           for i in $(seq 1 60); do [ -s url.txt ] && break; sleep 1; done
           URL=$(tr -d '\r\n' < url.txt); TOKEN=${URL##*token=}; BASE=${URL%%/?token*}
           curl -sf -H "x-iaflac-token: $TOKEN" "$BASE/api/health" | tee health.json
           grep -q '_internal' health.json
-          taskkill //F //IM iaflac.exe || true
+          taskkill //F //IM flacmn.exe || true
       - name: installer
         run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" /DAppVersion=${{ env.VERSION }} packaging\windows\iaflac.iss'
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: dist/iaflac-*-setup.exe
+          path: dist/flacmn-*-setup.exe
 
   macos:
     strategy:
@@ -63,12 +63,12 @@ jobs:
         run: pyinstaller packaging/iaflac-gui.spec --noconfirm
       - name: smoke test the built app
         run: |
-          ./dist/iaflac.app/Contents/MacOS/iaflac --server-only --url-file url.txt &
+          ./dist/flacmn.app/Contents/MacOS/flacmn --server-only --url-file url.txt &
           for i in $(seq 1 60); do [ -s url.txt ] && break; sleep 1; done
           URL=$(tr -d '\r\n' < url.txt); TOKEN=${URL##*token=}; BASE=${URL%%/?token*}
           curl -sf -H "x-iaflac-token: $TOKEN" "$BASE/api/health" | tee health.json
-          grep -q 'iaflac.app' health.json
-          pkill -f iaflac.app || true
+          grep -q 'flacmn.app' health.json
+          pkill -f flacmn.app || true
       - name: disk image
         run: bash packaging/macos/make_dmg.sh "$VERSION"
       - uses: actions/upload-artifact@v4
@@ -92,6 +92,6 @@ jobs:
           body: |
             Unsigned builds. First launch:
             - **Windows:** if SmartScreen says "Windows protected your PC", choose More info → Run anyway.
-            - **macOS:** right-click iaflac in Applications → Open → Open (once). `-arm64` is for Apple Silicon, `-x86_64` for Intel Macs.
+            - **macOS:** right-click flacmn in Applications → Open → Open (once). `-arm64` is for Apple Silicon, `-x86_64` for Intel Macs.
 
             Bundled tools: FLAC (BSD-style licence, Xiph.Org) and FFmpeg built under the LGPL; their sources and licences are listed in `bin/SOURCES.txt` inside the app.

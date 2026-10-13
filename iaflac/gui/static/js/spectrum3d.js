@@ -5,8 +5,8 @@
 import { fmtTime } from "./ui.js";
 
 const LOUD = [[0, "#23305A"], [0.35, "#5C53A2"], [0.62, "#BC3843"], [0.85, "#F4B73E"], [1, "#FADFA8"]];
-const C = { text3: "#77767D", border: "#D9D5CC", floor: "#F1EFE9", grid: "#E3E0D8",
-            text: "#2E2E33", slice: "#9D98C7", white: "#FFFFFF" };
+const C = { text3: "#9C9A95", border: "#4B4B53", floor: "#27272B", grid: "#3A3A40",     // the charcoal page's colours
+            text: "#F6F4EE", slice: "#9D98C7", white: "#FFFFFF", ink: "#2E2E33" };
 const FONT = '500 10px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 export class Spectrum3D {
@@ -143,7 +143,7 @@ export class Spectrum3D {
     ctx.fillStyle = C.text;
     roundRect(ctx, px + 8, py - 10, 44, 20, 5);
     ctx.fill();
-    ctx.fillStyle = C.white;
+    ctx.fillStyle = C.ink;
     ctx.font = '700 10.5px "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif';
     ctx.textAlign = "center";
     ctx.fillText(fmtTime(this.current), px + 30, py + 4);

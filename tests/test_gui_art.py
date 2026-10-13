@@ -191,8 +191,8 @@ class ArtApi(unittest.TestCase):
         printed = self.wait(self.http.post("/api/art/print", json={"folder": folder}).json()["job_id"])
         sources = {p["name"]: p["source"] for p in printed["pieces"]}
         self.assertEqual(sources["back + spines"], "generated: tracklist with the spcmn mark (medium) on the album colour #203060")
-        self.assertEqual(sources["inside of front insert"], "generated: centred with the spcmn mark (small) on white")
-        self.assertIn("with the spcmn mark (small)", sources["under-tray image"])
+        self.assertEqual(sources["inside of front insert"], "generated: centred on white", "no mark inside")
+        self.assertNotIn("spcmn mark", sources["under-tray image"])
         self.assertIn("with the spcmn mark (medium)", sources["disc label"])
         self.assertIn("title with the spcmn mark (large)", sources["front cover"])
         put("inside", layout="blank", logo="medium")
@@ -259,8 +259,8 @@ class ArtApi(unittest.TestCase):
         self.assertEqual(self.http.put("/api/art/selection", json={"folder": folder, "selection": {"inside": "colour:red"}}).status_code, 400)
         printed = self.wait(self.http.post("/api/art/print", json={"folder": folder}).json()["job_id"])
         src = {p["name"]: p["source"] for p in printed["pieces"]}
-        self.assertEqual(src["inside of front insert"], "generated: tracklist with the spcmn mark (small) on the album colour #000000")
-        self.assertEqual(src["under-tray image"], f"album colour {main} with the spcmn mark (small)")
+        self.assertEqual(src["inside of front insert"], "generated: tracklist on the album colour #000000")
+        self.assertEqual(src["under-tray image"], f"album colour {main}")
         self.assertFalse(src["disc label"].startswith("generated"), "a front cover image fills the disc")
 
     def test_whole_library_checklist(self):

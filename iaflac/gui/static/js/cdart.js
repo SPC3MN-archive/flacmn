@@ -39,8 +39,11 @@ const DESIGNS = {
 };
 const designsFor = (part) => DESIGNS[state.format][part] || [];
 const designOf = (part) => state.art?.styles?.[part] || designsFor(part)[0];
-// every generated part carries the spcmn mark (small unless chosen), in charcoal or off-white to suit its colour
-const logoOf = (part) => state.art?.styles?.[`${part}:logo`] || "small";
+// the spcmn mark (small unless chosen), in charcoal or off-white to suit its colour: on a CD the front, the back (and
+// its spines) and the disc carry it, never the inside of the front insert or the under-tray image; on a cassette every
+// generated part does
+const marked = (part) => state.format !== "cd" || !["inside", "tray"].includes(part);
+const logoOf = (part) => (marked(part) ? state.art?.styles?.[`${part}:logo`] || "small" : "none");
 const logosFor = (part) => ["small", "medium", ...(["title", "blank"].includes(designOf(part)) ? ["large"] : [])];
 // is this part drawn by flacmn (a colour, or nothing chosen) rather than printed from a scan or an upload?
 function generated(part, value, chosen) {
@@ -51,7 +54,7 @@ function generated(part, value, chosen) {
 const onColour = (part) => {
   const d = designOf(part), first = designsFor(part)[0];
   const base = d && d !== first ? DESIGN_NAME[d].toLowerCase() : (state.format === "cassette" ? CASSETTE_ON_COLOUR : ON_COLOUR)[part];
-  return `${base || "colour"}, ${logoOf(part)} spcmn logo`;
+  return marked(part) ? `${base || "colour"}, ${logoOf(part)} spcmn logo` : base || "colour";
 };
 // the spcmn palette, offered as fill colours beside the album's own (lower case: the server's colour format)
 const SPCMN_COLOURS = [["#2e2e33", "Charcoal"], ["#f6f4ee", "Off-white"], ["#5c53a2", "Purple"], ["#20a76b", "Green"],
@@ -296,7 +299,7 @@ function renderParts(box) {
           ...designsFor(part).map((d) => h("button.design" + (designOf(part) === d ? ".on" : ""), {
             onclick: () => setDesign(part, { layout: d }),
           }, DESIGN_NAME[d]))) : null,
-        isBlank && designsFor(part).length ? h("div.alts.design-row", h("span.section-label", "spcmn logo"),
+        isBlank && designsFor(part).length && marked(part) ? h("div.alts.design-row", h("span.section-label", "spcmn logo"),
           ...logosFor(part).map((size) => h("button.design" + (logoOf(part) === size ? ".on" : ""), {
             onclick: () => setDesign(part, { logo: size }),
             title: (part === "back" ? "The spines get a small mark too. " : "") + "Charcoal on light colours, off-white on dark ones",
@@ -304,7 +307,7 @@ function renderParts(box) {
         // a part printed from an image: switch it to a blank, or to another image
         !isBlank && designsFor(part).length ? h("div.alts.design-row", h("span.section-label", "Blank"),
           h("button.design", { onclick: () => choose(part, `colour:${(state.art.palette || [])[0] || "#f6f4ee"}`),
-            title: "Print this part in a colour with the spcmn logo instead of an image" }, "Use a blank")) : null,
+            title: marked(part) ? "Print this part in a colour with the spcmn logo instead of an image" : "Print this part in a colour instead of an image" }, "Use a blank")) : null,
         part === "disc" && value ? h("div.alts.design-row", h("span.section-label", "Disc"),
           h("button.design", { onclick: () => choose(part, null), title: "Cut the disc label from the front cover" }, "Cut from the cover")) : null,
         h("div.alts.upload-row", h("span.section-label", "Your own"),

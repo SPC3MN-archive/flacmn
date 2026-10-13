@@ -27,12 +27,25 @@ export function mountNowPlaying(el) {
   render();
 }
 
+// the colour as it is, unless it is too dark to read on the charcoal card: then only its lightness is raised
+function readable([r, g, b]) {
+  [r, g, b] = [r / 255, g / 255, b / 255];
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), dd = mx - mn, l = (mx + mn) / 2;
+  if (l >= 0.42) return `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
+  let hue = 0;
+  if (dd) hue = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4;
+  const sat = dd ? dd / (1 - Math.abs(mx + mn - 1)) : 0;
+  return `hsl(${Math.round(hue * 60 + 360) % 360} ${Math.round(sat * 100)}% 42%)`;
+}
+
 function coverUrl() {
   const al = now.album;
   return al && al.cover ? url("/library/file", { path: al.cover }) : null;
 }
 
-// the cover's most colourful average, as a mid-dark shade that reads on the light card (the Pi player's trace colour)
+// a colour taken from the cover itself, not an average of it: the cover's pixels are sorted into small colour boxes and
+// the box that is both common and colourful wins; the trace is that box's colour (a dark one is only lifted enough to
+// read on the charcoal card). A black-and-white cover gives its most common light shade.
 function traceColour(src) {
   if (!src) return Promise.resolve("");
   if (colours.has(src)) return Promise.resolve(colours.get(src));
@@ -40,21 +53,28 @@ function traceColour(src) {
     const im = new Image();
     im.onload = () => {
       const c = document.createElement("canvas");
-      c.width = c.height = 24;
-      const x = c.getContext("2d");
-      x.drawImage(im, 0, 0, 24, 24);
-      const d = x.getImageData(0, 0, 24, 24).data;
-      let r = 0, g = 0, b = 0, w = 0;
+      c.width = c.height = 64;
+      const x = c.getContext("2d", { willReadFrequently: true });
+      x.drawImage(im, 0, 0, 64, 64);
+      const d = x.getImageData(0, 0, 64, 64).data;
+      const boxes = new Map();                                         // 8 levels a channel: [count, r, g, b]
       for (let i = 0; i < d.length; i += 4) {
-        const s = Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) + 8;
-        r += d[i] * s; g += d[i + 1] * s; b += d[i + 2] * s; w += s;
+        const k = (d[i] >> 5) * 64 + (d[i + 1] >> 5) * 8 + (d[i + 2] >> 5);
+        const e = boxes.get(k) || [0, 0, 0, 0];
+        e[0]++; e[1] += d[i]; e[2] += d[i + 1]; e[3] += d[i + 2];
+        boxes.set(k, e);
       }
-      [r, g, b] = [r / w / 255, g / w / 255, b / w / 255];
-      const mx = Math.max(r, g, b), mn = Math.min(r, g, b), dd = mx - mn;
-      let hue = 0;
-      if (dd) hue = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4;
-      const sat = dd ? dd / (1 - Math.abs(mx + mn - 1)) : 0;
-      const col = `hsl(${Math.round(hue * 60 + 360) % 360} ${Math.round(Math.min(1, Math.max(0.45, sat)) * 100)}% 40%)`;
+      let best = null, bestScore = -1, grey = null, greyCount = 0;
+      for (const [n, r, g, b] of boxes.values()) {
+        const rgb = [r / n, g / n, b / n], mx = Math.max(...rgb), mn = Math.min(...rgb);
+        const sat = mx ? (mx - mn) / mx : 0;
+        if (sat < 0.25 || mx < 60) { if (mx >= 110 && n > greyCount) { grey = rgb; greyCount = n; } continue; }
+        const score = n * sat * sat * (mx / 255);
+        if (score > bestScore) { bestScore = score; best = rgb; }
+      }
+      // a colourful box has to cover a little of the cover (0.5 %) to count; otherwise the cover is black and white
+      const pick = best && bestScore >= 64 * 64 * 0.005 * 0.25 * 0.4 ? best : grey;
+      const col = pick ? readable(pick) : "";
       colours.set(src, col);
       ok(col);
     };

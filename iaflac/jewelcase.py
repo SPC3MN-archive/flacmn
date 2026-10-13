@@ -210,6 +210,10 @@ class Sheet:
         return name, size, text
 
 
+MARKED_PARTS = ("front", "back", "disc")   # the CD parts that may carry the spcmn mark (the back puts it on its spines too);
+                                           # the inside of the front insert and the under-tray image never do
+
+
 def draw_spines(sh: Sheet, x: float, y: float, text: str, bg: tuple, logo_ink: Optional[str] = None) -> None:
     """Both spines of the tray card, with the artist and album; with `logo_ink`, a small spcmn mark at the end of each
     (where its text finishes reading), the text centred in what is left."""
@@ -347,15 +351,16 @@ def render(path: Path, *, artist: str, album: str, year: str = "", tracks: Optio
     pw, ph = page_size[0] / mm, page_size[1] / mm
     c = canvas.Canvas(str(path), pagesize=page_size)
     c.setTitle(f"{artist} - {album}: CD jewel case")
-    c.setAuthor("iaflac")
+    c.setAuthor("flacmn")
     sh = Sheet(c, opts)
     title = f"{artist} — {album}" + (f" ({year})" if year else "")
     front_img = front.image() if isinstance(front, Art) else None
     page = [1]
 
     def design(part, default):
-        """(layout, logo, ink) chosen for a generated part."""
-        return styles.get(part, default), styles.get(f"{part}:logo", DEFAULT_LOGO), styles.get(f"{part}:ink", "auto")
+        """(layout, logo, ink) chosen for a generated part; no mark on the parts outside MARKED_PARTS."""
+        logo = styles.get(f"{part}:logo", DEFAULT_LOGO) if part in MARKED_PARTS else "none"
+        return styles.get(part, default), logo, styles.get(f"{part}:ink", "auto")
 
     def said(layout, logo, on):
         what = {"list": "tracklist", "title": "title"}.get(layout, layout)

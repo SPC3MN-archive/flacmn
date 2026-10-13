@@ -8,7 +8,8 @@ filled with a colour. A design is a layout, a size of the spcmn mark on it, and 
             compact   numbers and titles only, small
             blank     the colour alone
 
-  logo      every generated part carries the mark: small (in a corner, or at the end of a spine; the default),
+  logo      the mark on a generated part (on a CD only the back and its spines carry it; on a cassette every
+            generated part does): small (in a corner, or at the end of a spine; the default),
             medium (centred low, or centred on a blank), large (nearly the full width: on blank and title layouts,
             where nothing else needs the room). "none" leaves it off (kept for callers; the app always shows it)
 

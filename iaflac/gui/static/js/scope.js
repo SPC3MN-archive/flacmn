@@ -41,7 +41,7 @@ export class Scope {
     this.audio = audioEl;
     this.mode = "wave";
     this.gx = 2; this.gy = 2; this.gw = 1.6;
-    this.colour = "";                                             // "" for the theme's primary colour
+    this.colour = "";                                             // "" for the theme's light indigo
     this.l = new Float32Array(2048); this.r = new Float32Array(2048);
     this.running = false;
     this.frame = this.frame.bind(this);
@@ -67,7 +67,7 @@ export class Scope {
     const tap = taps.get(this.audio);
     if (tap) { tap.l.getFloatTimeDomainData(l); tap.r.getFloatTimeDomainData(r); } else { l.fill(0); r.fill(0); }
     const css = getComputedStyle(document.documentElement);
-    x.strokeStyle = this.colour || css.getPropertyValue("--primary").trim() || "#5C53A2";
+    x.strokeStyle = this.colour || css.getPropertyValue("--primary-text").trim() || "#BDB6F0";
     x.lineJoin = "round"; x.lineCap = "round";
     if (this.mode === "xy") this.drawXY(x, W, H, dpr);
     else this.drawWave(x, W, H, dpr);

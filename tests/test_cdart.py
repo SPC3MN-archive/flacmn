@@ -182,7 +182,7 @@ class FindArt(unittest.TestCase):
                          [(1, "front cover"), (1, "back + spines"), (2, "inside of front insert"), (2, "under-tray image"),
                           (3, "disc label")])
         self.assertNotIn("spines generated", report.pieces[1].source, "the 1500x1180 scan includes its spines")
-        self.assertEqual(report.pieces[3].source, "generated: the spcmn mark (small) on white")
+        self.assertEqual(report.pieces[3].source, "none found: left blank", "no spcmn mark under the tray")
 
     def test_save_scans_into_the_album_folder(self):
         art = self.find()
@@ -238,7 +238,7 @@ class FindArt(unittest.TestCase):
         self.assertTrue(any("tracklist tray card" in n for n in art.notes), art.notes)
         report = jc.render(self.library / "gen.pdf", artist="Nobody", album="Nothing", tracks=art.tracks)
         self.assertEqual([p.source.split(":")[0] for p in report.pieces],
-                         ["generated", "generated", "generated", "generated", "generated"], "every blank carries the mark")
+                         ["generated", "generated", "generated", "none found", "generated"], "no mark under the tray, so it stays blank")
 
 
 
@@ -280,8 +280,8 @@ class Gaps(unittest.TestCase):
             self.assertEqual(out.read_bytes()[:5], b"%PDF-")
         src = {p.name: p.source for p in report.pieces}
         self.assertEqual(src["back + spines"], "generated: tracklist with the spcmn mark (small) on the album colour #1e3c8c")
-        self.assertEqual(src["inside of front insert"], "generated: tracklist with the spcmn mark (small) on the album colour #f0c828")
-        self.assertEqual(src["under-tray image"], "album colour #1e3c8c with the spcmn mark (small)")
+        self.assertEqual(src["inside of front insert"], "generated: tracklist on the album colour #f0c828", "no mark inside")
+        self.assertEqual(src["under-tray image"], "album colour #1e3c8c")
         self.assertEqual(src["disc label"], "generated: title on the album colour #f0c828 with the spcmn mark (small)")
         self.assertEqual(jc.Colour("#ffffff").rgb, (1.0, 1.0, 1.0))
 

@@ -78,7 +78,8 @@ def main(argv=None) -> int:
         else:
             import webview
             bridge = Bridge()
-            bridge._window = webview.create_window("flacmn", url, width=1440, height=900, min_size=(1000, 680), js_api=bridge)
+            bridge._window = webview.create_window("flacmn", url, width=1440, height=900, min_size=(1000, 680), js_api=bridge,
+                                                  background_color="#2E2E33")   # the launch screen's charcoal, no flash of white
             webview.start(debug=args.debug)
     except KeyboardInterrupt:
         pass

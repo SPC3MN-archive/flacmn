@@ -9,11 +9,16 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
 
 TOOLS = ("flac", "metaflac", "ffmpeg")
+
+# Pass to every subprocess call that runs a tool: on Windows a windowed app has no console, so each console program it
+# starts (ffmpeg, flac) would otherwise flash up a terminal window of its own. Nothing elsewhere.
+NO_WINDOW: dict = {"creationflags": subprocess.CREATE_NO_WINDOW} if sys.platform == "win32" else {}
 SOURCE_BIN = Path(__file__).resolve().parent.parent / "packaging" / "bin"
 
 

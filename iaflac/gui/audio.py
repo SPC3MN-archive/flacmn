@@ -142,7 +142,7 @@ def peaks(path: Path, n: int = 1600) -> dict:
         return json.loads(out_path.read_text(encoding="utf-8"))
     duration = duration_of(path)
     cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-i", str(path), "-ac", "1", "-ar", str(PEAK_RATE), "-f", "f32le", "pipe:1"]
-    proc = subprocess.run(cmd, capture_output=True, timeout=300)
+    proc = subprocess.run(cmd, capture_output=True, timeout=300, **binaries.NO_WINDOW)
     if proc.returncode != 0:
         raise AudioError(proc.stderr.decode("utf-8", "replace").strip()[:200] or "ffmpeg could not decode the track")
     x = np.frombuffer(proc.stdout, dtype="<f4")
@@ -172,7 +172,7 @@ def spectrogram_png(path: Path, width: int = 1200, height: int = 400, legend: bo
     filt = (f"showspectrumpic=s={width}x{height}:mode=combined:color=intensity:scale=log:fscale=lin"
             f":legend={1 if legend else 0}:gain=1:drange=120")
     cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-y", "-i", str(path), "-lavfi", filt, "-frames:v", "1", str(tmp)]
-    proc = subprocess.run(cmd, capture_output=True, timeout=300)
+    proc = subprocess.run(cmd, capture_output=True, timeout=300, **binaries.NO_WINDOW)
     if proc.returncode != 0 or not tmp.exists():
         raise AudioError(proc.stderr.decode("utf-8", "replace").strip()[:200] or "ffmpeg could not draw the spectrogram")
     tmp.replace(out_path)
@@ -198,7 +198,7 @@ def spectrum3d(path: Path, slices: int = 40, bins: int = 128) -> dict:
     window = np.hanning(n_fft).astype(np.float32)
     edges = np.linspace(0, n_fft // 2, bins + 1).astype(int)
     cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-i", str(path), "-ac", "1", "-f", "f32le", "pipe:1"]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, **binaries.NO_WINDOW)
     levels, pos, buf = [], 0, np.zeros(0, dtype=np.float32)
     try:
         for start in starts:                       # read the decoded stream once, keeping only the bits we need
@@ -237,7 +237,7 @@ def spectrum3d(path: Path, slices: int = 40, bins: int = 128) -> dict:
 def _decode_window(path: Path, start: float, seconds: float) -> tuple:
     cmd = [_ffmpeg(), "-nostdin", "-v", "error", "-ss", f"{start:.2f}", "-t", f"{seconds:.2f}", "-i", str(path),
            "-ac", "1", "-f", "f32le", "pipe:1"]
-    proc = subprocess.run(cmd, capture_output=True, timeout=120)
+    proc = subprocess.run(cmd, capture_output=True, timeout=120, **binaries.NO_WINDOW)
     return np.frombuffer(proc.stdout, dtype="<f4")
 
 
@@ -279,7 +279,7 @@ def analyze(path: Path) -> dict:
 def transcode_wav(path: Path):
     """A WAV stream of a local track, for a web view that cannot play FLAC itself. Yields bytes."""
     proc = subprocess.Popen([_ffmpeg(), "-nostdin", "-v", "error", "-i", str(path), "-f", "wav", "pipe:1"],
-                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, **binaries.NO_WINDOW)
     try:
         while True:
             chunk = proc.stdout.read(CHUNK)

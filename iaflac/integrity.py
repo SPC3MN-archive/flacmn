@@ -51,7 +51,7 @@ def test_stream(chunks: Iterable[bytes], *, expected_size: Optional[int] = None,
     method, cmd = decoder_command()
     if not cmd:
         return IntegrityResult(False, "none", 0, message="neither flac nor ffmpeg is installed")
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, **binaries.NO_WINDOW)
     captured: list = []
     reader = threading.Thread(target=lambda: captured.append(proc.stderr.read()), daemon=True)
     reader.start()                       # drain stderr so a chatty decoder can never block on a full pipe

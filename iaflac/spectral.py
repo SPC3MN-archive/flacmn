@@ -147,7 +147,7 @@ def decode_slice(header: bytes, body: bytes) -> np.ndarray:
     if not ffmpeg:
         raise SpectralUnavailable("ffmpeg is not installed")
     proc = subprocess.run([ffmpeg, "-nostdin", "-v", "quiet", "-f", "flac", "-i", "pipe:0", "-ac", "1",
-                           "-f", "f32le", "pipe:1"], input=header + body, capture_output=True, timeout=120)
+                           "-f", "f32le", "pipe:1"], input=header + body, capture_output=True, timeout=120, **binaries.NO_WINDOW)
     return np.frombuffer(proc.stdout, dtype="<f4")
 
 

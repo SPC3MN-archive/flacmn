@@ -155,7 +155,7 @@ def flac_test(path: Path) -> tuple:
     flac = binaries.flac()
     if not flac:
         return None, "flac not installed, decode test skipped"
-    proc = subprocess.run([flac, "-t", "-s", str(path)], capture_output=True)
+    proc = subprocess.run([flac, "-t", "-s", str(path)], capture_output=True, **binaries.NO_WINDOW)
     if proc.returncode == 0:
         return True, ""
     msg = next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "flac -t failed")
@@ -207,7 +207,7 @@ def encode_wavs(res: GetResult, log: Callable[[str], None]) -> None:
         tags = [f"--tag=ARTIST={res.artist}", f"--tag=ALBUM={res.album}", f"--tag=TITLE={stem}"]
         if number and number.group(1).isdigit():
             tags.append(f"--tag=TRACKNUMBER={int(number.group(1))}")
-        proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), *tags, str(pf.path)], capture_output=True)
+        proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), *tags, str(pf.path)], capture_output=True, **binaries.NO_WINDOW)
         if proc.returncode != 0 or not out.exists():
             out.unlink(missing_ok=True)
             msg = next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "flac failed")

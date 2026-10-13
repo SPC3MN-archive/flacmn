@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .. import __version__, binaries, musicbrainz as mb, paths, quality, queries, save, tagging
-from .. import cdart, jewelcase, library_index
+from .. import cassette, cdart, designs, jewelcase, library_index
 from ..ia_client import IAClient, IAError
 from ..names import folder_component
 from ..model import track_files
@@ -27,6 +27,18 @@ from .settings import Settings
 
 
 PLAYABLE = {".flac", ".mp3", ".wav", ".ogg", ".m4a", ".opus"}     # any of the item's audio, originals or IA's derivatives
+def image_mime(data: bytes) -> str:
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    if data[:3] == b"GIF":
+        return "image/gif"
+    if data[:2] in (b"II", b"MM"):
+        return "image/tiff"
+    if data[:2] == b"BM":
+        return "image/bmp"
+    return "image/jpeg"
 
 
 class NotFound(LookupError):
@@ -41,6 +53,23 @@ class SearchSession:
     identifiers: list = field(default_factory=list)
     created: float = field(default_factory=time.time)
     done: bool = False
+
+
+# what can be printed: the parts each format uses (cdart.PARTS names), its file name and its drawing module
+FORMATS = {
+    "cd": {"parts": cdart.PARTS, "suffix": "CD case", "module": jewelcase},
+    "cassette": {"parts": ("front", "back", "inside"), "suffix": "cassette J-card", "module": cassette},
+}
+
+
+def check_format(fmt: str) -> str:
+    if fmt not in FORMATS:
+        raise ValueError(f"unknown format {fmt!r}: one of {', '.join(FORMATS)}")
+    return fmt
+
+
+class FetchError(audio.AudioError):
+    """An image could not be fetched (the Cover Art Archive did not answer, a file went missing)."""
 
 
 def open_with_system(path: Path) -> None:
@@ -87,12 +116,71 @@ class App:
         self.metas: dict = {}                 # identifier -> AlbumMeta being edited
         self.matches: dict = {}               # identifier -> [ReleaseMatch]
         self.library: Optional[library_index.LibraryIndex] = None
-        self.arts: dict = {}                  # library folder -> cdart.ArtSet
-        self.art_selections: dict = {}        # library folder -> {front, back, inside, tray, disc}: image id, "colour:#rrggbb" or None
-        self.art_palettes: dict = {}          # library folder -> {"from": image id, "colours": ["#rrggbb", ...]}
+        self._scan_job: Optional[str] = None          # the music-folder read in progress, if any
+        self._opened: dict = {}                       # album folder opened on its own -> its AlbumEntry
+        self.arts: dict = {}                  # album folder -> cdart.ArtSet
+        self.art_selections: dict = {}        # album folder -> {front, back, inside, tray, disc}: image id, "colour:#rrggbb" or None
+        self.art_palettes: dict = {}          # album folder -> {"from": image id, "colours": ["#rrggbb", ...]}
+        self.art_textures: dict = {}          # (album folder, format) -> {part: PNG bytes} for the previews
+        self.uploads: dict = {}               # album folder -> [ArtImage] you uploaded (kept across Find again)
+        self.art_styles: dict = {}            # album folder -> {part: design} for the parts flacmn generates
+        self._texture_version = 0
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
                                    concurrency=self.settings.download_concurrency)
+        self._load_albums()
+
+    # ---- what you did with each album, kept between launches ----------------------------------------------------
+    # The art found for each album, your choice for each part, the designs of the generated parts and your uploads are
+    # kept in flacmn's own data folder (never the music folder) and read back on the next start, so nothing has to be
+    # found or chosen again. A file that cannot be read is set aside, not trusted.
+    def _albums_file(self) -> Path:
+        return paths.data_dir() / ".gui" / "albums.json"
+
+    def _load_albums(self) -> None:
+        import json
+        path = self._albums_file()
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return
+        except (OSError, ValueError):
+            try:
+                path.replace(path.with_suffix(".unreadable.json"))
+            except OSError:
+                pass
+            return
+        for folder, saved in (data.get("albums") or {}).items() if isinstance(data, dict) else ():
+            try:
+                art = cdart.ArtSet.from_dict(saved["art"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            # an upload whose cached file has gone is dropped, with any choice of it
+            art.images = [im for im in art.images if im.source != "upload" or Path(im.ref).is_file()]
+            known = {im.id for im in art.images}
+            self.arts[folder] = art
+            sel = saved.get("selection") or {}
+            self.art_selections[folder] = {k: (v if v is None or cdart.is_colour(v) or v in known else None)
+                                           for k, v in sel.items() if k in cdart.PARTS}
+            self.art_styles[folder] = {k: v for k, v in (saved.get("styles") or {}).items() if isinstance(v, str)}
+            self.uploads[folder] = [im for im in art.images if im.source == "upload" and im.id in set(saved.get("uploads") or [])]
+
+    def _save_albums(self) -> None:
+        import json
+        import os
+        albums = {folder: {"art": {k: v for k, v in art.to_dict().items() if k not in ("completeness", "selection")},
+                           "selection": self.art_selections.get(folder) or {},
+                           "styles": self.art_styles.get(folder) or {},
+                           "uploads": [im.id for im in self.uploads.get(folder, [])]}
+                  for folder, art in self.arts.items()}
+        path = self._albums_file()
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_name(path.name + ".tmp")
+            tmp.write_text(json.dumps({"version": 1, "albums": albums}), encoding="utf-8")
+            os.replace(tmp, path)
+        except OSError:
+            pass                                       # keeping them is a convenience; the session carries on
 
     # ---- events ------------------------------------------------------------------------------------------------
     def listen(self, fn: Callable[[dict], None]) -> Callable[[], None]:
@@ -346,21 +434,77 @@ class App:
                 self.library = None
 
     def library_scan(self) -> dict:
+        """Read the music folder again in the background (one read at a time); progress and a "library" event follow."""
         root = self._library()
+        with self._lock:
+            if self._scan_job:
+                return {"job_id": self._scan_job}
 
-        def run(job: Job):
-            self.library = library_index.scan(root, progress=self.jobs.progress(job), cancel=job.cancelled)
-            self.broadcast({"type": "library", "count": len(self.library.albums)})
-            return {"albums": len(self.library.albums)}
+            def run(job: Job):
+                try:
+                    self.library = library_index.scan(root, progress=self.jobs.progress(job), cancel=job.cancelled)
+                    return {"albums": len(self.library.albums)}
+                finally:
+                    with self._lock:
+                        self._scan_job = None
+                    self.broadcast({"type": "library", "count": len(self.library.albums) if self.library else 0})
 
-        return {"job_id": self.jobs.submit("library", f"scan {root}", run).id}
+            self._scan_job = self.jobs.submit("library", f"read {root}", run).id
+            return {"job_id": self._scan_job}
 
     def library_albums(self) -> dict:
-        if self.library is None:
-            self._ensure_library()
-        if self.library is None:
-            return {"root": self.settings.library, "albums": [], "scanned": False}
-        return {**self.library.to_dict(), "scanned": True}
+        """The albums to choose from: any opened on their own first, then the music folder's. Never waits for a read
+        of the music folder: the first call starts one, and a "library" event says when it is done."""
+        lib = self.settings.library_path
+        if self.library is None and lib and lib.is_dir() and not self._scan_job:
+            self.library_scan()
+        out = {"root": self.settings.library, "albums": [], "scanned": self.library is not None,
+               "scanning": self._scan_job, "library_ok": bool(lib and lib.is_dir())}
+        if self.library is not None:
+            out.update(self.library.to_dict())
+        out["albums"] = [{**e.to_dict(), "opened": True} for e in self._opened_albums()] + out["albums"]
+        return out
+
+    # ---- albums opened on their own (any folder, in the music folder or not) -----------------------------------
+    def _opened_albums(self) -> list:
+        out = []
+        for path in self.settings.opened:
+            folder = Path(path)
+            if not folder.is_dir():
+                continue
+            entry = self._opened.get(path)
+            if entry is None:
+                files = library_index._audio_files(folder) or [p for p in folder.rglob("*") if p.is_file()
+                                                                 and p.suffix.lower() in library_index.AUDIO
+                                                                 and not paths.is_hidden(p, folder)]
+                entry = library_index.read_album(folder.parent, folder, files)
+                entry.folder = str(folder)
+                self._opened[path] = entry
+            out.append(entry)
+        return out
+
+    def open_album(self, path: str) -> dict:
+        """Add one album folder to the list (remembered between launches), for an album outside the music folder or
+        to start before the music folder has been read."""
+        folder = Path(path).expanduser()
+        if not folder.is_dir():
+            raise ValueError(f"{path} is not a folder")
+        folder = folder.resolve()
+        if not any(p.suffix.lower() in library_index.AUDIO for p in folder.rglob("*") if p.is_file()):
+            raise ValueError(f"{folder.name} has no audio files: choose the album's own folder")
+        key = str(folder)
+        self.settings.opened = [key] + [p for p in self.settings.opened if p != key][:19]
+        self.settings.save()
+        self._opened.pop(key, None)
+        entry = next(e for e in self._opened_albums() if e.folder == key)
+        return {**entry.to_dict(), "opened": True}
+
+    def _is_opened(self, folder: str) -> bool:
+        return folder in self.settings.opened
+
+    def _root_for(self, folder: str) -> Optional[Path]:
+        """The music folder an album's paths are relative to, or None for an album opened on its own."""
+        return None if self._is_opened(folder) else self._library()
 
     def library_album(self, folder: str) -> dict:
         root = self._library()
@@ -377,6 +521,10 @@ class App:
                 "cover": next((p.relative_to(root).as_posix() for p in path.iterdir() if p.name.lower() in tagging.COVER_NAMES), None)}
 
     def library_file(self, rel: str) -> Path:
+        """A file of an album (its cover, for the picker): relative to the music folder, or inside an opened album."""
+        opened = [Path(p) for p in self.settings.opened]
+        if Path(rel).is_absolute() and audio.inside(Path(rel), opened):
+            return Path(rel).resolve()
         root = self._library()
         path = root / rel
         if not audio.inside(path, [root]):
@@ -385,6 +533,10 @@ class App:
 
     # ---- CD artwork: find the scans, choose, print, keep -------------------------------------------------------
     def _album_dir(self, folder: str) -> Path:
+        if self._is_opened(folder):
+            if not Path(folder).is_dir():
+                raise NotFound(f"the album folder {folder} is gone (is the drive connected?)")
+            return Path(folder).resolve()
         root = self._library()
         path = (root / folder).resolve()
         if not path.is_relative_to(root.resolve()) or not path.is_dir():
@@ -402,11 +554,13 @@ class App:
 
         def run(job: Job):
             art = cdart.find_art(path, mb_client=self.mb, ia_client=self.client, release_id=release_id,
-                                 search_archive=self.settings.art_search_archive, library_root=self._library(),
+                                 search_archive=self.settings.art_search_archive, library_root=self._root_for(folder),
                                  progress=self.jobs.progress(job), cancel=job.cancelled)
+            art.images += [im for im in self.uploads.get(folder, []) if art.get(im.id) is None]
             self.arts[folder] = art
             sel = cdart.default_selection(art)
             self.art_selections[folder] = cdart.fill_gaps(sel, self._palette(folder, art, sel, cancel=job.cancelled))
+            self._save_albums()
             out = self.art_state(folder)
             self.broadcast({"type": "art", "folder": folder, "completeness": out["completeness"]})
             return out
@@ -416,8 +570,9 @@ class App:
     def art_state(self, folder: str) -> dict:
         art = self._art(folder)
         sel = self.art_selections.get(folder) or cdart.default_selection(art)
-        return {**art.to_dict(), "selection": sel, "palette": self._palette(folder, art, sel),
-                "pdf": str(self._pdf_path(art)) if self._pdf_path(art).exists() else None}
+        pdfs = {fmt: str(self._pdf_path(art, fmt)) if self._pdf_path(art, fmt).exists() else None for fmt in FORMATS}
+        return {**art.to_dict(), "selection": sel, "palette": self._palette(folder, art, sel), "pdf": pdfs["cd"], "pdfs": pdfs,
+                "styles": dict(self.art_styles.get(folder, {}))}
 
     def _palette(self, folder: str, art: cdart.ArtSet, selection: dict, cancel=None) -> list:
         """The album's colours, from the chosen front cover (else any scan); worked out once per source image."""
@@ -444,6 +599,58 @@ class App:
                 raise ValueError(f"{part}: unknown image {iid}")
             clean[part] = iid
         self.art_selections[folder] = clean
+        self._save_albums()
+        return self.art_state(folder)
+
+    def _folder_of(self, art: cdart.ArtSet) -> Optional[str]:
+        return next((f for f, a in self.arts.items() if a is art), None)
+
+    # the layouts each part offers (designs.LAYOUTS); every layout offers the spcmn mark (designs.logos_for) and its ink
+    PART_LAYOUTS = {"front": ("title", "blank"), "back": designs.TRACKLISTS + ("blank",),
+                    "inside": designs.TRACKLISTS + ("blank",), "tray": ("blank",), "disc": ("title",)}
+
+    def art_style(self, folder: str, part: str, layout: Optional[str] = None, logo: Optional[str] = None,
+                  ink: Optional[str] = None) -> dict:
+        """Choose how a part flacmn generates (one not printed from a scan or upload) looks: its layout, the spcmn
+        mark's size on it, and the mark's colour. Anything left out stays as it was. See designs.py."""
+        self._art(folder)
+        if part not in self.PART_LAYOUTS:
+            raise ValueError(f"unknown part {part!r}")
+        styles = self.art_styles.setdefault(folder, {})
+        layouts = self.PART_LAYOUTS[part]
+        if layout is not None:
+            if layout not in layouts:
+                raise ValueError(f"{layout!r} is not a layout for the {part}: one of {', '.join(layouts)}")
+            styles[part] = layout
+        current = styles.get(part, layouts[0])
+        if logo is not None:
+            if logo not in designs.logos_for(current):
+                raise ValueError(f"{logo!r} is not a logo size for a {current} {part}: one of {', '.join(designs.logos_for(current))}")
+            styles[f"{part}:logo"] = logo
+        elif styles.get(f"{part}:logo") not in designs.logos_for(current) + (None,):
+            styles[f"{part}:logo"] = "medium"          # a large mark does not fit beside a tracklist
+        if ink is not None:
+            if ink not in designs.INKS:
+                raise ValueError(f"{ink!r} is not a logo colour: one of {', '.join(designs.INKS)}")
+            styles[f"{part}:ink"] = ink
+        self._save_albums()
+        return self.art_state(folder)
+
+    def art_upload(self, folder: str, part: str, data: bytes, name: str = "") -> dict:
+        """Use an image of your own for one part (front, back, inside, tray or disc) and choose it there."""
+        art = self._art(folder)
+        if part not in cdart.PARTS:
+            raise ValueError(f"unknown part {part!r}: one of {', '.join(cdart.PARTS)}")
+        im = cdart.store_upload(data, name, cdart.PART_KIND[part])
+        if art.get(im.id) is None:
+            art.images.append(im)
+        mine = self.uploads.setdefault(folder, [])
+        if not any(u.id == im.id for u in mine):
+            mine.append(im)
+        sel = dict(self.art_selections.get(folder) or cdart.default_selection(art))
+        sel[part] = im.id
+        self.art_selections[folder] = sel
+        self._save_albums()
         return self.art_state(folder)
 
     def art_image(self, image_id: str, preview: bool = True) -> tuple:
@@ -462,57 +669,98 @@ class App:
             if data is None:
                 try:
                     data = fetcher.get(im)
-                except (mb.MBError, IAError, OSError) as exc:
-                    raise audio.AudioError(f"could not fetch the image: {exc}") from exc
-            mime = "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
-            return data, mime
+                except (mb.MBError, IAError, OSError, ValueError) as exc:
+                    raise FetchError(f"could not fetch the image: {exc}") from exc
+            return data, image_mime(data)
         raise NotFound(f"no image {image_id}")
 
-    def _pdf_path(self, art: cdart.ArtSet) -> Path:
-        name = folder_component(f"{art.artist} - {art.album}" + (f" ({art.year})" if art.year else "")) + " - CD case.pdf"
+    def _pdf_path(self, art: cdart.ArtSet, fmt: str = "cd") -> Path:
+        name = (folder_component(f"{art.artist} - {art.album}" + (f" ({art.year})" if art.year else ""))
+                + f" - {FORMATS[fmt]['suffix']}.pdf")
         return self.settings.print_path / name
 
-    def art_print(self, folder: str, discs: int = 0) -> dict:
-        art = self._art(folder)
-        sel = dict(self.art_selections.get(folder) or cdart.default_selection(art))
+    def _print_options(self, art: cdart.ArtSet, discs: int = 0, **over) -> jewelcase.PrintOptions:
         s = self.settings
         opts = jewelcase.PrintOptions(paper=s.paper, bleed=s.bleed_mm, disc_inner=s.disc_hole_mm,
                                       discs=discs or max([t["disc"] for t in art.tracks] or [1]))
+        for k, v in over.items():
+            setattr(opts, k, v)
+        return opts
+
+    def _render(self, art: cdart.ArtSet, sel: dict, out: Path, opts: jewelcase.PrintOptions, job: Job,
+                fmt: str = "cd") -> jewelcase.PrintReport:
+        """Fetch the chosen scans the format uses and draw its print PDF to `out`."""
+        fetcher = cdart.ArtFetcher(self.mb, self.client)
+        emit = self.jobs.progress(job)
+        used = FORMATS[fmt]["parts"]
+        wanted = [k for k in used if sel.get(k) and not cdart.is_colour(sel[k])]
+
+        def load(part):
+            if cdart.is_colour(sel[part]):
+                return jewelcase.Colour(sel[part].split(":", 1)[1])
+            im = art.get(sel[part])
+            emit({"stage": "art", "step": "fetching", "part": part, "label": im.label,
+                  "index": wanted.index(part) + 1, "total": len(wanted)})
+            return jewelcase.Art(fetcher.get(im, cancel=job.cancelled), im.label)
+
+        parts = {k: load(k) if sel.get(k) else None for k in used}
+        out.parent.mkdir(parents=True, exist_ok=True)
+        emit({"stage": "art", "step": "rendering"})
+        styles = dict(self.art_styles.get(art_key, {})) if (art_key := self._folder_of(art)) else {}
+        return FORMATS[fmt]["module"].render(out, artist=art.artist, album=art.album, year=art.year, tracks=art.tracks,
+                                             opts=opts, styles=styles, **parts)
+
+    def art_print(self, folder: str, discs: int = 0, fmt: str = "cd") -> dict:
+        art = self._art(folder)
+        check_format(fmt)
+        sel = dict(self.art_selections.get(folder) or cdart.default_selection(art))
+        opts = self._print_options(art, discs)
 
         def run(job: Job):
-            fetcher = cdart.ArtFetcher(self.mb, self.client)
-            emit = self.jobs.progress(job)
-            wanted = [k for k in cdart.PARTS if sel.get(k) and not cdart.is_colour(sel[k])]
-
-            def load(part):
-                if cdart.is_colour(sel[part]):
-                    return jewelcase.Colour(sel[part].split(":", 1)[1])
-                im = art.get(sel[part])
-                emit({"stage": "art", "step": "fetching", "part": part, "label": im.label,
-                      "index": wanted.index(part) + 1, "total": len(wanted)})
-                return jewelcase.Art(fetcher.get(im, cancel=job.cancelled), im.label)
-
-            parts = {k: load(k) if sel.get(k) else None for k in cdart.PARTS}
-            out = self._pdf_path(art)
-            out.parent.mkdir(parents=True, exist_ok=True)
-            emit({"stage": "art", "step": "rendering"})
-            report = jewelcase.render(out, artist=art.artist, album=art.album, year=art.year, tracks=art.tracks,
-                                      opts=opts, **parts)
-            result = {"pdf": str(out), **report.to_dict()}
-            self.broadcast({"type": "art_printed", "folder": folder, "pdf": str(out)})
+            out = self._pdf_path(art, fmt)
+            report = self._render(art, sel, out, opts, job, fmt)
+            result = {"pdf": str(out), "format": fmt, **report.to_dict()}
+            self.broadcast({"type": "art_printed", "folder": folder, "pdf": str(out), "format": fmt})
             return result
 
-        return {"job_id": self.jobs.submit("print", f"print sheet: {art.artist} / {art.album}", run).id}
+        return {"job_id": self.jobs.submit("print", f"{FORMATS[fmt]['suffix']}: {art.artist} / {art.album}", run).id}
 
-    def art_pdf(self, folder: str) -> Path:
-        path = self._pdf_path(self._art(folder))
+    def art_preview3d(self, folder: str, fmt: str = "cd") -> dict:
+        """Draw the format exactly as it prints (one disc, no crop marks) and cut out its parts as pictures, for the
+        3D view and the exact template previews. CD: front, back (tray card with spines), inside, tray, disc;
+        cassette: outside, inside, spine, front."""
+        art = self._art(folder)
+        check_format(fmt)
+        sel = dict(self.art_selections.get(folder) or cdart.default_selection(art))
+        opts = self._print_options(art, 1, crop_marks=False)
+
+        def run(job: Job):
+            out = paths.cache_dir() / "preview3d" / f"{fmt}.pdf"
+            self._render(art, sel, out, opts, job, fmt)
+            textures = FORMATS[fmt]["module"].part_images(out, opts)
+            with self._lock:
+                self.art_textures[(folder, fmt)] = textures
+                self._texture_version += 1
+                version = self._texture_version
+            return {"folder": folder, "format": fmt, "version": version, "parts": sorted(textures)}
+
+        return {"job_id": self.jobs.submit("preview3d", f"preview: {art.artist} / {art.album}", run).id}
+
+    def art_texture(self, folder: str, part: str, fmt: str = "cd") -> bytes:
+        textures = self.art_textures.get((folder, fmt)) or {}
+        if part not in textures:
+            raise NotFound(f"no 3D preview of {part!r} for {folder!r} yet")
+        return textures[part]
+
+    def art_pdf(self, folder: str, fmt: str = "cd") -> Path:
+        path = self._pdf_path(self._art(folder), check_format(fmt))
         if not path.exists():
             raise NotFound("no print sheet yet: make one first")
         return path
 
-    def art_open(self, folder: str) -> dict:
+    def art_open(self, folder: str, fmt: str = "cd") -> dict:
         """Open the print PDF in the system's PDF viewer (to print it from there)."""
-        path = self.art_pdf(folder)
+        path = self.art_pdf(folder, fmt)
         open_with_system(path)
         return {"opened": str(path)}
 
@@ -551,6 +799,7 @@ class App:
                 self.art_selections[entry.folder] = cdart.default_selection(art)
                 rows.append(self._art_row(art))
                 self.broadcast({"type": "art", "folder": entry.folder, "completeness": art.completeness()})
+            self._save_albums()
             return {"albums": rows}
 
         return {"job_id": self.jobs.submit("art-all", f"artwork for the whole library ({root})", run).id}

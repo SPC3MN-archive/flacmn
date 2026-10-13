@@ -194,6 +194,9 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     @api.get("/api/library/album")
     def library_album(folder: str):
         return core.library_album(folder)
+    @api.post("/api/library/open")
+    def library_open(body: dict = Body(...)):
+        return core.open_album(body["path"])
 
     @api.get("/api/library/file")
     def library_file(path: str):
@@ -213,6 +216,21 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def art_select(body: dict = Body(...)):
         return core.art_select(body["folder"], body.get("selection") or {})
 
+    @api.put("/api/art/style")
+    def art_style(body: dict = Body(...)):
+        return core.art_style(body["folder"], body["part"], body.get("layout"), body.get("logo"), body.get("ink"))
+
+    @api.post("/api/art/upload")
+    def art_upload(body: dict = Body(...)):
+        """{folder, part, name, data}: data is the image file, base64-encoded."""
+        import base64
+        import binascii
+        try:
+            data = base64.b64decode(body.get("data") or "", validate=True)
+        except (binascii.Error, ValueError):
+            raise ValueError("the upload is not valid base64") from None
+        return core.art_upload(body["folder"], body["part"], data, body.get("name", ""))
+
     @api.get("/api/art/image/{image_id}")
     def art_image(image_id: str, full: bool = False):
         data, mime = core.art_image(image_id, preview=not full)
@@ -220,16 +238,24 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
 
     @api.post("/api/art/print")
     def art_print(body: dict = Body(...)):
-        return core.art_print(body["folder"], int(body.get("discs", 0)))
+        return core.art_print(body["folder"], int(body.get("discs", 0)), body.get("format", "cd"))
+
+    @api.post("/api/art/preview3d")
+    def art_preview3d(body: dict = Body(...)):
+        return core.art_preview3d(body["folder"], body.get("format", "cd"))
+
+    @api.get("/api/art/texture")
+    def art_texture(folder: str, part: str, format: str = "cd"):
+        return Response(core.art_texture(folder, part, format), media_type="image/png", headers={"Cache-Control": "no-cache"})
 
     @api.get("/api/art/pdf")
-    def art_pdf(folder: str):
-        p = core.art_pdf(folder)
+    def art_pdf(folder: str, format: str = "cd"):
+        p = core.art_pdf(folder, format)
         return FileResponse(p, media_type="application/pdf", filename=p.name, content_disposition_type="inline")
 
     @api.post("/api/art/open")
     def art_open(body: dict = Body(...)):
-        return core.art_open(body["folder"])
+        return core.art_open(body["folder"], body.get("format", "cd"))
 
     @api.post("/api/art/save")
     def art_save(body: dict = Body(...)):

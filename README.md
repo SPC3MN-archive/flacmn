@@ -17,7 +17,7 @@ python3 -m iaflac replace --scan                      # albums you have only as 
 
 **Desktop app: flacmn.** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
 same engine: Album Search (every format ranked together, pick a track to see its 3D spectrogram and play it, MusicBrainz-checked
-tags), CD Art (case scans and true-size print sheets) and Library, with a download queue that saves albums as
+tags), Case Art (CD jewel cases and cassette J-cards: scans, true-size print sheets and a 3D preview) and Library, with a download queue that saves albums as
 `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. On a Mac, `bash packaging/macos/dev_setup.sh` does
 the whole setup from a checkout and opens it (`--app` also builds `dist/iaflac.app`). Installers are built by
 `.github/workflows/release.yml`; see `packaging/README.md`.

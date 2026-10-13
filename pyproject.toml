@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Find and verify FLAC (ideally CD-rip) albums on the Internet Archive"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["requests", "numpy", "scipy", "matplotlib", "PyYAML", "openpyxl", "mutagen", "platformdirs", "Pillow", "reportlab"]
+dependencies = ["requests", "numpy", "scipy", "matplotlib", "PyYAML", "openpyxl", "mutagen", "platformdirs", "Pillow", "reportlab", "pypdfium2"]
 
 [project.optional-dependencies]
 gui = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "pywebview>=5"]

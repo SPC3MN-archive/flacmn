@@ -22,6 +22,7 @@ export function mountLibrary(topCard, bottomCard, opts) {
 export async function load() {
   try {
     state.data = await api("/library");
+    state.data.albums = (state.data.albums || []).filter((a) => !a.opened);   // folders opened in Case Art aren't the library
     state.colw = null;                                           // measure the columns again for this library
   } catch (e) {
     state.data = { error: errorText(e), albums: [] };
@@ -100,6 +101,7 @@ function renderRows() {
       h("span", "Choose where albums are saved: a local folder, a USB drive or your Volumio share."),
       h("button.btn.primary.sm", { onclick: () => hooks.openSettings && hooks.openSettings() }, "Open Settings")));
   }
+  if (d.scanning && !d.albums.length) return clear(els.rows, h("div.empty", h("span.spinner"), "Reading the library…"));
   if (!d.albums.length) {
     return clear(els.rows, h("div.empty", icon("library"), h("b", "No albums found"), h("span", `Nothing in ${d.root} yet.`)));
   }

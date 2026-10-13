@@ -34,7 +34,8 @@ PRINTED = ("front", "back", "booklet", "disc", "tray")
 PARTS = ("front", "back", "inside", "tray", "disc")       # what a print uses; "inside" is chosen from booklet scans
 CAA_KIND = {"Front": "front", "Back": "back", "Booklet": "booklet", "Medium": "disc", "Tray": "tray", "Spine": "spine",
             "Liner": "booklet"}
-SOURCE_RANK = {"folder": 0, "archive.org": 1, "coverartarchive": 2, "coverartarchive-sibling": 3, "archive.org-search": 4}
+SOURCE_RANK = {"upload": 0, "folder": 0, "archive.org": 1, "coverartarchive": 2, "coverartarchive-sibling": 3, "archive.org-search": 4}
+LOCAL = ("folder", "upload")  # sources read from disk: the album folder, and images you uploaded (kept in the cache)
 SIBLINGS = 4                 # other pressings whose Cover Art Archive images are listed
 CD_FORMATS = re.compile(r"\bcd\b|compact disc|sacd|hdcd|blu-spec|shm", re.I)
 
@@ -68,7 +69,7 @@ def classify_name(name: str) -> str:
 class ArtImage:
     id: str
     kind: str
-    source: str                 # folder | archive.org | coverartarchive | coverartarchive-sibling | archive.org-search
+    source: str                 # folder | upload | archive.org | coverartarchive | coverartarchive-sibling | archive.org-search
     ref: str                    # local path, or URL of the full-size image
     preview: str = ""           # a smaller image for the UI (Cover Art Archive thumbnail), else same as ref
     label: str = ""             # where it is from, for people: "Cover Art Archive · 1997 AU CD"
@@ -377,7 +378,7 @@ def measure_all(art: ArtSet, mb_client=None, ia_client=None, cancel: Optional[Ca
             return
         check(cancel)
         try:
-            if im.source == "folder":
+            if im.source in LOCAL:
                 with open(im.ref, "rb") as fh:
                     im.width, im.height = header_size(fh.read(65536))
             elif im.source.startswith("coverartarchive") and mb_client is not None and hasattr(mb_client, "image_size"):
@@ -495,7 +496,7 @@ class ArtFetcher:
         self.cache = cache or paths.cache_dir() / "art"
 
     def get(self, im: ArtImage, cancel: Optional[CancelCheck] = None) -> bytes:
-        if im.source == "folder":
+        if im.source in LOCAL:
             return Path(im.ref).read_bytes()
         path = self.cache / im.id[:2] / im.id
         if path.exists():
@@ -545,3 +546,37 @@ def save_to_folder(art: ArtSet, selection: dict, folder: Path, fetcher: ArtFetch
         target.write_bytes(data)
         written.append(str(target))
     return written
+
+
+# ---- your own images -------------------------------------------------------------------------------------------------
+
+UPLOAD_MAX = 40 * 2**20
+UPLOAD_KINDS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "TIFF": ".tif", "BMP": ".bmp", "GIF": ".gif"}
+
+
+def store_upload(data: bytes, name: str, kind: str, root: Optional[Path] = None) -> ArtImage:
+    """Keep an image you uploaded for one part (kind: front, back, booklet, tray or disc) in flacmn's cache, named by its
+    content, and describe it as an ArtImage. Your original file and the music folder are never touched."""
+    from PIL import Image, UnidentifiedImageError
+    if kind not in KINDS:
+        raise ValueError(f"unknown part kind {kind!r}")
+    if not data:
+        raise ValueError("the file is empty")
+    if len(data) > UPLOAD_MAX:
+        raise ValueError(f"the image is over {UPLOAD_MAX // 2**20} MB")
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            fmt, (w, h) = img.format, img.size
+            img.verify()
+    except (UnidentifiedImageError, OSError, SyntaxError) as exc:
+        raise ValueError(f"{name or 'the file'} is not an image flacmn can read") from exc
+    if fmt not in UPLOAD_KINDS:
+        raise ValueError(f"{fmt} images are not supported: use JPEG, PNG, WebP, TIFF, BMP or GIF")
+    digest = hashlib.sha1(data).hexdigest()
+    path = (root or paths.cache_dir() / "uploads") / digest[:2] / (digest + UPLOAD_KINDS[fmt])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.write_bytes(data)
+    label = f"your upload: {Path(name).name}" if name else "your upload"
+    return ArtImage(id=image_id("upload", str(path)), kind=kind, source="upload", ref=str(path), preview=str(path),
+                    label=label, group="upload", size=len(data), width=w, height=h)

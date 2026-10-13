@@ -182,7 +182,7 @@ class FindArt(unittest.TestCase):
                          [(1, "front cover"), (1, "back + spines"), (2, "inside of front insert"), (2, "under-tray image"),
                           (3, "disc label")])
         self.assertNotIn("spines generated", report.pieces[1].source, "the 1500x1180 scan includes its spines")
-        self.assertEqual(report.pieces[3].source, "none found: left blank")
+        self.assertEqual(report.pieces[3].source, "generated: the spcmn mark (small) on white")
 
     def test_save_scans_into_the_album_folder(self):
         art = self.find()
@@ -238,7 +238,7 @@ class FindArt(unittest.TestCase):
         self.assertTrue(any("tracklist tray card" in n for n in art.notes), art.notes)
         report = jc.render(self.library / "gen.pdf", artist="Nobody", album="Nothing", tracks=art.tracks)
         self.assertEqual([p.source.split(":")[0] for p in report.pieces],
-                         ["generated", "generated", "generated", "none found", "generated"])
+                         ["generated", "generated", "generated", "generated", "generated"], "every blank carries the mark")
 
 
 
@@ -279,12 +279,80 @@ class Gaps(unittest.TestCase):
                                front=jc.Art(two_tone(), "cover.png"), back=blue, inside=gold, tray=blue, disc=gold)
             self.assertEqual(out.read_bytes()[:5], b"%PDF-")
         src = {p.name: p.source for p in report.pieces}
-        self.assertEqual(src["back + spines"], "generated: tracklist on the album colour #1e3c8c")
-        self.assertEqual(src["inside of front insert"], "generated: tracklist on the album colour #f0c828")
-        self.assertEqual(src["under-tray image"], "album colour #1e3c8c")
-        self.assertEqual(src["disc label"], "generated: title on the album colour #f0c828")
+        self.assertEqual(src["back + spines"], "generated: tracklist with the spcmn mark (small) on the album colour #1e3c8c")
+        self.assertEqual(src["inside of front insert"], "generated: tracklist with the spcmn mark (small) on the album colour #f0c828")
+        self.assertEqual(src["under-tray image"], "album colour #1e3c8c with the spcmn mark (small)")
+        self.assertEqual(src["disc label"], "generated: title on the album colour #f0c828 with the spcmn mark (small)")
         self.assertEqual(jc.Colour("#ffffff").rgb, (1.0, 1.0, 1.0))
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PartImages(unittest.TestCase):
+    def test_each_part_is_cut_out_at_its_trim_size_and_place(self):
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as tmp:
+            for paper in ("letter", "a4"):
+                opts = jc.PrintOptions(paper=paper, crop_marks=False)
+                pdf = Path(tmp) / f"{paper}.pdf"
+                colours = {"front": "#ff0000", "back": "#00ff00", "inside": "#0000ff", "tray": "#ffff00", "disc": "#ff00ff"}
+                jc.render(pdf, artist="A", album="B", opts=opts, **{k: jc.Colour(v) for k, v in colours.items()})
+                parts = jc.part_images(pdf, opts, px_per_mm=4)
+                for part, hexc in colours.items():
+                    im = Image.open(io.BytesIO(parts[part])).convert("RGB")
+                    want = tuple(int(hexc[i:i + 2], 16) for i in (1, 3, 5))
+                    w, h = im.size
+                    probes = [(w // 2, h // 6)] if part == "disc" else [(1, 1), (w - 2, h - 2), (w // 2, h // 2)]
+                    for xy in probes:
+                        self.assertEqual(im.getpixel(xy), want, f"{paper} {part} at {xy}")
+
+
+class Designs(unittest.TestCase):
+    def test_the_spcmn_mark_has_its_138_dots_and_every_design_draws(self):
+        from iaflac import designs
+        self.assertEqual(len(designs.LOGO_DOTS), 138)
+        self.assertEqual(max(x for _, x, _ in designs.LOGO_DOTS), 31.5)
+        tracks = [{"disc": 1, "track": i, "title": f"Song {i}", "length": 200} for i in range(1, 30)]
+        with tempfile.TemporaryDirectory() as tmp:
+            for layout in designs.TRACKLISTS + ("blank",):
+                for logo in designs.logos_for(layout):
+                    styles = {"back": layout, "back:logo": logo, "inside": layout, "inside:logo": logo, "tray:logo": logo,
+                              "front": "blank" if layout == "blank" else "title", "front:logo": logo, "disc:logo": logo}
+                    report = jc.render(Path(tmp) / f"{layout}-{logo}.pdf", artist="A", album="B", tracks=tracks,
+                                       back=jc.Colour("#000000"), tray=jc.Colour("#5c53a2"), styles=styles)
+                    self.assertEqual(report.pages, 3, (layout, logo))
+
+    def test_large_marks_only_where_there_is_no_tracklist(self):
+        from iaflac import designs
+        self.assertEqual(designs.logos_for("blank"), ("none", "small", "medium", "large"))
+        self.assertEqual(designs.logos_for("list"), ("none", "small", "medium"))
+        self.assertIsNone(designs.logo_place("list", "none", 0, 0, 138, 118))
+        x, base, lw = designs.logo_place("list", "small", 0, 0, 138, 118)
+        self.assertLess(x, 20, "beside a list the small mark sits bottom-left, clear of the total on the right")
+        self.assertGreater(designs.logo_reserve("list", "medium", 138, 118), designs.logo_reserve("list", "small", 138, 118))
+
+    def test_a_marked_back_marks_its_spines(self):
+        from PIL import Image, ImageChops
+        with tempfile.TemporaryDirectory() as tmp:
+            opts = jc.PrintOptions(crop_marks=False)
+            shots = {}
+            for logo in ("none", "small"):
+                pdf = Path(tmp) / f"{logo}.pdf"
+                jc.render(pdf, artist="A", album="B", back=jc.Colour("#000000"), opts=opts, styles={"back": "blank", "back:logo": logo})
+                shots[logo] = Image.open(io.BytesIO(jc.part_images(pdf, opts, px_per_mm=6)["back"])).convert("RGB")
+            spine = lambda im: im.crop((0, 0, 39, im.size[1]))        # the left spine, 6.5 mm at 6 px/mm
+            changed = ImageChops.difference(spine(shots["none"]), spine(shots["small"])).getbbox()
+            self.assertIsNotNone(changed, "the left spine carries a mark")
+            self.assertLess(changed[1], shots["small"].size[1] * 0.3, "at the spine's top end, where its text finishes")
+
+    def test_the_mark_in_charcoal_and_off_white(self):
+        from iaflac import designs
+        light, dark = (0.95, 0.93, 0.9), (0.1, 0.1, 0.12)
+        self.assertEqual(designs.INKS, ("auto", "charcoal", "off-white"))
+        self.assertEqual(designs.logo_colours("auto", light)("s"), designs.CHARCOAL)
+        self.assertEqual(designs.logo_colours("auto", dark)("m"), designs.OFF_WHITE)
+        self.assertEqual(designs.logo_colours("off-white", light)("p"), designs.OFF_WHITE)
+        self.assertEqual(designs.logo_colours("green", dark)("c"), designs.OFF_WHITE, "anything else is auto")
+        self.assertEqual(designs.DEFAULT_LOGO, "small")

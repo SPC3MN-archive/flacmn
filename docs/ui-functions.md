@@ -70,11 +70,12 @@
 - **Cancel / retry / remove**: stop a download, try a failed one again, or take it off the list.
 - **Clear finished**: removes completed downloads from the list.
 
-# 2. CD Art
+# 2. Case Art (CD jewel case and cassette J-card)
 
 ## Album
 
-- **Library album picker**: choose an album you already have.
+- **Format**: CD jewel case or cassette J-card; each has its own parts, print sheet and 3D view.
+- **Album picker**: choose an album from your music folder (read in the background, with progress), or **Open album folder…** for any album folder on disk, remembered between launches.
 - **Find art button**: searches the album folder, the archive.org upload it came from, the Cover Art Archive (including other pressings with the same tracklist) and other archive.org uploads.
 - **Notes**: the matched MusicBrainz release, which pressings were searched, what wasn't found.
 
@@ -83,9 +84,14 @@
 - **Parts**: front cover · back + spines · inside of front insert · under-tray image · disc label.
 - **Chosen scan**: thumbnail, where it came from (e.g. "Cover Art Archive · 1997 XE CD") and its print resolution in dpi.
 - **Alternatives**: other scans for that part; click one to use it instead. By default all parts come from one pressing at the best resolution.
+- **Your own image**: upload an image for any part.
+- **Generated parts**: a part with no scan is drawn: pick its design (title, tracklist layouts, blank), its colour (the album's or the spcmn palette) and the size of the spcmn mark it carries.
+- **Kept between launches**: found art, your choices, designs and uploads (in flacmn's own data folder, never the music folder).
 
 ## Case Preview
 
+- **3D**: the case built in 3D with the parts exactly as they print: orbit it, open the lid, take the disc out (CD); the cassette's clear case with the J-card folded inside, and a tape that pops out.
+- **Spine**: both tray-card spines, enlarged, as they print.
 - **Outside (page 1)**: front cover above the back tray card with its spines.
 - **Inside (page 2)**: inside of the front insert and the under-tray image, laid out to print on the back of page 1.
 - **Disc (page 3)**: the disc label, for label stock or a printable disc.
@@ -114,7 +120,7 @@
 
 - **Tracks**: title, artist, length, format per track.
 - **Tag issues**: what a player like Volumio would trip over: missing titles or track numbers, gaps, mismatched album names, no cover, or a .cue file that can make it list the album twice.
-- **Play album / CD art**: play the album from the first track (clicking a track plays the album on from there), or open it in CD Art.
+- **Play album / CD art**: play the album from the first track (clicking a track plays the album on from there), or open it in Case Art.
 
 ## Now playing
 
@@ -127,7 +133,7 @@
 
 ## Top bar (always visible)
 
-- **Navigation**: Album Search · CD Art · Library · Settings.
+- **Navigation**: Album Search · Case Art · Library · Settings.
 - **Activity strip**: running searches, tests, downloads and art lookups, each with progress and a cancel button.
 
 ## Settings

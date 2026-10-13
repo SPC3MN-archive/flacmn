@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 from .. import paths
@@ -34,6 +34,7 @@ class Settings:
     disc_hole_mm: float = 41.0             # 41 for most sticker labels; ~23 or less for printable discs
     print_folder: str = ""                 # where print PDFs go (default: Documents/iaflac CD prints)
     art_search_archive: bool = True        # also look through other archive.org uploads of the album for scans
+    opened: list = field(default_factory=list)   # album folders opened on their own, newest first (not set via update)
 
     @classmethod
     def load(cls) -> "Settings":
@@ -59,7 +60,7 @@ class Settings:
     def update(self, values: dict) -> list:
         """Apply the known keys of `values` (type-checked against the defaults); returns the rejected keys."""
         rejected = []
-        types = {f.name: type(f.default) for f in fields(self)}
+        types = {f.name: type(f.default) for f in fields(self) if f.name != "opened"}
         for k, v in values.items():
             t = types.get(k)
             if t is float and isinstance(v, int) and not isinstance(v, bool):

@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flacmn</title>
 <link rel="stylesheet" href="/static/app.css">
+<script type="importmap">{ "imports": { "three": "/static/vendor/three/three.module.min.js" } }</script>
 </head>
 <body>
 <header class="topbar">
   <img class="logo" src="/static/logo.svg" alt="flacmn">
   <nav class="row" id="tabs">
     <button class="tab active" data-view="search"><span data-icon="search"></span>Album Search</button>
-    <button class="tab" data-view="cdart"><span data-icon="disc"></span>CD Art</button>
+    <button class="tab" data-view="cdart"><span data-icon="disc"></span>Case Art</button>
     <button class="tab" data-view="library"><span data-icon="library"></span>Library<span class="badge" id="lib-badge" hidden></span></button>
   </nav>
   <div class="spacer"></div>

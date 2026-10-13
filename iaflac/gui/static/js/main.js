@@ -7,7 +7,8 @@ import { mountSpectrogram, loadCandidate, updateCandidate as updateSpec } from "
 import { mountTags, loadTags } from "./tags.js";
 import { mountLibrary, load as loadLibrary } from "./library.js";
 import { mountNowPlaying } from "./nowplaying.js";
-import { mountCdArt, openAlbum, refresh as refreshArt } from "./cdart.js";
+import { mountArtLibrary, load as loadArtLibrary } from "./artlib.js";
+import { mountCdArt, openAlbum, refresh as refreshArt, refreshPicker } from "./cdart.js";
 import { mountSettings, showSettings, loadSettings, getSettings } from "./settings.js";
 import { mountQueue } from "./queue.js";
 
@@ -40,6 +41,7 @@ const art = document.getElementById("view-cdart");
 const artLeft = h("div.card"), artRight = h("div.card.case-card");
 art.append(artLeft, artRight);
 mountCdArt(artLeft, artRight, { settings: getSettings });
+mountArtLibrary({ changed: () => refreshPicker() });   // Case Art's album picker: the music folder, plus folders opened on their own
 
 // ---- Library ---------------------------------------------------------------------------------------------------------
 const lib = document.getElementById("view-library");
@@ -56,7 +58,7 @@ mountLibrary(libTop, libBottom, {
 // ---- Settings --------------------------------------------------------------------------------------------------------
 mountSettings(document.getElementById("view-settings"), {
   changed: (s, values) => {
-    if ("library" in values) loadLibrary();
+    if ("library" in values) { loadLibrary(); loadArtLibrary(); }
     if ("paper" in values || "disc_hole_mm" in values || "bleed_mm" in values) refreshArt();
   },
 });
@@ -69,3 +71,4 @@ connect();
 mountQueue();
 loadSettings().catch(() => {});
 loadLibrary();
+loadArtLibrary();

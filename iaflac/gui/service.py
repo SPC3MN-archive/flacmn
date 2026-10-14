@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .. import __version__, binaries, musicbrainz as mb, paths, quality, queries, save, tagging
-from .. import cassette, cdart, designs, health, jewelcase, library_index
+from .. import cassette, cdart, designs, health, jewelcase, library_index, retag
 from ..ia_client import IAClient, IAError
 from ..names import folder_component
 from ..model import track_files
@@ -524,6 +524,44 @@ class App:
             tracks.append(t)
         return {"folder": folder, "tracks": tracks, "issues": tagging.validate(path),
                 "cover": next((p.relative_to(root).as_posix() for p in path.iterdir() if p.name.lower() in tagging.COVER_NAMES), None)}
+
+    # ---- editing an album's tags (Library → Edit tags) ---------------------------------------------------------
+    def album_tags(self, folder: str) -> dict:
+        """The album's tags as its files say, for the editor."""
+        meta, skipped = retag.read_album(self._album_dir(folder))
+        return {"folder": folder, "meta": meta.to_dict(), "skipped": skipped}
+
+    def album_tags_musicbrainz(self, folder: str, artist: str = "", album: str = "") -> dict:
+        """Search MusicBrainz for the album (a job): its releases, best first, scored on track count, lengths and names."""
+        path = self._album_dir(folder)
+
+        def run(job: Job):
+            meta, _ = retag.read_album(path)
+            found = mb.find_matches(self.mb, meta, artist.strip(), album.strip())
+            if not found or found[0].score < 0.6:         # a misspelled album name: find the album by its songs
+                more = mb.find_matches_by_songs(self.mb, meta, artist.strip(), skip={m.release_id for m in found})
+                found = sorted(found + more, key=lambda m: -m.score)[:8]
+            return {"folder": folder, "matches": [x.to_dict() for x in found]}
+
+        return {"job_id": self.jobs.submit("musicbrainz", f"MusicBrainz: {artist or folder} / {album}", run).id}
+
+    def album_tags_preview(self, folder: str, draft: dict, release_id: str = "") -> dict:
+        """What saving would change: the draft as it is, or with a MusicBrainz release applied to it first."""
+        old, _ = retag.read_album(self._album_dir(folder))
+        new, warnings = retag.meta_from_dict(draft), []
+        if release_id:
+            new, warnings = retag.from_release(new, self.mb.release(release_id))
+        return {"meta": new.to_dict(), "diff": retag.preview(old, new), "warnings": warnings}
+
+    def album_tags_save(self, folder: str, draft: dict, rename: bool = False) -> dict:
+        path = self._album_dir(folder)
+        result = retag.write(path, retag.meta_from_dict(draft), rename=rename)
+        self.library = None                              # read the music folder again on next use
+        self._opened.pop(str(path), None)
+        if self.health_index is not None and self.health_index.get(folder) is not None:
+            self._health_refresh(folder)
+        self.broadcast({"type": "library", "changed": folder})
+        return result
 
     def library_file(self, rel: str) -> Path:
         """A file of an album (its cover, for the picker): relative to the music folder, or inside an opened album."""

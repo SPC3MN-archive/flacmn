@@ -23,6 +23,7 @@ from .. import __version__
 from ..ia_client import IAClient
 from . import audio
 from ..health import HealthError
+from ..retag import RetagError
 from .service import App, NotFound
 
 STATIC = Path(__file__).resolve().parent / "static"
@@ -72,6 +73,7 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
         return JSONResponse({"error": str(exc)}, status_code=400)
 
     @api.exception_handler(HealthError)
+    @api.exception_handler(RetagError)
     async def health_error(_request, exc):
         return JSONResponse({"error": str(exc)}, status_code=400)
 
@@ -199,6 +201,22 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     @api.get("/api/library/album")
     def library_album(folder: str):
         return core.library_album(folder)
+    @api.get("/api/library/tags")
+    def album_tags(folder: str):
+        return core.album_tags(folder)
+
+    @api.post("/api/library/tags/musicbrainz")
+    def album_tags_musicbrainz(body: dict = Body(...)):
+        return core.album_tags_musicbrainz(body["folder"], body.get("artist", ""), body.get("album", ""))
+
+    @api.post("/api/library/tags/preview")
+    def album_tags_preview(body: dict = Body(...)):
+        return core.album_tags_preview(body["folder"], body["meta"], body.get("release_id", ""))
+
+    @api.put("/api/library/tags")
+    def album_tags_save(body: dict = Body(...)):
+        return core.album_tags_save(body["folder"], body["meta"], bool(body.get("rename")))
+
     @api.post("/api/library/open")
     def library_open(body: dict = Body(...)):
         return core.open_album(body["path"])

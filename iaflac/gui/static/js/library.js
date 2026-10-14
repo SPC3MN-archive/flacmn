@@ -5,8 +5,9 @@
 import { api, url, on, waitJob } from "./api.js";
 import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText, albumQualityChip } from "./ui.js";
 import { now, onChange, playAlbum, toggle, playingPath } from "./player.js";
+import { openTagEditor } from "./tagedit.js";
 
-const state = { data: null, filter: "", selected: null, album: null, scanning: false, colw: null };
+const state = { data: null, filter: "", selected: null, album: null, scanning: false, colw: null, editing: false };
 let top = null, bottom = null, hooks = {};
 
 export function mountLibrary(topCard, bottomCard, opts) {
@@ -170,7 +171,17 @@ export async function openAlbum(folder) {
   await select(folder);
 }
 
+// Edit tags: the album's card becomes the editor; when it closes, the album is read again if anything was saved
+function editTags(folder) {
+  state.editing = true;
+  openTagEditor(bottom, folder, async (saved) => {
+    state.editing = false;
+    if (saved) { await select(folder); load(); } else renderAlbum();
+  });
+}
+
 async function select(folder) {
+  state.editing = false;
   state.selected = folder;
   renderRows();
   clear(bottom, h("div.empty", h("span.spinner"), "Reading the album…"));
@@ -193,7 +204,7 @@ function entryOf(al) {
 }
 
 function renderAlbum() {
-  if (!bottom) return;
+  if (!bottom || state.editing) return;                 // the tag editor has the card until it is saved or cancelled
   const al = state.album;
   if (!al) {
     clear(bottom, h("div.empty", icon("library"), h("b", "Choose an album"), "Its tracks and tag issues show here. Click a track to play it."));
@@ -224,6 +235,7 @@ function renderAlbum() {
         h("h2", entry.album || al.folder, kind, fmtChip),
         h("div.s", [entry.artist, entry.year, `${tracks.length} tracks`, fmtTime(total), al.folder + "/"].filter(Boolean).join(" · "))),
       playBtn,
+      h("button.btn.secondary", { onclick: () => editTags(al.folder) }, icon("tag"), "Edit tags"),
       h("button.btn.secondary", { onclick: () => hooks.openArt && hooks.openArt(al.folder) }, icon("disc"), "CD art")),
     al.issues.length ? h("div.issue-line", { style: { marginTop: 0, marginBottom: "10px" } }, ...al.issues.map((t) => chip(t, "warn", { icon: "alert" }))) : null,
     h("div.scroll.grow", table(tracks)));

@@ -406,7 +406,9 @@ def read_track(path: Path) -> dict:
                    disc=disc, disctotal=int(get("DISCTOTAL") or get("TOTALDISCS") or dtotal or 0),
                    date=get("DATE") or get("YEAR", ""), genre=get("GENRE", ""), mb_release_id=get("MUSICBRAINZ_ALBUMID", ""),
                    mb_releasegroup_id=get("MUSICBRAINZ_RELEASEGROUPID", ""), source_url=get("IAFLAC_SOURCE", ""),
-                   mb_recording_id=get("MUSICBRAINZ_TRACKID", ""), mb_track_id=get("MUSICBRAINZ_RELEASETRACKID", ""))
+                   mb_recording_id=get("MUSICBRAINZ_TRACKID", ""), mb_track_id=get("MUSICBRAINZ_RELEASETRACKID", ""),
+                   label=get("LABEL") or get("ORGANIZATION", ""), catalog=get("CATALOGNUMBER", ""),
+                   mb_albumartist_id=get("MUSICBRAINZ_ALBUMARTISTID", ""))
     else:
         tags = audio.tags or {}
 
@@ -421,7 +423,8 @@ def read_track(path: Path) -> dict:
                    mb_release_id=text("TXXX:MusicBrainz Album Id"),
                    mb_releasegroup_id=text("TXXX:MusicBrainz Release Group Id"), source_url=text("TXXX:IAFLAC_SOURCE"),
                    mb_recording_id=_ufid(tags) or text("TXXX:MusicBrainz Track Id"),
-                   mb_track_id=text("TXXX:MusicBrainz Release Track Id"))
+                   mb_track_id=text("TXXX:MusicBrainz Release Track Id"), label=text("TPUB"),
+                   catalog=text("TXXX:CATALOGNUMBER"), mb_albumartist_id=text("TXXX:MusicBrainz Album Artist Id"))
     return out
 
 

@@ -370,6 +370,43 @@ def find_matches(client: MBClient, meta: AlbumMeta, artist: str = "", album: str
     return out[:limit]
 
 
+def find_matches_by_songs(client: MBClient, meta: AlbumMeta, artist: str = "", limit: int = 8, lookups: int = 6,
+                          skip=()) -> list:
+    """When the album's name finds nothing (it is misspelled, or named differently), find its releases through its
+    songs instead: a few track titles are searched with the artist, the releases those recordings are on are ranked by
+    how many of the searched songs they hold and how close their track count is, and the best are looked up and
+    scored like find_matches (track count, lengths, names). Returns ReleaseMatch list, best first."""
+    artist = artist or meta.albumartist
+    titled = [t.title for t in sorted(meta.tracks, key=lambda t: (t.disc, t.track)) if t.title]
+    if not titled:
+        return []
+    picks = list(dict.fromkeys(titled[i] for i in sorted({0, len(titled) // 2, len(titled) - 1})))
+    total = len(meta.tracks)
+    seen: dict = {}                                   # release id -> [songs found on it, track count]
+    for title in picks:
+        try:
+            recordings = client.search_recordings(artist, title, limit=15)
+        except MBError:
+            continue
+        for rec in recordings:
+            for r in rec.get("releases", []):
+                rid = r.get("id")
+                if not rid or rid in skip:
+                    continue
+                count = r.get("track-count") or sum(m.get("track-count", 0) for m in r.get("media", []))
+                entry = seen.setdefault(rid, [set(), count])
+                entry[0].add(title)
+    ranked = sorted(seen.items(), key=lambda kv: (-len(kv[1][0]), abs((kv[1][1] or 999) - total)))
+    out = []
+    for rid, _ in ranked[:lookups]:
+        try:
+            out.append(score_release(meta, client.release(rid), artist, ""))
+        except MBError:
+            continue
+    out.sort(key=lambda m: -m.score)
+    return out[:limit]
+
+
 def apply_release(meta: AlbumMeta, release: dict) -> tuple:
     """(new AlbumMeta, warnings). Album fields always come from the release; track titles, numbers and IDs only when
     the track counts agree, paired in order."""

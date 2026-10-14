@@ -358,6 +358,21 @@ names, and anything in the other folders that is not audio (booklets, a cover) i
 the emptied folders go to the Trash, or `.iaflac-replaced/` in the library when there is no usable Trash. Nothing is
 deleted. The plan is always shown first, and a merge is refused if the folders changed after the plan was made.
 
+## Editing an album's tags (Library → Edit tags)
+
+Open an album in the Library tab and choose **Edit tags**. You can type changes by hand (album artist, album, date,
+genre, label, catalogue number, and each track's disc, number, title and artist), or fill them in from MusicBrainz:
+**Search** looks the album up by its name, and when the name is misspelled or named differently, by its songs, and
+scores each release on track count, track lengths and names. **Use** fills the form with that release (album fields
+always; track titles, numbers and IDs when the track counts agree), and every changed field is marked.
+
+Nothing is written until **Review changes** has listed every value that will change (old → new) and you choose **Save
+tags**. Only those tags change in the files, and only in files where something actually differs. Every other tag
+(ReplayGain, comments, lyrics...) and the embedded cover stay as they are. A release's MusicBrainz IDs are written too,
+so the Health Check can compare the album with it. TRACKTOTAL keeps saying how many tracks the album should have, so an
+incomplete album stays flagged. **Also rename the files** renames tracks to "03 - Title.flac" in the album's own naming
+style, and never over another file. FLAC and MP3 can be edited; other formats are listed and left alone.
+
 ## Your library and inventory
 
 ```bash

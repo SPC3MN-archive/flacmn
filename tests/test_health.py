@@ -607,3 +607,41 @@ class SearchLikeAlbumSearch(Base):
         self.assertFalse(health.is_upgrade(flac, True, 2500), "lossless and hi-res are both high quality")
         self.assertEqual(health.quality_label(True, 1435), "Hi-res")
         self.assertEqual(health.quality_label(True, 800), "Lossless")
+
+
+class AfterAFix(Api):
+    """What the Health Check screen shows after a change: a cover once chosen is no longer offered, and a replacement
+    reports each step for its progress bar."""
+
+    def test_the_covers_found_are_not_offered_again_once_one_is_saved(self):
+        from iaflac.cdart import ArtImage
+        folder = "Test Artist/Test Album"
+        self.wait(self.http.post("/api/health-check/scan", json={}).json()["job_id"])
+        Path(self.tmp.name, "new.jpg").write_bytes(jpeg(900))
+        im = ArtImage(id="img1", kind="front", source="upload", ref=str(Path(self.tmp.name) / "new.jpg"))
+        self.core.health_art["img1"] = im
+        self.core.health_found[folder] = {"folder": folder, "suggestions": [], "art": [im.to_dict()], "notes": []}
+        r = self.http.post("/api/health-check/cover", json={"folder": folder, "image_id": "img1", "replace": True})
+        self.assertEqual(r.status_code, 200, r.text)
+        search = self.http.get("/api/health-check/album", params={"folder": folder}).json()["search"]
+        self.assertEqual(search["art"], [], "the picker has nothing left to offer")
+        self.assertEqual((search["cover_done"]["written"], search["cover_done"]["px"], search["cover_done"]["replaced"]),
+                         ("cover.jpg", 900, True))
+
+    def test_a_replacement_reports_its_steps(self):
+        from iaflac.pipeline import Pipeline
+        folder = self.root / "Test Artist" / "Test Album (MP3)"
+        ia = self.core.client
+        cand = Pipeline(ia).load("t-flac")
+        h = health.scan(self.root, cache=Path(self.tmp.name) / "h2.json").get("Test Artist/Test Album (MP3)")
+        events = []
+        out = health.replace_album(ia, self.root, h, cand, trash=self.trash, progress=events.append)
+        self.assertTrue(out["ok"], out)
+        stages = [e.get("step") or e["stage"] for e in events]
+        self.assertEqual(stages[0], "preparing")
+        self.assertIn("download", stages)
+        self.assertIn("swapping", stages)
+        downloads = [e for e in events if e["stage"] == "download"]
+        self.assertTrue(all("done_bytes" in e and "total_bytes" in e and "index" in e for e in downloads))
+        self.assertEqual(downloads[-1]["done_bytes"], downloads[-1]["total_bytes"])
+        self.assertTrue(folder.is_dir())

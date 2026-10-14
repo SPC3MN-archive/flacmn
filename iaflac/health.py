@@ -1098,6 +1098,8 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     existing = (root / h.folder).resolve()
     if not existing.is_relative_to(root) or existing == root or not existing.is_dir():
         raise HealthError(f"no album folder {h.folder!r} in the library")
+    emit = progress or (lambda e: None)
+    emit({"stage": "replace", "step": "preparing", "identifier": cand.identifier})
     meta = tagging.from_candidate(cand)
     meta.albumartist, meta.album = h.artist, h.album              # your names stay, whatever the upload calls itself
     meta.date = meta.date or h.date or h.year
@@ -1107,6 +1109,7 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     if not result.ok:
         return {"ok": False, "folder": h.folder, "failures": result.failures,
                 "note": "your album was not touched; trying again resumes the download"}
+    emit({"stage": "replace", "step": "swapping", "identifier": cand.identifier})
     try:
         moved_to, carried = swap_in(existing, plan.folder, root, trash)
     except (ReplaceError, OSError) as exc:

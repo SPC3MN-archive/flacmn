@@ -5,7 +5,7 @@
 // A cover or the whole album can also be replaced with one the search found; the old one goes to the Trash. Every
 // replacement asks twice: the first click says what will happen, the second does it.
 
-import { api, url, on, waitJob } from "./api.js";
+import { api, url, on, waitJob, cancelJob } from "./api.js";
 import { h, clear, icon, chip, fmtBytes, fmtTime, toast, errorText } from "./ui.js";
 
 // the album's cover file; the URL carries the album's signature (which covers its cover files), so a replaced cover
@@ -22,7 +22,8 @@ const ICON = { missing_tracks: "music", low_quality: "alert", missing_art: "imag
 
 const state = {
   data: null, kind: "all", filter: "", selected: null, album: null, musicbrainz: false,
-  progress: null, searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", replacing: "", showAll: false,
+  progress: null, searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", showAll: false,
+  replace: null,       // the album replacement running: {folder, identifier, jobId, step, done, total, index, count}
 };
 let left = null, right = null, hooks = {};
 const els = {};
@@ -292,7 +293,7 @@ function archiveSection(a) {
   return h("div", head,
     h("div.muted.small", `Searched for ${s.query}: ${all.length} upload${all.length === 1 ? "" : "s"}`
       + (better ? `, ${better} better than your copy` : "") + "."),
-    art.length ? artPicker(a, art) : null,
+    s.cover_done ? coverDone(s.cover_done) : art.length ? artPicker(a, art) : null,
     all.length ? shown.map((x) => suggestionBox(a, x))
       : h("div.empty.small", icon("search"), h("b", "No uploads of this album on archive.org"),
         "Try Album Search with a shorter title."),
@@ -323,6 +324,14 @@ function artPicker(a, art) {
     })));
 }
 
+function coverDone(c) {
+  const what = [c.written, c.px ? `${c.px} px` : "", c.embedded ? `also embedded in ${c.embedded} track${c.embedded === 1 ? "" : "s"}` : ""]
+    .filter(Boolean).join(" · ");
+  return h("div.health-box", h("div.row", h("span", { style: { color: "var(--green)" } }, icon("check")),
+    h("div.grow", h("b", c.replaced ? "Cover replaced" : "Cover saved"), h("div.muted.small", what)),
+    h("span.muted.small", "Search again to choose a different one.")));
+}
+
 // the first click of a replacement only asks; clicking another replacement asks about that one instead
 function ask(key) {
   state.confirm = key;
@@ -338,7 +347,8 @@ function suggestionBox(a, x) {
   const tracks = x.provides.length ? h("div.provides", ...x.provides.map((p) => h("label.check",
     h("input", { type: "checkbox", checked: picks.has(p.file), onchange: (e) => { e.target.checked ? picks.add(p.file) : picks.delete(p.file); } }),
     h("span", `${p.disc > 1 ? p.disc + "-" : ""}${p.track || "?"}. ${p.title}`), h("span.muted.small", ` ${p.format} · ${fmtBytes(p.size)}`)))) : null;
-  const rkey = `album:${x.identifier}`, asking = state.confirm === rkey, running = state.busy === rkey;
+  const rkey = `album:${x.identifier}`, asking = state.confirm === rkey;
+  const r = state.replace, running = !!r && r.folder === a.folder && r.identifier === x.identifier;
   const have = Object.entries(a.formats || {}).map(([f, n]) => `${n} ${f}`).join(", ");
   return h("div.health-box",
     h("div.row", h("div.grow",
@@ -352,16 +362,16 @@ function suggestionBox(a, x) {
       + "It is downloaded and checked first; only then does your folder go to the Trash, with its booklets and other "
       + "files copied across. Your artist and album names are kept."
       + (x.tracks < a.track_count ? ` This upload has ${a.track_count - x.tracks} fewer track(s) than yours.` : ""))) : null,
+    running ? replaceProgress() : null,
     h("div.row", { style: { marginTop: "8px" } }, h("div.grow"),
       h("button.btn.ghost.sm", {
         title: "Look at it (spectrogram, tags) in Album Search first",
         onclick: () => hooks.openSearch && hooks.openSearch(a.artist, (a.search?.titles || [a.album]).slice(-1)[0]),
       }, "Open in Album Search"),
       asking ? h("button.btn.secondary.sm", { onclick: () => ask("") }, "Cancel") : null,
-      x.lossless || x.upgrade ? h("button.btn.sm" + (asking ? ".danger" : ".secondary"), {
-        onclick: () => (asking ? replaceAlbum(a.folder, x) : ask(rkey)), disabled: !!state.busy,
-      }, running ? h("span.spinner") : icon("refresh"),
-        running ? (state.replacing || "Replacing…") : asking ? "Yes, replace the album" : "Replace album") : null,
+      (x.lossless || x.upgrade) && !running ? h("button.btn.sm" + (asking ? ".danger" : ".secondary"), {
+        onclick: () => (asking ? replaceAlbum(a.folder, x) : ask(rkey)), disabled: !!state.busy || !!state.replace,
+      }, icon("refresh"), asking ? "Yes, replace the album" : "Replace album") : null,
       x.provides.length ? h("button.btn.primary.sm", { onclick: () => fetchTracks(a.folder, x), disabled: !!state.busy },
         state.busy === `fetch:${x.identifier}` ? h("span.spinner") : icon("download"), "Add to album") : null));
 }
@@ -406,27 +416,65 @@ async function fetchTracks(folder, x) {
   }
 }
 
+// ---- the album replacement's progress, drawn like a download in the queue ------------------------------------------
+const STEP = { preparing: "Reading the upload", download: "Downloading", tagging: "Writing tags",
+  swapping: "Swapping in: your old folder goes to the Trash", cancelling: "Cancelling" };
+let rp = null;          // the bar and its line, while shown: updated in place, so the page is not redrawn per event
+
+function replaceProgress() {
+  rp = { text: h("div.s.ellipsis"), bar: h("i") };
+  const box = h("div.q-item", { style: { padding: "6px 0 0", borderBottom: 0 } },
+    h("div.row", h("div.grow", { style: { minWidth: 0 } }, rp.text),
+      h("button.btn.ghost.sm", { onclick: cancelReplace, disabled: state.replace?.step === "cancelling" }, "Cancel")),
+    h("div.progress.busy", rp.bar));
+  paintReplace(true);                                  // drawn at once, before the box is on the page
+  return box;
+}
+
+function paintReplace(fresh = false) {
+  const r = state.replace;
+  if (!r || !rp || (!fresh && !rp.bar.isConnected)) return;
+  const pct = r.step === "download" && r.total ? Math.min(100, (100 * r.done) / r.total)
+    : ["tagging", "swapping"].includes(r.step) ? 100 : 0;
+  rp.bar.style.width = `${pct}%`;
+  rp.text.textContent = (STEP[r.step] || "Starting") + (r.step === "download"
+    ? `${r.count ? ` · file ${r.index} of ${r.count}` : ""} · ${fmtBytes(r.done)} of ${fmtBytes(r.total)}` : "");
+}
+
+async function cancelReplace() {
+  const r = state.replace;
+  if (!r) return;
+  r.step = "cancelling";
+  paintReplace();
+  try { await cancelJob(r.jobId); } catch (e) { /* it may have just finished */ }
+}
+
 async function replaceAlbum(folder, x) {
-  state.busy = `album:${x.identifier}`;
-  state.replacing = "Starting…";
   state.confirm = "";
+  state.replace = { folder, identifier: x.identifier, jobId: null, step: "preparing", done: 0, total: x.bytes, index: 0, count: x.tracks };
   renderRight();
   try {
     const { job_id } = await api("/health-check/replace", { method: "POST", body: { folder, identifier: x.identifier } });
+    state.replace.jobId = job_id;
     const r = await waitJob(job_id, (e) => {
-      if (e.stage === "download" && e.total_bytes) state.replacing = `Downloading ${Math.round(100 * e.done_bytes / e.total_bytes)}%`;
-      else if (e.stage === "tagging") state.replacing = "Tagging…";
-      if (state.selected === folder) renderRight();
+      const st = state.replace;
+      if (!st || st.step === "cancelling") return;
+      if (e.stage === "download") Object.assign(st, { step: "download", done: e.done_bytes || 0, total: e.total_bytes || st.total,
+        index: e.index || st.index, count: e.total || st.count });
+      else if (e.stage === "tagging") st.step = "tagging";
+      else if (e.stage === "replace" && e.step) st.step = e.step;
+      paintReplace();
     });
     if (r.ok) toast(`Replaced ${folder} with ${x.identifier}. Your old folder is in ${r.trash}`, "good", 9000);
     else for (const f of r.failures || []) toast(`${f} (${r.note})`, "bad", 9000);
+  } catch (e) {
+    if (errorText(e) === "cancelled") toast("Replacement cancelled. Your album was not touched; replacing it again resumes the download.", "", 7000);
+    else toast(`Could not replace the album: ${errorText(e)}`, "bad", 9000);
+  } finally {
+    state.replace = null;
+    rp = null;
     hooks.libraryChanged && hooks.libraryChanged();
     await load();
-  } catch (e) {
-    toast(`Could not replace the album: ${errorText(e)}`, "bad", 9000);
-  } finally {
-    state.busy = "";
-    state.replacing = "";
     renderRight();
   }
 }

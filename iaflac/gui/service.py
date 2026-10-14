@@ -948,6 +948,13 @@ class App:
         data, _ = self.health_image(image_id)
         out = health.save_cover(self._library(), entry, data, replace=replace)
         self._health_refresh(folder)
+        found = self.health_found.get(folder)
+        if found is not None:
+            # the choice is made: the covers found are no longer offered (Search again brings them back)
+            fresh = self.health_index.get(folder) if self.health_index is not None else None
+            found["art"] = []
+            found["cover_done"] = {"written": out["written"], "px": fresh.cover_px if fresh else 0,
+                                   "embedded": out.get("embedded", 0), "replaced": bool(out.get("trash"))}
         return out
 
     def health_replace(self, folder: str, identifier: str) -> dict:
@@ -963,6 +970,7 @@ class App:
         root = self._library()
 
         def run(job: Job):
+            self.jobs.progress(job)({"stage": "replace", "step": "preparing", "identifier": identifier})
             c = self.cand(identifier, media=media)
             if not c.probes and not c.alt_stats:
                 self.pipeline(job).probe(c)

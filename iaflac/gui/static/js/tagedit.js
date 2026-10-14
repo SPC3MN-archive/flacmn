@@ -17,9 +17,13 @@ let st = null;      // {folder, orig, draft, skipped, matches, mbState, release,
 export async function openTagEditor(el, folder, done) {
   card = el;
   onDone = done || (() => {});
-  st = { folder, orig: null, draft: null, skipped: [], matches: null, mbState: "", release: null, warnings: [],
+  st = { folder, orig: null, draft: null, skipped: [], matches: null, mbState: "", release: null, releaseInfo: null, warnings: [],
     review: null, rename: false, saving: false };
   clear(card, h("div.empty", h("span.spinner"), "Reading the tags…"));
+  if (!card.dataset.tagEditor) {                   // any typing in the form after a release was used: "with your edits"
+    card.dataset.tagEditor = "1";
+    card.addEventListener("input", (e) => { if (st && !st.review && e.target.closest(".tag-fields, .tagedit-table")) st.touched = true; });
+  }
   try {
     const r = await api("/library/tags", { query: { folder } });
     st.orig = r.meta;
@@ -120,14 +124,22 @@ async function lookup() {
   if (!st.review) renderMB();
 }
 
+// Use: fill the tags from the release and go straight to the review (Back to editing leaves them filled in)
 async function useRelease(x) {
   try {
     const r = await api("/library/tags/preview", { method: "POST", body: { folder: st.folder, meta: st.draft, release_id: x.release_id } });
     st.draft = r.meta;
     st.release = x.release_id;
+    st.releaseInfo = x;
+    st.touched = false;
     st.warnings = r.warnings || [];
+    if (!r.diff.length && !r.ids_added) {
+      render();
+      toast("Your tags already match this release: nothing would change", "", 5000);
+      return;
+    }
+    st.review = r;
     render();
-    toast(`Filled in from MusicBrainz: ${r.diff.length} value${r.diff.length === 1 ? "" : "s"} would change. Review them before saving.`, "", 6000);
   } catch (e) {
     toast(`MusicBrainz: ${errorText(e)}`, "bad");
   }
@@ -137,38 +149,74 @@ async function useRelease(x) {
 async function review() {
   try {
     const r = await api("/library/tags/preview", { method: "POST", body: { folder: st.folder, meta: st.draft } });
-    if (!r.diff.length && !st.rename) { toast("Nothing has changed yet"); return; }
-    st.review = r.diff;
+    if (!r.diff.length && !r.ids_added && !r.renames.length) { toast("Nothing has changed yet"); return; }
+    if (!r.diff.length && !r.ids_added) st.rename = true;   // the tags are right, only file names differ: that is the change
+    r.warnings = st.warnings;
+    st.review = r;
     render();
   } catch (e) {
     toast(`Could not check the changes: ${errorText(e)}`, "bad");
   }
 }
 
+const describeRelease = (x) => [x.title, x.date, x.country, x.formats,
+  x.discs ? `${x.discs.length > 1 ? x.discs.join("+") : x.discs[0]} tracks` : ""].filter(Boolean).join(" · ");
+
+// one change: what it is, the value now (struck through) and the value after saving (highlighted)
+function change(label, before, after) {
+  const val = (v, cls) => h("span.rv-val." + cls, v === "" || v == null ? h("i", "empty") : String(v));
+  return h("div.rv-row", h("span.rv-label", label), val(before, "old"), h("span.rv-arrow", "\u2192"), val(after, "new"));
+}
+
 function renderReview() {
-  const d = st.review;
-  const album = d.filter((x) => x.scope === "album"), tracks = d.filter((x) => x.scope === "track");
-  const name = (src) => src.split("/").pop();
-  const show = (v) => (v === "" || v == null ? h("span.muted", "(empty)") : String(v));
-  const row = (x) => h("tr", h("td.dim", x.scope === "track" ? h("span.ellipsis", name(x.source)) : ""), h("td", LABEL[x.field] || x.field),
-    h("td.dim", h("s", show(x.old))), h("td.strong", show(x.new)));
-  const files = new Set(tracks.map((x) => x.source));
-  const touched = album.length ? st.draft.tracks.length : files.size;
+  const r = st.review;
+  const d = r.diff;
+  const album = d.filter((x) => x.scope === "album");
+  const byTrack = new Map();
+  for (const x of d.filter((x) => x.scope === "track")) {
+    if (!byTrack.has(x.source)) byTrack.set(x.source, []);
+    byTrack.get(x.source).push(x);
+  }
+  const renames = st.rename ? new Map(r.renames.map(([o, n]) => [o, n])) : new Map();
+  const tracks = [...st.draft.tracks].sort((a, b) => a.disc - b.disc || a.track - b.track);
+  const changedTracks = tracks.filter((t) => byTrack.has(t.source) || renames.has(t.source));
+  const unchanged = tracks.length - changedTracks.length;
+  const files = album.length || r.ids_added ? tracks.length : changedTracks.length;
+  const count = d.length + (r.ids_added ? 1 : 0) + renames.size;
+  const multiDisc = tracks.some((t) => t.disc > 1);
+  const fromMB = st.release && st.releaseInfo;
+
+  const summary = h("div.rv-summary",
+    h("span.rv-icon", icon(fromMB ? "tag" : "edit")),
+    h("div.grow",
+      h("b", fromMB ? `From MusicBrainz: ${describeRelease(st.releaseInfo)}${st.touched ? ", with your edits" : ""}` : "Your edits"),
+      h("div.dim.small", `${count} change${count === 1 ? "" : "s"} in ${files} of ${tracks.length} file${tracks.length === 1 ? "" : "s"}. `
+        + "Nothing is written until you choose Save tags.")));
+
+  const albumSection = album.length || r.ids_added ? h("div.rv-section",
+    h("div.rv-head", h("b", "Album"), h("span.dim.small", "written to every track")),
+    ...album.map((x) => change(LABEL[x.field] || x.field, x.old, x.new)),
+    r.ids_added ? change("MusicBrainz release", st.orig.mb_release_id ? "another release" : "", fromMB ? "this release's IDs" : "added") : null) : null;
+
+  const trackSection = changedTracks.length ? h("div.rv-section",
+    h("div.rv-head", h("b", "Tracks"), h("span.dim.small", unchanged ? `${unchanged} other track${unchanged === 1 ? "" : "s"} unchanged` : "")),
+    ...changedTracks.map((t) => h("div.rv-track",
+      h("div.rv-track-head", h("span.rv-num", (multiDisc ? `${t.disc}-` : "") + String(t.track || "?").padStart(2, "0")),
+        h("b.ellipsis", t.title || "(no title)"), h("span.dim.small.ellipsis", t.source.split("/").pop())),
+      ...(byTrack.get(t.source) || []).map((x) => change(LABEL[x.field] || x.field, x.old, x.new)),
+      renames.has(t.source) ? change("File name", t.source.split("/").pop(), renames.get(t.source).split("/").pop()) : null))) : null;
+
   clear(card,
-    h("div.card-head", h("span.card-title", "Review changes"),
-      h("span.card-sub.grow", `${d.length} value${d.length === 1 ? "" : "s"} in ${touched} file${touched === 1 ? "" : "s"}`),
+    h("div.card-head", h("span.card-title", "Review changes"), h("span.grow"),
       h("button.btn.secondary.sm", { onclick: () => { st.review = null; render(); } }, "Back to editing"),
       h("button.btn.primary.sm", { onclick: save, disabled: st.saving }, st.saving ? h("span.spinner") : icon("check"), "Save tags")),
-    h("div.scroll.grow", h("table.grid.static",
-      h("thead", h("tr", h("th", "File"), h("th", "Tag"), h("th", "Now"), h("th", "After saving"))),
-      h("tbody", ...album.map(row), ...tracks.map(row)))),
-    st.draft.mb_release_id && st.draft.mb_release_id !== st.orig.mb_release_id
-      ? h("div.folder-line", icon("tag"), h("span", "Also writes the release's MusicBrainz IDs (album, release group, artist and "
-        + "each track), so the Health Check can compare the album with it.")) : null,
+    summary,
+    ...(r.warnings || []).map((w) => h("div.finding.warn", icon("alert"), h("span", w))),
+    h("div.scroll.grow.rv-body", albumSection, trackSection),
     h("label.check", { style: { marginTop: "10px" } },
-      h("input", { type: "checkbox", checked: st.rename, onchange: (e) => { st.rename = e.target.checked; } }),
-      "Also rename the files to match their tags (“03 - Title.flac”, in the album's own naming style)"),
-    h("div.folder-line", icon("info"), h("span", "Only these tags change. Every other tag, and the embedded cover, stay as they are.")));
+      h("input", { type: "checkbox", checked: st.rename, onchange: (e) => { st.rename = e.target.checked; renderReview(); } }),
+      `Also rename the files to match (\u201c03 - Title.flac\u201d)` + (r.renames.length ? `: ${r.renames.length} file${r.renames.length === 1 ? "" : "s"}` : ": none need it")),
+    h("div.folder-line", icon("info"), h("span", "Only the tags listed here change. Every other tag, and the embedded cover, stay as they are.")));
 }
 
 async function save() {
@@ -176,9 +224,11 @@ async function save() {
   renderReview();
   try {
     const r = await api("/library/tags", { method: "PUT", body: { folder: st.folder, meta: st.draft, rename: st.rename } });
-    const parts = [`Saved tags in ${r.written.length} file${r.written.length === 1 ? "" : "s"}`];
-    if (r.renamed.length) parts.push(`renamed ${r.renamed.length}`);
-    toast(parts.join(", "), "good");
+    const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+    const parts = [];
+    if (r.written.length) parts.push(`Saved tags in ${plural(r.written.length, "file")}`);
+    if (r.renamed.length) parts.push(parts.length ? `renamed ${r.renamed.length}` : `Renamed ${plural(r.renamed.length, "file")}`);
+    toast(parts.join(", ") || "Nothing needed changing", "good");
     for (const f of r.failures || []) toast(f, "bad", 8000);
     onDone(true);
   } catch (e) {

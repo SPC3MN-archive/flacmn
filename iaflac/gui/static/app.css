@@ -491,6 +491,32 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .tagedit-match .score { font-weight: 700; color: var(--primary-text); width: 26px; text-align: right; flex: none; }
 .tag-fields .field.changed, .tagedit-table input.changed { border-color: var(--amber); background: var(--warn-tint); }
 .tagedit-table th:nth-child(5) { width: 22%; } .tagedit-table th:nth-child(4) { width: 22%; }
+/* while tags are edited the editor gets the room: full width, most of the height; Now playing steps aside */
+#view-library.tag-editing { grid-template-rows: minmax(120px, 24%) minmax(0, 1fr); }
+#view-library.tag-editing > .card:not(.lib-top):not(.np-card) { grid-column: 1 / -1; }
+#view-library.tag-editing > .np-card { display: none; }
+
+/* the review: where the changes come from, then the album's and each track's changes as "now -> after saving" */
+.rv-summary { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-sunk);
+              margin-bottom: 10px; flex: none; }
+.rv-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--raised); display: grid; place-items: center; flex: none; }
+.rv-icon .icon { width: 16px; height: 16px; color: var(--primary-text); }
+.rv-body { display: flex; flex-direction: column; gap: 14px; }
+.rv-section { display: flex; flex-direction: column; gap: 6px; }
+.rv-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft); }
+.rv-row { display: grid; grid-template-columns: 140px minmax(0, 360px) 18px minmax(0, 1fr); align-items: center; gap: 8px;
+          font-size: 12.5px; padding: 2px 0; }
+.rv-label { color: var(--text-2); }
+.rv-val { padding: 2px 8px; border-radius: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          justify-self: start; max-width: 100%; }                       /* as wide as the value, not the column */
+.rv-val.old { color: var(--text-3); text-decoration: line-through; }
+.rv-val.new { background: var(--good-tint); color: var(--good-text); font-weight: 600; }
+.rv-val i { font-style: italic; text-decoration: none; opacity: .8; }
+.rv-arrow { color: var(--text-3); text-align: center; }
+.rv-track { display: flex; flex-direction: column; gap: 2px; padding: 6px 0 8px; border-bottom: 1px dashed var(--border-soft); }
+.rv-track:last-child { border-bottom: 0; }
+.rv-track-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; margin-bottom: 2px; }
+.rv-num { font-variant-numeric: tabular-nums; color: var(--text-3); font-size: 12px; flex: none; }
 
 /* ---- Settings ------------------------------------------------------------------------------------------------ */
 #view-settings { grid-template-columns: repeat(3, minmax(300px, 392px)); justify-content: center; align-content: start; }

@@ -551,7 +551,9 @@ class App:
         new, warnings = retag.meta_from_dict(draft), []
         if release_id:
             new, warnings = retag.from_release(new, self.mb.release(release_id))
-        return {"meta": new.to_dict(), "diff": retag.preview(old, new), "warnings": warnings}
+        return {"meta": new.to_dict(), "diff": retag.preview(old, new), "warnings": warnings,
+                "renames": retag.plan_renames(self._album_dir(folder), new),
+                "ids_added": bool(new.mb_release_id) and new.mb_release_id != old.mb_release_id}
 
     def album_tags_save(self, folder: str, draft: dict, rename: bool = False) -> dict:
         path = self._album_dir(folder)

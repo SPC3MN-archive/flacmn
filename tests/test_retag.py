@@ -148,3 +148,42 @@ class Api(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewData(Base):
+    def test_planning_renames_changes_nothing(self):
+        meta, _ = retag.read_album(self.folder)
+        meta.tracks[1].title = "Two"
+        before = sorted(p.name for p in self.folder.iterdir())
+        self.assertEqual(retag.plan_renames(self.folder, meta), [["02 Too.flac", "02 Two.flac"]])
+        self.assertEqual(sorted(p.name for p in self.folder.iterdir()), before)
+
+    def test_two_tracks_never_planned_onto_one_name(self):
+        meta, _ = retag.read_album(self.folder)
+        meta.tracks[0].track, meta.tracks[0].title = 2, "Two"
+        meta.tracks[1].title = "Two"
+        plan = retag.plan_renames(self.folder, meta)
+        self.assertEqual(len({new for _, new in plan}), len(plan))
+
+
+class ApiReview(Api):
+    def test_preview_says_what_renames_and_ids_come_with_it(self):
+        folder = "Test Artist/Test Albm"
+        meta = self.http.get("/api/library/tags", params={"folder": folder}).json()["meta"]
+        r = self.http.post("/api/library/tags/preview", json={"folder": folder, "meta": meta, "release_id": "rel-1"}).json()
+        self.assertTrue(r["ids_added"])
+        self.assertEqual(r["renames"], [["02 Too.flac", "02 Two.flac"]])
+        plain = self.http.post("/api/library/tags/preview", json={"folder": folder, "meta": meta}).json()
+        self.assertEqual((plain["diff"], plain["renames"], plain["ids_added"]), ([], [], False))
+
+
+class CaseOnlyRename(Base):
+    def test_a_change_of_letter_case_is_renamed_too(self):
+        """Windows and macOS see "01 one.flac" and "01 One.flac" as the same file: that is no clash."""
+        folder = self.root / "C" / "Case"
+        write_track(folder / "01 - so what.flac", flac_bytes(), "so what", 1, artist="C", album="Case")
+        meta, _ = retag.read_album(folder)
+        meta.tracks[0].title = "So What"
+        out = retag.write(folder, meta, rename=True)
+        self.assertEqual(out["renamed"], [["01 - so what.flac", "01 - So What.flac"]])
+        self.assertEqual([p.name for p in folder.iterdir()], ["01 - So What.flac"])

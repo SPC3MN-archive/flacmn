@@ -166,26 +166,43 @@ def write(folder: Path, meta: AlbumMeta, *, rename: bool = False) -> dict:
     return out
 
 
-def rename_files(folder: Path, meta: AlbumMeta) -> list:
-    """Rename each track to '<number> - <title><ext>' in the style the album already uses, inside its own subfolder.
-    A name that is taken (by another file) is left alone. Returns [[old, new]] for the files renamed."""
+def _other_file(new: Path, old: Path) -> bool:
+    """Is the name `new` taken by a file other than `old`? On Windows and macOS a change of letter case only
+    ("so what" -> "So What") names the same file, which is not a clash."""
+    return new.exists() and not os.path.samefile(new, old)
+
+
+def plan_renames(folder: Path, meta: AlbumMeta) -> list:
+    """[[old, new]]: the files that renaming would rename to '<number> - <title><ext>', in the style the album already
+    uses, inside their own subfolder. A name taken by another file is left out (that file is never overwritten)."""
     from .health import track_name
     existing = [t.source for t in meta.tracks]
     multi = len({t.disc for t in meta.tracks}) > 1
-    done = []
+    plan, taken = [], set()
     for t in sorted(meta.tracks, key=lambda x: (x.disc, x.track)):
         if not t.title or not t.track:
             continue
-        old = folder / t.source
+        old = Path(folder) / t.source
         new = old.with_name(track_name(existing, t.disc, t.track, t.title, old.suffix, multi))
-        if new.name == old.name:
+        if new.name == old.name or new.name.casefold() in taken:
             continue
-        if new.exists() and new.resolve() != old.resolve():
+        if _other_file(new, old):
             continue
-        os.replace(old, new)
-        rel = new.relative_to(folder).as_posix()
-        done.append([t.source, rel])
-        t.source = rel
+        taken.add(new.name.casefold())
+        plan.append([t.source, new.relative_to(folder).as_posix()])
+    return plan
+
+
+def rename_files(folder: Path, meta: AlbumMeta) -> list:
+    """Carry out plan_renames. Returns [[old, new]] for the files renamed."""
+    by_source = {t.source: t for t in meta.tracks}
+    done = []
+    for old, new in plan_renames(folder, meta):
+        if _other_file(Path(folder) / new, Path(folder) / old):    # appeared meanwhile: never overwritten
+            continue
+        os.replace(Path(folder) / old, Path(folder) / new)
+        by_source[old].source = new
+        done.append([old, new])
     return done
 
 

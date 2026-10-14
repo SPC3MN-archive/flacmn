@@ -174,14 +174,18 @@ export async function openAlbum(folder) {
 // Edit tags: the album's card becomes the editor; when it closes, the album is read again if anything was saved
 function editTags(folder) {
   state.editing = true;
+  const view = document.getElementById("view-library");
+  view.classList.add("tag-editing");
   openTagEditor(bottom, folder, async (saved) => {
     state.editing = false;
+    view.classList.remove("tag-editing");
     if (saved) { await select(folder); load(); } else renderAlbum();
   });
 }
 
 async function select(folder) {
   state.editing = false;
+  document.getElementById("view-library").classList.remove("tag-editing");
   state.selected = folder;
   renderRows();
   clear(bottom, h("div.empty", h("span.spinner"), "Reading the album…"));

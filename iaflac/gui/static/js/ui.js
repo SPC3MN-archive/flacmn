@@ -64,6 +64,7 @@ const PATHS = {
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
   prev: '<path d="M19 5v14L9 12z"/><path d="M6 5v14"/>',
   next: '<path d="M5 5v14l10-7z"/><path d="M18 5v14"/>',
+  pulse: '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',
 };
 
 export function icon(name, cls = "") {

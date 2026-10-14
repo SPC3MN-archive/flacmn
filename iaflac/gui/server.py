@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from .. import __version__
 from ..ia_client import IAClient
 from . import audio
+from ..health import HealthError
 from .service import App, NotFound
 
 STATIC = Path(__file__).resolve().parent / "static"
@@ -68,6 +69,10 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
 
     @api.exception_handler(ValueError)
     async def bad_value(_request, exc):
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    @api.exception_handler(HealthError)
+    async def health_error(_request, exc):
         return JSONResponse({"error": str(exc)}, status_code=400)
 
     @api.exception_handler(audio.AudioError)
@@ -202,6 +207,48 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def library_file(path: str):
         p = core.library_file(path)
         return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"))
+
+    # ---- Library Health Check (/api/health is the app's own status) ------------------------------------------
+    @api.get("/api/health-check")
+    def health_report():
+        return core.health_report()
+
+    @api.post("/api/health-check/scan")
+    def health_scan(body: dict = Body(default={})):
+        return core.health_scan(bool(body.get("musicbrainz")))
+
+    @api.get("/api/health-check/album")
+    def health_album(folder: str):
+        return core.health_album(folder)
+
+    @api.post("/api/health-check/search")
+    def health_search(body: dict = Body(...)):
+        return core.health_search(body["folder"])
+
+    @api.post("/api/health-check/fetch")
+    def health_fetch(body: dict = Body(...)):
+        return core.health_fetch(body["folder"], body["identifier"], list(body.get("files") or []))
+
+    @api.get("/api/health-check/image/{image_id}")
+    def health_image(image_id: str):
+        data, mime = core.health_image(image_id)
+        return Response(data, media_type=mime, headers={"Cache-Control": "max-age=86400"})
+
+    @api.post("/api/health-check/cover")
+    def health_cover(body: dict = Body(...)):
+        return core.health_cover(body["folder"], body["image_id"], bool(body.get("replace")))
+
+    @api.post("/api/health-check/replace")
+    def health_replace(body: dict = Body(...)):
+        return core.health_replace(body["folder"], body["identifier"])
+
+    @api.post("/api/health-check/merge-plan")
+    def health_merge_plan(body: dict = Body(...)):
+        return core.health_merge_plan(list(body.get("folders") or []))
+
+    @api.post("/api/health-check/merge")
+    def health_merge(body: dict = Body(...)):
+        return core.health_merge(list(body.get("folders") or []), body.get("token", ""))
 
     # ---- CD artwork --------------------------------------------------------------------------------------------
     @api.post("/api/art/find")

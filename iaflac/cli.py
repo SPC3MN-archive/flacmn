@@ -1,4 +1,4 @@
-"""Command line: find | genre | verify | get | inventory."""
+"""Command line: find | genre | verify | get | inventory | replace | health."""
 
 from __future__ import annotations
 
@@ -880,6 +880,90 @@ def cmd_replace(args, client: IAClient) -> int:
     return cmd_find(args, client)
 
 
+def cmd_health(args, client: IAClient) -> int:
+    """Library Health Check: missing songs, low quality, missing art and duplicates; --archive looks each flagged
+    album up on archive.org; --merge merges duplicate album folders (a plan unless --yes)."""
+    from . import health
+    library = library_from(args)
+    if library is None and is_interactive():
+        library = ask_library()
+    if library is None or not library.is_dir():
+        say("error: say where your library is with --library <folder> (or set IAFLAC_LIBRARY)")
+        return 2
+    mb_client = None
+    if args.musicbrainz or args.archive:
+        from .musicbrainz import MBClient
+        mb_client = MBClient()
+    if args.merge:
+        try:
+            plan = health.plan_merge(library, args.merge)
+        except health.HealthError as exc:
+            say(f"error: {exc}")
+            return 2
+        print(f"Merge into {plan['target']}/  ({plan['moves']} song(s) move in, {plan['drops']} worse cop(ies) to the Trash)")
+        for s in plan["songs"]:
+            keep = s["keep"]
+            where = "" if keep["folder"] == plan["target"] else f"  <- from {keep['folder']}/"
+            print(f"  keep  {keep['name']}  [{keep['format']}]{where}")
+            for d in s["drop"]:
+                print(f"  trash {d['folder']}/{d['name']}  [{d['format']}]")
+        for folder in plan["trash_folders"]:
+            print(f"  then {folder}/ goes to the Trash (anything in it that is not audio is copied across first)")
+        if not args.yes:
+            print("\nNothing was changed. Add --yes to merge.")
+            return 0
+        result = health.apply_merge(library, args.merge, plan["token"])
+        print(f"\nMerged: {len(result['moved'])} moved in, {len(result['trashed_files'])} file(s) and "
+              f"{len(result['trashed_folders'])} folder(s) to the Trash.")
+        for note in result["notes"]:
+            print(f"  {note}")
+        return 0
+    only = set(args.only.split(",")) if args.only else set(health.KINDS)
+    unknown = only - set(health.KINDS)
+    if unknown:
+        say(f"error: --only takes {', '.join(health.KINDS)}")
+        return 2
+    say(f"Checking {library}" + (" (comparing tracklists with MusicBrainz: about 5 s per album the first time)"
+                                 if args.musicbrainz else ""))
+    report = health.scan(library, mb_client=mb_client if args.musicbrainz else None,
+                         progress=lambda e: say(f"  {e['index']}/{e['total']}  {e['folder']}") if args.musicbrainz else None)
+    flagged = [a for a in report.albums if a.kinds & only]
+    if args.json:
+        out = report.to_dict()
+        out["albums"] = [a.to_dict() for a in flagged]
+        print(json.dumps(out, indent=2))
+        return 0
+    c = report.counts()
+    print(f"{c['albums']} albums, {c['healthy']} healthy · " + " · ".join(f"{c[k]} {health.LABEL[k].lower()}" for k in health.KINDS))
+    for a in flagged:
+        print(f"\n{a.artist} / {a.album}" + (f" ({a.year})" if a.year else "") + f"   [{a.folder}]")
+        for f in a.findings:
+            if f.kind in only:
+                print(f"  {'!' if f.severity == 'bad' else '-'} {health.LABEL[f.kind]}: {f.text}")
+        if a.musicbrainz:
+            print(f"    MusicBrainz: {a.musicbrainz}")
+        if args.archive and a.kinds & {health.MISSING, health.QUALITY, health.ART}:
+            try:
+                found = health.search_archive(client, a, mb_client=mb_client)
+            except IAError as exc:
+                print(f"    archive.org search failed: {exc}")
+                continue
+            useful = [s for s in found["suggestions"] if s["fixes"]][:3]
+            if not useful:
+                print("    archive.org: nothing found that fixes this")
+            for s in useful:
+                fixes = ", ".join(health.LABEL[k].lower() for k in s["fixes"])
+                print(f"    archive.org {s['identifier']}  ({s['format']}, {s['tracks']} tracks) fixes: {fixes}")
+                for p in s["provides"]:
+                    print(f"      has {p['title']}  ({p['file']})")
+    dupes = health.duplicate_albums(report.albums)
+    if dupes and health.DUPES in only:
+        print("\nMerge duplicate folders with:")
+        for g in dupes:
+            print("  python3 -m iaflac health --merge " + " ".join(f'"{a.folder}"' for a in g))
+    return 0
+
+
 def cmd_get(args, client: IAClient) -> int:
     if bool(args.dest) == bool(args.library):
         say("error: give exactly one of --dest (archive-style folders) or --library (Artist/Album folders)")
@@ -1031,10 +1115,19 @@ def main(argv=None) -> int:
     i.add_argument("--album", help="album name if the folder's own name is not it")
     i.add_argument("--yes", action="store_true", help="write the change (a backup is made first)")
 
+    hc = sub.add_parser("health", help="Library Health Check: missing songs, low quality, missing art, duplicates")
+    hc.add_argument("--library", help="your music folder (default: $IAFLAC_LIBRARY or the remembered one)")
+    hc.add_argument("--musicbrainz", action="store_true", help="also compare each tracklist with MusicBrainz to name missing songs (slow)")
+    hc.add_argument("--archive", action="store_true", help="search archive.org for each flagged album and say what each upload fixes")
+    hc.add_argument("--only", help="comma-separated: " + "missing_tracks,low_quality,missing_art,duplicates")
+    hc.add_argument("--json", action="store_true", help="print the report as JSON")
+    hc.add_argument("--merge", nargs="+", metavar="FOLDER", help="merge these album folders (Artist/Album) into one, best copy of each song")
+    hc.add_argument("--yes", action="store_true", help="with --merge: do it (without it, only the plan is shown)")
+
     args = ap.parse_args(argv)
     client = IAClient(cache_dir=args.cache)
     return {"find": cmd_find, "replace": cmd_replace, "genre": cmd_genre, "verify": cmd_verify, "get": cmd_get,
-                                  "inventory": cmd_inventory}[args.cmd](args, client)
+                                  "inventory": cmd_inventory, "health": cmd_health}[args.cmd](args, client)
 
 
 if __name__ == "__main__":

@@ -80,6 +80,13 @@ function describe(e) {
   return "Searching…";
 }
 
+/** Search for an album from another screen (the Health Check's "Open in Album Search"). */
+export function searchFor(artist, album) {
+  els.artist.value = artist || "";
+  els.album.value = album || "";
+  run();
+}
+
 async function run() {
   const artist = els.artist.value.trim(), album = els.album.value.trim();
   if (!artist && !album) { els.artist.focus(); return; }

@@ -159,6 +159,12 @@ function fitColumns(table, widths) {
   }
 }
 
+/** Show one album (from another screen). The list is loaded first if it isn't yet. */
+export async function openAlbum(folder) {
+  if (!state.data) await load();
+  await select(folder);
+}
+
 async function select(folder) {
   state.selected = folder;
   renderRows();

@@ -17,7 +17,7 @@ python3 -m iaflac replace --scan                      # albums you have only as 
 
 **Desktop app: flacmn.** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
 same engine: Album Search (every format ranked together, pick a track to see its 3D spectrogram and play it, MusicBrainz-checked
-tags), Case Art (CD jewel cases and cassette J-cards: scans, true-size print sheets and a 3D preview) and Library, with a download queue that saves albums as
+tags), Case Art (CD jewel cases and cassette J-cards: scans, true-size print sheets and a 3D preview), Library and Health Check (missing songs, low quality, missing art and duplicates; see below), with a download queue that saves albums as
 `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. On a Mac, `bash packaging/macos/dev_setup.sh` does
 the whole setup from a checkout and opens it (`--app` also builds `dist/flacmn.app`). Installers are built by
 `.github/workflows/release.yml`; see `packaging/README.md`.
@@ -298,6 +298,51 @@ for example a deluxe edition), and the inventory change. One `y` does everything
 
 An album that already contains any FLAC is never replaced. Without a terminal, `find --save --yes` will not replace an
 album unless you also pass `--replace` (`replace ... --save 1 --yes` counts as explicit).
+
+## Library Health Check: missing songs, low quality, missing art, duplicates
+
+```bash
+python3 -m iaflac health                               # check every album in the library
+python3 -m iaflac health --musicbrainz                 # also compare tracklists with MusicBrainz (names the missing songs; slow)
+python3 -m iaflac health --archive --only missing_tracks,missing_art   # and say which archive.org uploads fix each album
+python3 -m iaflac health --merge "Artist/Album" "Artist/Album (Deluxe)"          # the merge plan
+python3 -m iaflac health --merge "Artist/Album" "Artist/Album (Deluxe)" --yes    # do it
+```
+
+In the app this is the **Health Check** tab. Each album is checked for:
+
+| Problem | What counts |
+|---|---|
+| **Missing songs** | gaps in the track numbers, fewer tracks than `TRACKTOTAL`/`DISCTOTAL` say, or (with MusicBrainz on) songs of the album's release that are not in the folder. The release is the one in the tags, else the smallest official release holding every song you have, so a standard edition is not flagged for the deluxe edition's bonus tracks |
+| **Low quality** | lossy files (MP3, AAC, Ogg...), lossy below 220 kbps (marked bad), lossless below CD resolution, unreadable files, an album mixing lossless and lossy tracks |
+| **Missing art** | no embedded cover and no `cover.jpg`/`folder.jpg`, or a cover under 500 px |
+| **Duplicates** | the same album in two or more folders (years and edition words such as "Deluxe" or "Remastered" ignored), or the same song twice in one folder |
+
+Checking reads tags and headers only. Each album is cached by its files' sizes and dates, so a second check only
+reads what changed.
+
+**Search the Internet Archive** (one album at a time) lists the uploads of that album and what each one fixes: which
+of the missing songs it has (matched by title, or by number when the upload has the same numbering as your copy), whether
+it is a lossless copy, and its cover, plus the Cover Art Archive's front cover when the MusicBrainz release is known.
+Only item listings are read. Then:
+
+- **Add to album** downloads the ticked tracks into the album folder. Each one is checked against archive.org's
+  checksum (and `flac -t`), tagged with the album's names, and named like the tracks already there
+  (`03 - Title.flac`). A WAV is encoded to FLAC. A file that is already there is never overwritten.
+- **Use as cover** saves `cover.jpg` for an album with none. **Replace cover** (it asks first) moves your cover file
+  to the Trash, along with a copy of the embedded cover, writes the new one, and embeds it in the tracks that had one
+  embedded. Only their picture changes.
+- **Replace album** (any lossless upload; it asks first and shows both track counts and formats) downloads the upload
+  into a hidden staging folder beside your album and checks every file against archive.org's checksums. Only then does
+  your folder go to the Trash, with anything in it that is not audio copied across, and the new one take its place
+  under the same folder name, tagged with your artist and album names. If the download fails or is cancelled, your
+  album is untouched, and trying again resumes it. A lossy upload never replaces an album.
+
+**Merge** keeps the best copy of every song in one folder: lossless over lossy, then the higher resolution or bitrate.
+The folder with the most lossless songs stays. Songs that only the other copy has are moved in and given the album's
+names, and anything in the other folders that is not audio (booklets, a cover) is copied across. The worse copies and
+the emptied folders go to the Trash, or `.iaflac-replaced/` in the library when there is no usable Trash. Nothing is
+deleted. The plan is always shown first, and a merge is refused if the folders changed after the plan was made.
 
 ## Your library and inventory
 

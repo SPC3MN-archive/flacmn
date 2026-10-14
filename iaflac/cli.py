@@ -891,7 +891,7 @@ def cmd_health(args, client: IAClient) -> int:
         say("error: say where your library is with --library <folder> (or set IAFLAC_LIBRARY)")
         return 2
     mb_client = None
-    if args.musicbrainz or args.archive:
+    if not args.offline:                    # albums tagged with MusicBrainz IDs are always compared with their release
         from .musicbrainz import MBClient
         mb_client = MBClient()
     if args.merge:
@@ -923,10 +923,10 @@ def cmd_health(args, client: IAClient) -> int:
     if unknown:
         say(f"error: --only takes {', '.join(health.KINDS)}")
         return 2
-    say(f"Checking {library}" + (" (comparing tracklists with MusicBrainz: about 5 s per album the first time)"
-                                 if args.musicbrainz else ""))
-    report = health.scan(library, mb_client=mb_client if args.musicbrainz else None,
-                         progress=lambda e: say(f"  {e['index']}/{e['total']}  {e['folder']}") if args.musicbrainz else None)
+    say(f"Checking {library}" + (" (searching MusicBrainz for untagged albums: about 5 s per album the first time)"
+                                 if args.musicbrainz and mb_client else ""))
+    report = health.scan(library, mb_client=mb_client, search_untagged=bool(args.musicbrainz),
+                         progress=lambda e: say(f"  {e['index']}/{e['total']}  {e['folder']}") if e.get("step") == "MusicBrainz" else None)
     flagged = [a for a in report.albums if a.kinds & only]
     if args.json:
         out = report.to_dict()
@@ -1117,7 +1117,10 @@ def main(argv=None) -> int:
 
     hc = sub.add_parser("health", help="Library Health Check: missing songs, low quality, missing art, duplicates")
     hc.add_argument("--library", help="your music folder (default: $IAFLAC_LIBRARY or the remembered one)")
-    hc.add_argument("--musicbrainz", action="store_true", help="also compare each tracklist with MusicBrainz to name missing songs (slow)")
+    hc.add_argument("--musicbrainz", action="store_true",
+                    help="also search MusicBrainz for albums without MusicBrainz tags, to name their missing songs (slow); "
+                         "tagged albums are always compared with their release")
+    hc.add_argument("--offline", action="store_true", help="no MusicBrainz at all: only what the files themselves say")
     hc.add_argument("--archive", action="store_true", help="search archive.org for each flagged album and say what each upload fixes")
     hc.add_argument("--only", help="comma-separated: " + "missing_tracks,low_quality,missing_art,duplicates")
     hc.add_argument("--json", action="store_true", help="print the report as JSON")

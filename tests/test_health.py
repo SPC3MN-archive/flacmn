@@ -165,6 +165,9 @@ class FakeMB:
     def art_listing(self, rid):
         return [{"types": ["Front"], "image": f"https://coverartarchive.org/{rid}/front.jpg", "thumbnails": {}}]
 
+    def cover(self, rid, group=""):
+        return None
+
 
 def mb_release(rid, titles, title="Test Album", artist="Test Artist"):
     return {"id": rid, "title": title, "date": "2001", "country": "US", "status": "Official",
@@ -177,7 +180,7 @@ class MusicBrainz(Base):
         self.album("Test Artist/Test Album", [(1, "One"), (2, "Two"), (3, "Four")], cover=jpeg())
         mb = FakeMB([mb_release("std", ["One", "Two", "Three", "Four"]),
                      mb_release("dlx", ["One", "Two", "Three", "Four", "Bonus", "Demo"])])
-        a = self.scan(mb_client=mb).albums[0]
+        a = self.scan(mb_client=mb, search_untagged=True).albums[0]
         f = [f for f in a.findings if f.kind == health.MISSING][0]
         self.assertEqual([m["title"] for m in f.missing], ["Three"], "the standard edition, not the deluxe one")
         self.assertIn("compared with Test Album", a.musicbrainz)
@@ -185,7 +188,7 @@ class MusicBrainz(Base):
     def test_a_complete_album_clears_a_numbering_guess(self):
         self.album("Test Artist/Test Album", [(1, "One"), (3, "Two")], cover=jpeg())
         mb = FakeMB([mb_release("std", ["One", "Two"])])
-        a = self.scan(mb_client=mb).albums[0]
+        a = self.scan(mb_client=mb, search_untagged=True).albums[0]
         self.assertNotIn(health.MISSING, a.kinds)
         self.assertTrue(a.musicbrainz.startswith("complete"))
 
@@ -526,7 +529,7 @@ class MusicBrainzByIds(Base):
         self.album("Test Artist/Test Album (2011 Remaster)", [(1, "One"), (2, "Two"), (3, "Three"), (4, "Four")],
                    album="Test Album (2011 Remaster)", cover=jpeg())
         mb = FakeMBIds()
-        a = self.scan(mb_client=mb).albums[0]
+        a = self.scan(mb_client=mb, search_untagged=True).albums[0]
         self.assertTrue(a.musicbrainz.startswith("complete"), a.musicbrainz)
         self.assertTrue(any(c[0] == "search_recordings" for c in mb.calls if isinstance(c, tuple)))
 
@@ -645,3 +648,92 @@ class AfterAFix(Api):
         self.assertTrue(all("done_bytes" in e and "total_bytes" in e and "index" in e for e in downloads))
         self.assertEqual(downloads[-1]["done_bytes"], downloads[-1]["total_bytes"])
         self.assertTrue(folder.is_dir())
+
+
+class MusicBrainzTags(Base):
+    """Albums tagged with MusicBrainz IDs (Picard) are always compared with their release, a lookup or two each and no
+    searching; untagged albums are only looked up when asked, since that means searching."""
+
+    def tagged_album(self):
+        folder = self.root / "Test Artist" / "Test Album"
+        for n, title in ((1, "One"), (2, "Two"), (4, "Four")):
+            write_track(folder / f"{n:02d} - {title}.flac", flac_bytes(), title, n,
+                        tags={"MUSICBRAINZ_ALBUMID": "rel-album", "MUSICBRAINZ_TRACKID": f"rec-{title}"})
+        (folder / "cover.jpg").write_bytes(jpeg())
+
+    def test_a_tagged_album_is_compared_without_searching(self):
+        self.tagged_album()
+        mb = FakeMBIds()
+        mb.album["title"] = "Something Else Entirely"          # the tags lead to it, whatever it is called
+        a = self.scan(mb_client=mb).albums[0]
+        self.assertEqual([m["title"] for f in a.findings if f.kind == health.MISSING for m in f.missing], ["Three"])
+        self.assertEqual(mb.calls, [("release", "rel-album")], "one lookup: the tags' own release, no searches")
+
+    def test_an_untagged_album_is_left_alone_unless_asked(self):
+        self.album("Test Artist/Test Album", [(1, "One"), (2, "Two"), (4, "Four")], cover=jpeg())
+        mb = FakeMBIds()
+        a = self.scan(mb_client=mb).albums[0]
+        self.assertEqual(mb.calls, [])
+        self.assertEqual(a.musicbrainz, "")
+        self.assertIn("Missing track 3 of 4", [f.text for f in a.findings if f.kind == health.MISSING][0])
+
+
+class RedownloadComplete(Base):
+    """When songs are missing, an upload with the whole album can be downloaded again in place of yours, as long as it
+    is no worse than your copy."""
+
+    def setUp(self):
+        super().setUp()
+        self.album("Test Artist/Test Album", [(1, "One"), (2, "Two"), (4, "Four")], total=4, cover=jpeg())
+        whole = {f"{n:02d} - {t}.flac": flac_bytes() for n, t in ((1, "One"), (2, "Two"), (3, "Three"), (4, "Four"))}
+        part = {f"{n:02d} - {t}.flac": flac_bytes() for n, t in ((1, "One"), (3, "Three"))}
+        mp3 = {f"{n:02d} - {t}.mp3": mp3_bytes(320, frames=400) for n, t in ((1, "One"), (2, "Two"), (3, "Three"), (4, "Four"))}
+        self.ia = FakeIA([FakeItem("whole", "Test Artist - Test Album", "Test Artist", whole),
+                          FakeItem("part", "Test Artist - Test Album", "Test Artist", part),
+                          FakeItem("whole-mp3", "Test Artist - Test Album", "Test Artist", mp3, fmt="VBR MP3")])
+        for f in self.ia.items["whole-mp3"].metadata["files"]:
+            f["length"] = str(400 * 1152 / 44100)
+        for item in self.ia.items.values():                         # archive.org reads titles for MP3s too
+            for f in item.metadata["files"]:
+                if f["name"].endswith(".mp3"):
+                    f["title"], f["track"] = f["name"][5:-4], f["name"][:2]
+        self.h = self.scan().albums[0]
+
+    def test_complete_uploads_are_marked_and_come_first(self):
+        out = health.search_archive(self.ia, self.h)
+        by = {s["identifier"]: s for s in out["suggestions"]}
+        self.assertEqual(out["suggestions"][0]["identifier"], "whole")
+        self.assertTrue(by["whole"]["complete"] and by["whole"]["redownload"])
+        self.assertEqual(by["whole"]["album_tracks"], 4)
+        self.assertFalse(by["part"]["complete"], "two tracks are not the album")
+        self.assertTrue(by["whole-mp3"]["complete"])
+        self.assertFalse(by["whole-mp3"]["redownload"], "MP3s never take the place of a FLAC album")
+
+    def test_redownload_puts_the_complete_album_in_place(self):
+        from iaflac.pipeline import Pipeline
+        out = health.replace_album(self.ia, self.root, self.h, Pipeline(self.ia).load("whole"), trash=self.trash, complete=True)
+        self.assertTrue(out["ok"], out)
+        folder = self.root / "Test Artist" / "Test Album"
+        self.assertEqual(sorted(p.name for p in folder.iterdir() if p.suffix == ".flac"),
+                         ["01 - One.flac", "02 - Two.flac", "03 - Three.flac", "04 - Four.flac"])
+        self.assertNotIn(health.MISSING, self.scan().albums[0].kinds)
+
+    def test_a_lower_quality_upload_is_refused(self):
+        from iaflac.pipeline import Pipeline
+        with self.assertRaises(health.HealthError):
+            health.replace_album(self.ia, self.root, self.h, Pipeline(self.ia).load("whole-mp3", media="mp3"),
+                                 trash=self.trash, complete=True)
+        self.assertEqual(len([p for p in (self.root / "Test Artist" / "Test Album").iterdir() if p.suffix == ".flac"]), 3)
+
+
+class RedownloadKeepsMusicBrainz(RedownloadComplete):
+    def test_the_new_files_keep_the_release_id_and_your_names(self):
+        from iaflac.pipeline import Pipeline
+        from iaflac.tagging import read_track
+        self.h.mb_release_id = "rel-album"
+        mb = FakeMB([mb_release("rel-album", ["One", "Two", "Three", "Four"], title="Some Other Title")])
+        out = health.replace_album(self.ia, self.root, self.h, Pipeline(self.ia).load("whole"), trash=self.trash,
+                                   complete=True, mb_client=mb)
+        self.assertTrue(out["ok"], out)
+        t = read_track(self.root / "Test Artist" / "Test Album" / "03 - Three.flac")
+        self.assertEqual((t["mb_release_id"], t["album"], t["albumartist"]), ("rel-album", "Test Album", "Test Artist"))

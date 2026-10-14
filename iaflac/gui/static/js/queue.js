@@ -27,20 +27,46 @@ export async function mountQueue() {
   update();
 }
 
+// album replacements from the Health Check: shown like downloads, with a bar, rather than as background tasks
+const isReplace = (j) => j.kind === "health-replace" && (j.state === "running" || j.state === "queued");
+
 function update() {
   const list = [...items.values()];
   const active = list.filter((i) => i.state === "downloading" || i.state === "tagging");
   const waiting = list.filter((i) => i.state === "queued");
-  const running = [...jobs.values()].filter((j) => j.state === "running" || j.state === "queued");
+  const replacing = [...jobs.values()].filter(isReplace);
+  const running = [...jobs.values()].filter((j) => (j.state === "running" || j.state === "queued") && !isReplace(j));
   let t = "Queue · empty";
-  if (active.length) t = `Queue · ${active.length} downloading`;
+  if (replacing.length) t = `Queue · replacing ${replacing.length} album${replacing.length === 1 ? "" : "s"}`;
+  else if (active.length) t = `Queue · ${active.length} downloading`;
   else if (waiting.length) t = `Queue · ${waiting.length} waiting`;
   else if (list.some((i) => i.state === "paused")) t = "Queue · paused";
   else if (running.length) t = `${running.length} task${running.length === 1 ? "" : "s"} running`;
   else if (list.length) t = `Queue · ${list.filter((i) => i.state === "done").length} done`;
   textEl.textContent = t;
-  chipEl.classList.toggle("busy", !!(active.length || running.length));
+  chipEl.classList.toggle("busy", !!(active.length || running.length || replacing.length));
   if (!pop.hidden) render();
+  if (running.length || replacing.length) recheckSoon();
+}
+
+// A job's "done" event can be missed (one that finished while the page was loading, or while the connection was
+// re-made), which left the chip saying "1 task running" for good. While anything looks busy, ask the server again
+// every few seconds.
+let recheck = null;
+function recheckSoon() {
+  if (recheck) return;
+  recheck = setTimeout(async () => {
+    recheck = null;
+    try {
+      const now = new Map((await api("/jobs")).map((j) => [j.id, j]));
+      for (const [id, j] of jobs) {
+        const fresh = now.get(id);
+        if (fresh) jobs.set(id, { ...j, ...fresh });
+        else if (j.state === "running" || j.state === "queued") jobs.set(id, { ...j, state: "done" });
+      }
+    } catch (e) { /* the server answers again shortly */ }
+    update();
+  }, 4000);
 }
 
 function open() {
@@ -64,14 +90,37 @@ async function act(id, action) {
 
 const STATE = { queued: "Waiting", downloading: "Downloading", tagging: "Writing tags", paused: "Paused", failed: "Failed", done: "Saved", cancelled: "Cancelled" };
 
+const REPLACE_STEP = { preparing: "Reading the upload", download: "Downloading", tagging: "Writing tags",
+  swapping: "Swapping in: the old folder goes to the Trash" };
+
+// one album replacement, drawn like a download: what it is, the step with files and sizes, a green bar, Cancel
+function replaceItem(j) {
+  const e = j.progress || {};
+  const step = e.stage === "download" ? "download" : e.stage === "tagging" ? "tagging" : e.stage === "replace" ? e.step : "preparing";
+  const pct = step === "download" && e.total_bytes ? Math.min(100, (100 * (e.done_bytes || 0)) / e.total_bytes)
+    : ["tagging", "swapping"].includes(step) ? 100 : 0;
+  const [album, from] = j.label.split(" \u2190 ");
+  return h("div.q-item",
+    h("div.row", h("div.grow", { style: { minWidth: 0 } },
+      h("div.t.ellipsis", `Replacing ${album}`),
+      h("div.s.ellipsis", (REPLACE_STEP[step] || "Starting") + (step === "download"
+        ? `${e.total ? ` · file ${e.index} of ${e.total}` : ""} · ${fmtBytes(e.done_bytes)} of ${fmtBytes(e.total_bytes)}` : "")
+        + (from ? ` · from ${from}` : ""))),
+      h("button.btn.ghost.sm", { onclick: () => cancelJob(j.id) }, "Cancel")),
+    h("div.progress", h("i", { style: { width: `${pct}%` } })));
+}
+
 function render() {
   const list = [...items.values()].sort((a, b) => a.order - b.order || a.added - b.added);
-  const running = [...jobs.values()].filter((j) => j.state === "running" || j.state === "queued").sort((a, b) => a.created - b.created);
+  const replacing = [...jobs.values()].filter(isReplace).sort((a, b) => a.created - b.created);
+  const running = [...jobs.values()].filter((j) => (j.state === "running" || j.state === "queued") && !isReplace(j))
+    .sort((a, b) => a.created - b.created);
   const finished = list.some((i) => ["done", "cancelled"].includes(i.state));
   clear(pop,
     h("div.card-head", h("span.card-title.grow", "Downloads"),
       finished ? h("button.btn.ghost.sm", { onclick: async () => { await api("/queue/clear", { method: "POST" }); items.clear(); for (const it of await api("/queue")) items.set(it.id, it); update(); } }, "Clear finished") : null),
     h("div.scroll", { style: { maxHeight: "50vh" } },
+      replacing.map(replaceItem),
       list.length ? list.map((it) => {
         const pct = it.total_bytes ? Math.min(100, (it.done_bytes / it.total_bytes) * 100) : it.state === "done" ? 100 : 0;
         const btns = [];
@@ -88,7 +137,7 @@ function render() {
           h("div.progress" + (it.state === "done" ? "" : ".busy"), h("i", { style: { width: `${pct}%`, background: it.state === "failed" ? "var(--red)" : null } })),
           it.error ? h("div.s", { style: { color: "var(--bad-text)" } }, it.error) : null,
           problems.length ? h("div.s", { style: { color: "var(--warn-text)" } }, problems.slice(0, 3).join(" · ")) : null);
-      }) : h("div.muted", { style: { padding: "8px 0" } }, "Nothing queued. Use Add to library on Album Search.")),
+      }) : replacing.length ? null : h("div.muted", { style: { padding: "8px 0" } }, "Nothing queued. Use Add to library on Album Search.")),
     running.length ? h("div", h("hr.hr"), h("div.section-label", { style: { marginBottom: "6px" } }, "Working on"),
       ...running.map((j) => h("div.job-item", h("span.spinner"), h("span.grow.ellipsis", j.label),
         h("button.btn.ghost.sm", { onclick: () => cancelJob(j.id) }, icon("x"))))) : null);

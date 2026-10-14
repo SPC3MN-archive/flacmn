@@ -834,7 +834,8 @@ class App:
         return out
 
     def health_scan(self, musicbrainz: bool = False) -> dict:
-        """Check every album in the background (one check at a time); progress and a "health" event follow."""
+        """Check every album in the background (one check at a time); progress and a "health" event follow. Albums with
+        MusicBrainz IDs in their tags are always compared with their release; `musicbrainz` searches for the rest."""
         root = self._library()
         with self._lock:
             if self._health_job:
@@ -842,15 +843,15 @@ class App:
 
             def run(job: Job):
                 try:
-                    self.health_index = health.scan(root, mb_client=self.mb if musicbrainz else None,
-                                              progress=self.jobs.progress(job), cancel=job.cancelled)
+                    self.health_index = health.scan(root, mb_client=self.mb, search_untagged=musicbrainz,
+                                                    progress=self.jobs.progress(job), cancel=job.cancelled)
                     return self.health_index.counts()
                 finally:
                     with self._lock:
                         self._health_job = None
                     self.broadcast({"type": "health"})
 
-            label = "health check" + (" with MusicBrainz" if musicbrainz else "") + f": {root}"
+            label = "health check" + (" with a MusicBrainz search" if musicbrainz else "") + f": {root}"
             self._health_job = self.jobs.submit("health", label, run).id
             return {"job_id": self._health_job}
 
@@ -867,7 +868,8 @@ class App:
         root = self._library()
         self.health_index.albums = [a for a in self.health_index.albums if a.folder not in gone]
         try:
-            fresh = health.check_one(root, folder, self.mb if self.health_index.musicbrainz else None)
+            fresh = health.check_one(root, folder, self.mb if self.health_index.mb_tags else None,
+                                     search_untagged=self.health_index.musicbrainz)
         except health.HealthError:
             fresh = None
             self.health_index.albums = [a for a in self.health_index.albums if a.folder != folder]
@@ -964,7 +966,7 @@ class App:
         offer = next((s for s in found.get("suggestions", []) if s["identifier"] == identifier), None)
         if offer is None:
             raise ValueError("search the Internet Archive for this album first: only an upload it found can replace it")
-        if not (offer["lossless"] or offer["upgrade"]):
+        if not (offer["lossless"] or offer["upgrade"] or offer.get("redownload")):
             raise ValueError("that upload is lossy and not a clear step up from your copy, so it does not replace it")
         media = offer["media"]
         root = self._library()
@@ -976,11 +978,14 @@ class App:
                 self.pipeline(job).probe(c)
             try:
                 return health.replace_album(self.client, root, entry, c, opts=self.save_options(), mb_client=self.mb,
-                                            progress=self.jobs.progress(job), cancel=job.cancelled)
+                                            progress=self.jobs.progress(job), cancel=job.cancelled,
+                                            complete=bool(offer.get("redownload")) and not offer["upgrade"])
             finally:
                 self._health_refresh(folder)
 
-        return {"job_id": self.jobs.submit("health-replace", f"replace {folder} with {identifier}", run).id}
+        # the queue shows this like a download: the album, and where the new copy comes from
+        label = f"{entry.artist} / {entry.album} \u2190 {identifier}"
+        return {"job_id": self.jobs.submit("health-replace", label, run).id}
 
     def health_merge_plan(self, folders: list) -> dict:
         return health.plan_merge(self._library(), folders)

@@ -129,7 +129,8 @@ class HealthReport:
     root: str
     albums: list = field(default_factory=list)       # [AlbumHealth], every album checked, sorted by artist and album
     checked_at: float = 0.0
-    musicbrainz: bool = False
+    musicbrainz: bool = False          # untagged albums were searched on MusicBrainz too
+    mb_tags: bool = False              # albums with MusicBrainz IDs in their tags were compared with their release
 
     def counts(self) -> dict:
         out = {"albums": len(self.albums), "healthy": sum(1 for a in self.albums if a.ok)}
@@ -141,7 +142,7 @@ class HealthReport:
         return next((a for a in self.albums if a.folder == folder), None)
 
     def to_dict(self) -> dict:
-        return {"root": self.root, "checked_at": self.checked_at, "musicbrainz": self.musicbrainz,
+        return {"root": self.root, "checked_at": self.checked_at, "musicbrainz": self.musicbrainz, "mb_tags": self.mb_tags,
                 "counts": self.counts(), "albums": [a.to_dict() for a in self.albums]}
 
 
@@ -492,24 +493,31 @@ def _release_count(r: dict) -> int:
     return r.get("track-count") or sum(m.get("track-count", 0) for m in r.get("media", [])) or 0
 
 
-def candidate_releases(mb_client, h: AlbumHealth) -> list:
-    """[(release id, exact)] to try, best first. Exact ones come from the tags: the album's release ID, the release a
-    release-track ID belongs to. Then the releases the tagged recordings are on, the releases whose name is like the
-    album's (loosely: a release only counts later if it holds the songs that are here), and, when nothing else turned
-    up, the releases that a few of the songs, searched by title, are on."""
+def has_mb_tags(h: AlbumHealth) -> bool:
+    """The files carry MusicBrainz IDs (as Picard writes them): the album's release, release tracks or recordings."""
+    return bool(h.mb_release_id) or any(t.get("mb_track_id") or t.get("mb_recording_id") for t in h.tracks)
+
+
+def candidate_releases(mb_client, h: AlbumHealth, *, tags: bool = True, search: bool = True, skip=()) -> list:
+    """[(release id, exact)] to try, best first. With `tags`, the releases the tags lead to: the album's release ID and
+    the release a release-track ID belongs to (exact), then the releases the tagged recordings are on. With `search`,
+    the releases whose name is like the album's (loosely: a release only counts later if it holds the songs that are
+    here) and, when that finds nothing, the releases that a few of the songs, searched by title, are on. IDs in
+    `skip` (tried already) are left out."""
     from . import musicbrainz as mb
 
-    out, seen = [], set()
+    out, seen = [], set(skip)
 
     def add(rid, exact=False):
         if rid and rid not in seen:
             seen.add(rid)
             out.append((rid, exact))
 
-    add(h.mb_release_id, True)
-    for tid in list(dict.fromkeys(t["mb_track_id"] for t in h.tracks if t.get("mb_track_id")))[:2]:
-        for r in mb_client.releases_with_track(tid):
-            add(r.get("id"), True)
+    if tags:
+        add(h.mb_release_id, True)
+        for tid in list(dict.fromkeys(t["mb_track_id"] for t in h.tracks if t.get("mb_track_id")))[:2]:
+            for r in mb_client.releases_with_track(tid):
+                add(r.get("id"), True)
     scored: dict = {}                                   # release id -> [hits, release dict]
 
     def consider(r: dict, weight: int = 1) -> None:
@@ -519,20 +527,20 @@ def candidate_releases(mb_client, h: AlbumHealth) -> list:
 
     tracks = sorted_tracks(h)
     recordings = list(dict.fromkeys(t["mb_recording_id"] for t in tracks if t.get("mb_recording_id")))
-    for rid in [recordings[i] for i in sorted({0, len(recordings) // 2, len(recordings) - 1})] if recordings else []:
+    for rid in [recordings[i] for i in sorted({0, len(recordings) // 2, len(recordings) - 1})] if recordings and tags else []:
         for r in mb_client.recording_releases(rid):
             consider(r, 2)
-    names = [h.album]
+    names = [h.album] if search else []
     base = re.split(r"\s+[-–—:]\s+|:\s+", h.album, maxsplit=1)[0].strip()
     if base and base.casefold() != h.album.casefold() and len(base) >= 3:
         names.append(base)                          # "Kind of Blue - 50th Anniversary": the plain album is wanted too
     for r in [r for name in names for r in mb_client.search_releases(h.artist, name, limit=15)]:
-        artist_ok =matching.similarity(h.artist, mb.credit_name(r.get("artist-credit") or [])) >= 0.7
+        artist_ok = matching.similarity(h.artist, mb.credit_name(r.get("artist-credit") or [])) >= 0.7
         title = r.get("title", "")
         if artist_ok and (matching.similarity(h.album, title) >= 0.6 or matching.containment(h.album, title) >= 0.8
                           or matching.containment(title, h.album) >= 0.8):      # "Kind of Blue - 50th Anniversary"
             consider(r)
-    if not scored:
+    if not scored and search:
         titled = [t["title"] for t in tracks if t["title"]]
         for title in list(dict.fromkeys(titled[i] for i in sorted({0, len(titled) // 2})))[:2]:
             for rec in mb_client.search_recordings(h.artist, title, limit=10):
@@ -556,27 +564,41 @@ def candidate_releases(mb_client, h: AlbumHealth) -> list:
     return out
 
 
-def compare_musicbrainz(mb_client, h: AlbumHealth, lookups: int = 5) -> Optional[Finding]:
+def compare_musicbrainz(mb_client, h: AlbumHealth, lookups: int = 5, search: bool = True) -> Optional[Finding]:
     """The album's MusicBrainz release, and which of its songs are not in the folder. Releases are found by the
     MusicBrainz IDs in the tags when there are any (so an album named a little differently from MusicBrainz is still
     found), else by a loose name search or by its songs' titles; a release counts only if it holds every song that is
     here. The tags' own release wins; otherwise the smallest such release (the standard edition you have, not the
-    deluxe one with bonus tracks). Sets h.musicbrainz to what happened. Returns a missing_tracks Finding, or None when
-    nothing is missing or no release fits."""
+    deluxe one with bonus tracks). The releases the tags lead to are tried first, a lookup or two each; MusicBrainz is
+    searched by name and titles only when they do not fit and `search` allows it. Sets h.musicbrainz to what happened.
+    Returns a missing_tracks Finding, or None when nothing is missing or no release fits."""
     from . import musicbrainz as mb
 
     local = [t for t in h.tracks if t["title"] or t.get("mb_recording_id") or t.get("mb_track_id")]
     if not local:
         h.musicbrainz = "no track titles or IDs to compare"
         return None
-    fits = []
-    try:
-        candidates = candidate_releases(mb_client, h)
-        for rid, exact in candidates[:lookups]:
+    fits, candidates = [], []
+
+    def try_releases(batch):
+        for rid, exact in batch:
             release = mb_client.release(rid)
             flat = [(d, i, t) for d, tracks in enumerate(mb.release_tracks(release), 1) for i, t in enumerate(tracks, 1)]
             if flat and _covered(local, [x for _, _, x in flat]):
                 fits.append((not exact, len(flat), release, flat))
+
+    try:
+        if h.mb_release_id:                             # the album's own release, from its tags: one lookup
+            candidates = [(h.mb_release_id, True)]
+            try_releases(candidates)
+        if not fits and has_mb_tags(h):                 # the releases its track and recording IDs lead to
+            more = candidate_releases(mb_client, h, search=False, skip=[rid for rid, _ in candidates])
+            candidates += more
+            try_releases(more[:lookups])
+        if not fits and search:
+            more = candidate_releases(mb_client, h, tags=not candidates, skip=[rid for rid, _ in candidates])
+            candidates += more
+            try_releases(more[:lookups])
     except mb.MBError as exc:
         h.musicbrainz = f"MusicBrainz: {exc}"
         return None
@@ -596,10 +618,10 @@ def compare_musicbrainz(mb_client, h: AlbumHealth, lookups: int = 5) -> Optional
     return Finding(MISSING, "bad", f"Missing {len(absent)} of {len(flat)} songs on MusicBrainz: {shown}", absent)
 
 
-def apply_musicbrainz(mb_client, h: AlbumHealth) -> None:
+def apply_musicbrainz(mb_client, h: AlbumHealth, search: bool = True) -> None:
     """Replace the numbering guess with MusicBrainz's answer when a release fits: it names the missing songs, and an
     album it calls complete is not flagged for odd numbering (that is a tag problem, shown in Library)."""
-    found = compare_musicbrainz(mb_client, h)
+    found = compare_musicbrainz(mb_client, h, search=search)
     if found is not None or h.musicbrainz.startswith("complete"):
         h.findings = [f for f in h.findings if f.kind != MISSING] + ([found] if found else [])
         h.findings.sort(key=lambda f: KINDS.index(f.kind))
@@ -622,16 +644,20 @@ def _load_cache(path: Path) -> dict:
     return {}
 
 
-def scan(root: Path, *, mb_client=None, cache: Optional[Path] = None, use_cache: bool = True,
-         progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None) -> HealthReport:
-    """Check every album in the library. With `mb_client`, each album's tracklist is also compared with MusicBrainz."""
+def scan(root: Path, *, mb_client=None, search_untagged: bool = False, cache: Optional[Path] = None,
+         use_cache: bool = True, progress: Optional[Callable[[dict], None]] = None,
+         cancel: Optional[CancelCheck] = None) -> HealthReport:
+    """Check every album in the library. With `mb_client`, every album whose files carry MusicBrainz IDs is compared
+    with its release (a lookup or two, cached for a week), and with `search_untagged` the albums without them too,
+    by searching MusicBrainz for their name and songs (slower)."""
     root = Path(root).expanduser()
     if not root.is_dir():
         raise FileNotFoundError(f"{root} is not a folder")
     cache = cache or cache_path(root)
     known = _load_cache(cache) if use_cache else {}
     folders = album_folders(root)
-    report = HealthReport(root=str(root), checked_at=time.time(), musicbrainz=mb_client is not None)
+    report = HealthReport(root=str(root), checked_at=time.time(), musicbrainz=mb_client is not None and search_untagged,
+                          mb_tags=mb_client is not None)
     for i, (folder, files) in enumerate(folders, 1):
         check(cancel)
         rel = folder.relative_to(root).as_posix()
@@ -642,10 +668,11 @@ def scan(root: Path, *, mb_client=None, cache: Optional[Path] = None, use_cache:
             entry.musicbrainz = ""
         else:
             entry = read_album(root, folder, files)
+        compare = mb_client is not None and (search_untagged or has_mb_tags(entry))
         if progress is not None:
             progress({"stage": "health", "index": i, "total": len(folders), "folder": rel,
-                      "step": "MusicBrainz" if mb_client is not None else "reading"})
-        if mb_client is not None:
+                      "step": "MusicBrainz" if compare else "reading"})
+        if compare:
             apply_musicbrainz(mb_client, entry)
         report.albums.append(entry)
     report.albums.sort(key=lambda a: (a.artist.casefold(), a.year, a.album.casefold()))
@@ -661,7 +688,7 @@ def scan(root: Path, *, mb_client=None, cache: Optional[Path] = None, use_cache:
     return report
 
 
-def check_one(root: Path, rel: str, mb_client=None) -> AlbumHealth:
+def check_one(root: Path, rel: str, mb_client=None, search_untagged: bool = False) -> AlbumHealth:
     """Check one album folder again (after a fix), without reading the rest of the library."""
     root = Path(root).expanduser()
     folder = (root / rel).resolve()
@@ -671,7 +698,7 @@ def check_one(root: Path, rel: str, mb_client=None) -> AlbumHealth:
     files = pairs[0][1] if pairs else []
     entry = read_album(root.resolve(), folder, files)
     entry.folder = rel
-    if mb_client is not None:
+    if mb_client is not None and (search_untagged or has_mb_tags(entry)):
         apply_musicbrainz(mb_client, entry)
     return entry
 
@@ -753,6 +780,16 @@ def is_upgrade(h: AlbumHealth, lossless: bool, kbps: int) -> bool:
     return False
 
 
+def not_worse(h: AlbumHealth, lossless: bool, kbps: int) -> bool:
+    """Would this upload be at least as good as the album? Lossless always is; a lossy one only for an album that is
+    lossy itself, at no lower a bitrate (a little under counts: archive.org's figure is an average)."""
+    if lossless:
+        return True
+    if not h.tracks or any(t["format"] in LOSSLESS for t in h.tracks):
+        return False
+    return bool(kbps) and kbps >= album_kbps(h) - 16
+
+
 def suggestion(h: AlbumHealth, cand) -> dict:
     """What one archive.org upload offers this album: which missing songs it has, whether it is better audio than the
     album (lossless, or a much higher bitrate for a lossy album), and whether it ships a cover."""
@@ -768,6 +805,10 @@ def suggestion(h: AlbumHealth, cand) -> dict:
                 for m, f in match_missing(h, tracks)]
     cover = pick_cover(item)
     upgrade = is_upgrade(h, lossless, kbps) and len(tracks) >= len(h.tracks)
+    want_total = len(h.tracks) + len(h.missing())
+    # the whole album, every song that is here and every one missing: it can be downloaded again in place of yours
+    complete = bool(h.missing()) and len(provides) == len(h.missing()) and len(tracks) >= want_total
+    redownload = complete and not_worse(h, lossless, kbps)
     fixes = []
     want = len(h.missing())
     if want and provides:
@@ -782,7 +823,8 @@ def suggestion(h: AlbumHealth, cand) -> dict:
             "url": item.url, "media": item.media, "lossless": lossless, "kbps": kbps,
             "quality": quality_label(lossless, kbps), "format": measured.format if measured.tested else
             (item.media.upper() + (f" ~{kbps} kbps" if kbps else "")),
-            "upgrade": upgrade, "tracks": len(tracks), "bytes": sum(f.size for f in tracks),
+            "upgrade": upgrade, "complete": complete, "redownload": redownload, "album_tracks": want_total,
+            "tracks": len(tracks), "bytes": sum(f.size for f in tracks),
             "downloads": item.downloads, "match": ("exact" if m.bucket == 0 else "close") if m else "", "fixes": fixes,
             "provides": provides, "provides_all": bool(want) and len(provides) == want,
             "cover": {"name": cover.name, "size": cover.size} if cover is not None else None,
@@ -797,7 +839,7 @@ def suggestions_for(h: AlbumHealth, cands: list) -> list:
 def _suggestion_key(s: dict) -> tuple:
     """The missing songs first (when the album lacks any), then the best audio (lossless, then lossy by bitrate), then
     what else it fixes, the closer match, and popularity."""
-    return (not s["provides_all"], -len(s["provides"]), not s["lossless"],
+    return (not s["provides_all"], not s.get("complete"), -len(s["provides"]), not s["lossless"],
             -(s["kbps"] if not s["lossless"] else 0), -len(s["fixes"]), s["match"] != "exact", -s["downloads"])
 
 
@@ -1082,9 +1124,11 @@ def embed_cover(path: Path, picture: tuple) -> bool:
 
 
 def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_client=None, trash: Optional[Path] = None,
-                  progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None) -> dict:
+                  progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None,
+                  complete: bool = False) -> dict:
     """Replace the album with a better archive.org upload of it (lossless; or, for a lossy album, a lossy one of a
-    clearly higher bitrate: see is_upgrade), never risking the original: the upload is downloaded
+    clearly higher bitrate: see is_upgrade), or download the album again from a complete upload of it when songs are
+    missing (`complete`: an upload no worse than yours), never risking the original: the upload is downloaded
     into a hidden staging folder beside the album, checked against archive.org's checksums and tagged with your album's
     artist and title. Only when every file has verified does the old folder go to the Trash (anything in it that is not
     audio is carried over first) and the new one take its place, under the old folder's name. A failed or cancelled
@@ -1092,7 +1136,10 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     from . import save, tagging
     from .replace import ReplaceError, staging_folder, swap_in
 
-    if cand.item.media not in ("flac", "wav") and not is_upgrade(h, False, upload_kbps(cand.item.flacs)):
+    lossless, kbps = cand.item.media in ("flac", "wav"), upload_kbps(cand.item.flacs)
+    if complete and not not_worse(h, lossless, kbps):
+        raise HealthError("that upload is lower quality than your copy, so it does not replace it")
+    if not lossless and not complete and not is_upgrade(h, False, kbps):
         raise HealthError("that upload is lossy and not a clear step up from your copy, so it does not replace it")
     root = Path(root).expanduser().resolve()
     existing = (root / h.folder).resolve()
@@ -1101,6 +1148,15 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     emit = progress or (lambda e: None)
     emit({"stage": "replace", "step": "preparing", "identifier": cand.identifier})
     meta = tagging.from_candidate(cand)
+    release_id = h.mb_release_id or h.mb_match
+    if release_id and mb_client is not None:
+        # keep the album's MusicBrainz release (its IDs, and its track titles when the counts agree), so the new
+        # files can be checked against it again like the old ones
+        from . import musicbrainz as mb
+        try:
+            meta, _warnings = mb.apply_release(meta, mb_client.release(release_id))
+        except mb.MBError:
+            meta.mb_release_id = h.mb_release_id
     meta.albumartist, meta.album = h.artist, h.album              # your names stay, whatever the upload calls itself
     meta.date = meta.date or h.date or h.year
     plan = save.plan_save(cand, root, meta, opts)

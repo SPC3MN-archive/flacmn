@@ -303,7 +303,8 @@ album unless you also pass `--replace` (`replace ... --save 1 --yes` counts as e
 
 ```bash
 python3 -m iaflac health                               # check every album in the library
-python3 -m iaflac health --musicbrainz                 # also compare tracklists with MusicBrainz (names the missing songs; slow)
+python3 -m iaflac health --musicbrainz                 # also search MusicBrainz for untagged albums (names their missing songs; slow)
+python3 -m iaflac health --offline                     # no MusicBrainz at all
 python3 -m iaflac health --archive --only missing_tracks,missing_art   # and say which archive.org uploads fix each album
 python3 -m iaflac health --merge "Artist/Album" "Artist/Album (Deluxe)"          # the merge plan
 python3 -m iaflac health --merge "Artist/Album" "Artist/Album (Deluxe)" --yes    # do it
@@ -313,7 +314,7 @@ In the app this is the **Health Check** tab. Each album is checked for:
 
 | Problem | What counts |
 |---|---|
-| **Missing songs** | gaps in the track numbers, fewer tracks than `TRACKTOTAL`/`DISCTOTAL` say, or (with MusicBrainz on) songs of the album's release that are not in the folder. Releases are found from the MusicBrainz IDs in the tags (album, release-track or recording IDs, as Picard writes them), so an album named differently from MusicBrainz is still found. Without IDs, they come from a loose name search (also without a suffix such as " - 50th Anniversary") or from searches for the songs' titles. A release only counts if it holds every song you have (matched by ID, else by title). The release in the tags wins; otherwise the smallest one is used, so a standard edition is not flagged for the deluxe edition's bonus tracks |
+| **Missing songs** | gaps in the track numbers, fewer tracks than `TRACKTOTAL`/`DISCTOTAL` say, or songs of the album's MusicBrainz release that are not in the folder. Albums whose files carry MusicBrainz IDs (tagged with Picard) are always compared with their release, usually one lookup each, cached for a week; untagged albums only when you ask ("Search MusicBrainz for untagged albums", or `--musicbrainz`), since that means searching. Releases are found from the MusicBrainz IDs in the tags (album, release-track or recording IDs, as Picard writes them), so an album named differently from MusicBrainz is still found. Without IDs, they come from a loose name search (also without a suffix such as " - 50th Anniversary") or from searches for the songs' titles. A release only counts if it holds every song you have (matched by ID, else by title). The release in the tags wins; otherwise the smallest one is used, so a standard edition is not flagged for the deluxe edition's bonus tracks |
 | **Low quality** | lossy files (MP3, AAC, Ogg...), lossy below 220 kbps (marked bad), lossless below CD resolution, unreadable files, an album mixing lossless and lossy tracks |
 | **Missing art** | no embedded cover and no `cover.jpg`/`folder.jpg`, or a cover under 500 px |
 | **Duplicates** | the same album in two or more folders (years and edition words such as "Deluxe" or "Remastered" ignored), or the same song twice in one folder |
@@ -339,10 +340,16 @@ Only item listings are read. Then:
 - **Use as cover** saves `cover.jpg` for an album with none. **Replace cover** (it asks first) moves your cover file
   to the Trash, along with a copy of the embedded cover, writes the new one, and embeds it in the tracks that had one
   embedded. Only their picture changes.
-- **Replace album** (any lossless upload, or a clearly higher-bitrate one for a lossy album; it asks first and shows both track counts and formats) downloads the upload
+- **Redownload album**, when songs are missing: an upload with the complete album (every song you have and every
+  missing one, at no lower quality than yours) is marked "Complete album" and can be downloaded again in place of
+  yours, the same way as Replace album below. The new files keep the album's MusicBrainz release ID, so the next check
+  compares them with it again.
+- **Replace album** (an upload with at least as many tracks as yours that is lossless, or a clearly higher-bitrate one
+  for a lossy album; it asks first and shows both track counts and formats) downloads the upload
   into a hidden staging folder beside your album and checks every file against archive.org's checksums. Only then does
   your folder go to the Trash, with anything in it that is not audio copied across, and the new one take its place
-  under the same folder name, tagged with your artist and album names. If the download fails or is cancelled, your
+  under the same folder name, tagged with your artist and album names. It shows in the download queue with a green
+  progress bar (file, megabytes) and Cancel. If the download fails or is cancelled, your
   album is untouched, and trying again resumes it. A lossy upload only replaces a lossy album, and only when it is clearly better.
 
 **Merge** keeps the best copy of every song in one folder: lossless over lossy, then the higher resolution or bitrate.

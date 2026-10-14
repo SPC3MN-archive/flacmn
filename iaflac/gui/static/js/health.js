@@ -92,9 +92,10 @@ function renderHead() {
   const sub = running
     ? (state.progress ? `Checking… ${state.progress.index} / ${state.progress.total}${state.progress.step === "MusicBrainz" ? " · MusicBrainz" : ""}` : "Checking…")
     : c ? `${c.albums} albums · ${c.healthy} healthy · ${c.albums - c.healthy} need attention` : (d?.root || "");
-  const mb = h("label.check", { title: "Also compare each tracklist with MusicBrainz, which names the missing songs. About 5 s per album the first time." },
+  const mb = h("label.check", { title: "Albums whose files carry MusicBrainz IDs (tagged with Picard) are always compared with their "
+      + "release. Tick this to also search MusicBrainz for albums without them: slower, about 5 s per album the first time." },
     h("input", { type: "checkbox", checked: state.musicbrainz, onchange: (e) => { state.musicbrainz = e.target.checked; } }),
-    "Compare with MusicBrainz");
+    "Search MusicBrainz for untagged albums");
   clear(els.head, h("div.card-head",
     h("span.card-title", { style: { whiteSpace: "nowrap" } }, "Library Health Check"), h("span.card-sub.grow.ellipsis", sub), mb,
     h("button.btn.primary.sm", { onclick: run, disabled: running || !d?.library_ok },
@@ -186,6 +187,10 @@ function renderRight() {
         icon(f.severity === "bad" ? "x" : "alert"), h("b", LABEL[f.kind]), h("span", f.text)))
         : [h("div.muted.small", "None found. You can still search for a better copy or another cover.")])),
       a.musicbrainz ? h("div.muted.small", icon("info"), ` MusicBrainz: ${a.musicbrainz}`) : null,
+      a.kinds.includes("missing_tracks") ? h("div.row", { style: { gap: "8px" } },
+        h("span.muted.small.grow", "Get the songs that are missing, or download the complete album again in place of this one."),
+        h("button.btn.secondary.sm", { onclick: () => search(a.folder), disabled: state.searching },
+          icon("search"), a.search ? "Search again" : "Find the complete album")) : null,
       dupes.length ? mergeSection(a, dupes) : null,
       archiveSection(a),
       h("div.section-label", { style: { marginTop: "18px" } }, "Tracks"),
@@ -288,11 +293,11 @@ function archiveSection(a) {
       + "downloaded until you choose."));
   }
   const all = s.suggestions, art = s.art || [];
-  const better = all.filter((x) => x.upgrade).length;
+  const better = all.filter((x) => x.upgrade).length, whole = all.filter((x) => x.complete).length;
   const shown = state.showAll ? all : all.slice(0, 8);
   return h("div", head,
     h("div.muted.small", `Searched for ${s.query}: ${all.length} upload${all.length === 1 ? "" : "s"}`
-      + (better ? `, ${better} better than your copy` : "") + "."),
+      + (whole ? `, ${whole} with the complete album` : "") + (better ? `, ${better} better than your copy` : "") + "."),
     s.cover_done ? coverDone(s.cover_done) : art.length ? artPicker(a, art) : null,
     all.length ? shown.map((x) => suggestionBox(a, x))
       : h("div.empty.small", icon("search"), h("b", "No uploads of this album on archive.org"),
@@ -339,7 +344,10 @@ function ask(key) {
 }
 
 function suggestionBox(a, x) {
-  const fixes = x.fixes.map((k) => chip(k === "missing_tracks" ? (x.provides_all ? "Has every missing song" : `Has ${x.provides.length} missing song(s)`)
+  // the whole album, when songs are missing: download it again; a better copy (or any other one) replaces it
+  const verb = x.complete && !x.upgrade ? "Redownload" : "Replace";
+  const fixes = x.fixes.map((k) => chip(k === "missing_tracks" ? (x.complete ? `Complete album: all ${x.album_tracks} songs`
+      : x.provides_all ? "Has every missing song" : `Has ${x.provides.length} missing song(s)`)
     : k === "low_quality" ? (x.lossless ? "Better than yours: lossless" : `Better than yours: ~${x.kbps} kbps`)
     : "Has a cover", "good", { icon: "check" }));
   const qkind = x.lossless ? "good" : x.upgrade ? "warn" : "bad";
@@ -358,7 +366,8 @@ function suggestionBox(a, x) {
     fixes.length ? h("div.issue-line", ...fixes) : null,
     tracks,
     asking ? h("div.finding.warn", icon("alert"), h("span",
-      `Replace your ${a.track_count} tracks (${have}) with this upload's ${x.tracks} (${x.format}, ${fmtBytes(x.bytes)})? `
+      `${verb === "Redownload" ? "Download the complete album again: replace" : "Replace"} your ${a.track_count} tracks (${have}) `
+      + `with this upload's ${x.tracks} (${x.format}, ${fmtBytes(x.bytes)})? `
       + "It is downloaded and checked first; only then does your folder go to the Trash, with its booklets and other "
       + "files copied across. Your artist and album names are kept."
       + (x.tracks < a.track_count ? ` This upload has ${a.track_count - x.tracks} fewer track(s) than yours.` : ""))) : null,
@@ -369,9 +378,11 @@ function suggestionBox(a, x) {
         onclick: () => hooks.openSearch && hooks.openSearch(a.artist, (a.search?.titles || [a.album]).slice(-1)[0]),
       }, "Open in Album Search"),
       asking ? h("button.btn.secondary.sm", { onclick: () => ask("") }, "Cancel") : null,
-      (x.lossless || x.upgrade) && !running ? h("button.btn.sm" + (asking ? ".danger" : ".secondary"), {
+      // never offered for an upload with fewer tracks than yours (a single-file rip, a few songs): it is not the album
+      (x.upgrade || x.redownload || (x.lossless && x.tracks >= a.track_count)) && !running ? h("button.btn.sm" + (asking ? ".danger" : x.complete ? ".primary" : ".secondary"), {
         onclick: () => (asking ? replaceAlbum(a.folder, x) : ask(rkey)), disabled: !!state.busy || !!state.replace,
-      }, icon("refresh"), asking ? "Yes, replace the album" : "Replace album") : null,
+      }, icon(verb === "Redownload" ? "download" : "refresh"),
+        asking ? `Yes, ${verb.toLowerCase()} the album` : `${verb} album`) : null,
       x.provides.length ? h("button.btn.primary.sm", { onclick: () => fetchTracks(a.folder, x), disabled: !!state.busy },
         state.busy === `fetch:${x.identifier}` ? h("span.spinner") : icon("download"), "Add to album") : null));
 }
@@ -426,7 +437,7 @@ function replaceProgress() {
   const box = h("div.q-item", { style: { padding: "6px 0 0", borderBottom: 0 } },
     h("div.row", h("div.grow", { style: { minWidth: 0 } }, rp.text),
       h("button.btn.ghost.sm", { onclick: cancelReplace, disabled: state.replace?.step === "cancelling" }, "Cancel")),
-    h("div.progress.busy", rp.bar));
+    h("div.progress", rp.bar));                        // green, like the queue's
   paintReplace(true);                                  // drawn at once, before the box is on the page
   return box;
 }

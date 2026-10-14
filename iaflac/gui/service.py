@@ -128,6 +128,7 @@ class App:
         self.health_index: Optional[health.HealthReport] = None
         self._health_job: Optional[str] = None
         self.health_found: dict = {}          # album folder -> its last Internet Archive search (health.search_archive)
+        self.health_cands: dict = {}          # album folder -> the uploads that search found (Candidates)
         self.health_art: dict = {}            # image id -> cdart.ArtImage offered as a cover by those searches
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
@@ -868,12 +869,23 @@ class App:
         try:
             fresh = health.check_one(root, folder, self.mb if self.health_index.musicbrainz else None)
         except health.HealthError:
+            fresh = None
             self.health_index.albums = [a for a in self.health_index.albums if a.folder != folder]
+            gone = (*gone, folder)
         else:
             self.health_index.albums = [fresh if a.folder == folder else a for a in self.health_index.albums]
         health.mark_duplicates(self.health_index)
+        if fresh is not None and folder in self.health_found:
+            # keep the search, but say again what each upload offers the album as it is now (a track just added is
+            # no longer missing; a cover just saved is no longer needed)
+            self.health_found[folder]["suggestions"] = health.suggestions_for(fresh, self.health_cands.get(folder, []))
         for f in (folder, *gone):
-            self.health_found.pop(f, None)
+            if f in gone:
+                self.health_found.pop(f, None)
+                self.health_cands.pop(f, None)
+            art = self.arts.get(f)
+            if art is not None:                          # Case Art: forget scans of the folder that were moved away
+                art.images = [im for im in art.images if im.source not in cdart.LOCAL or Path(im.ref).is_file()]
         self.library = None                              # the music folder changed: read again on next use
         self.broadcast({"type": "health"})
 
@@ -881,7 +893,7 @@ class App:
         entry = self._health_entry(folder)
         out = entry.to_dict(tracks=True)
         out["tracks"] = health.sorted_tracks(entry)
-        out["cover"] = next((f"{folder}/{p.name}" for p in health.cover_files(self._library() / folder)), None)
+        out["cover"] = f"{folder}/{entry.cover_file}" if entry.cover_file else None
         out["search"] = self.health_found.get(folder)
         return out
 
@@ -890,8 +902,10 @@ class App:
         entry = self._health_entry(folder)
 
         def run(job: Job):
-            found = health.search_archive(self.client, entry, mb_client=self.mb, progress=self.jobs.progress(job),
-                                          cancel=job.cancelled)
+            cands: list = []
+            found = health.search_archive(self.client, entry, mb_client=self.mb, found=cands,
+                                          progress=self.jobs.progress(job), cancel=job.cancelled)
+            self.health_cands[folder] = cands
             for im in found["art"]:
                 self.health_art[im["id"]] = cdart.ArtImage(**im)
             self.health_found[folder] = found

@@ -126,6 +126,25 @@ class MBClient:
     def release(self, release_id: str) -> dict:
         return self._get(f"{WS}/release/{release_id}", {"inc": RELEASE_INC})
 
+    def recording_releases(self, recording_id: str) -> list:
+        """Every release a recording (the MUSICBRAINZ_TRACKID tag) is on, with its release group and media."""
+        data = self._get(f"{WS}/recording/{recording_id}", {"inc": "releases+release-groups+media"})
+        return data.get("releases", [])
+
+    def releases_with_track(self, track_id: str) -> list:
+        """The release a release track (the MUSICBRAINZ_RELEASETRACKID tag) belongs to."""
+        data = self._get(f"{WS}/release/", {"query": f"tid:{track_id}", "limit": 5})
+        return data.get("releases", [])
+
+    def search_recordings(self, artist: str, title: str, limit: int = 15) -> list:
+        """Recordings of a song by an artist, each with the releases it is on."""
+        def q(s: str) -> str:
+            return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+        if not title:
+            return []
+        query = f"recording:{q(title)}" + (f" AND artist:{q(artist)}" if artist else "")
+        return self._get(f"{WS}/recording/", {"query": query, "limit": limit}).get("recordings", [])
+
     def group_releases(self, release_group_id: str, limit: int = 100) -> list:
         """Every release (pressing) in a release group, with its media track counts and Cover Art Archive counts."""
         data = self._get(f"{WS}/release", {"release-group": release_group_id, "inc": "media", "limit": limit})

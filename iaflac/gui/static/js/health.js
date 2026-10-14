@@ -7,7 +7,14 @@
 
 import { api, url, on, waitJob } from "./api.js";
 import { h, clear, icon, chip, fmtBytes, fmtTime, toast, errorText } from "./ui.js";
-import { coverThumb } from "./library.js";
+
+// the album's cover file; the URL carries the album's signature (which covers its cover files), so a replaced cover
+// is fetched anew instead of shown from the window's cache
+function cover(a, cls = "thumb") {
+  if (!a.cover_file) return h("div." + cls, icon("image"));
+  return h("img." + cls, { src: url("/library/file", { path: `${a.folder}/${a.cover_file}`, v: (a.signature || "").slice(0, 12) }),
+    alt: "", loading: "lazy" });
+}
 
 const KINDS = ["missing_tracks", "low_quality", "missing_art", "duplicates"];
 const LABEL = { missing_tracks: "Missing songs", low_quality: "Low quality", missing_art: "Missing art", duplicates: "Duplicates" };
@@ -124,7 +131,7 @@ function renderRows() {
   clear(els.rows, h("table.grid.lib-table.health-table",
     h("thead", h("tr", h("th", ""), h("th", "Artist"), h("th", "Album"), h("th", "Problems"))),
     h("tbody", ...rows.map((a) => h("tr" + (a.folder === state.selected ? ".selected" : ""), { onclick: () => select(a.folder), title: a.folder },
-      h("td", { style: { width: "56px" } }, coverThumb({ folder: a.folder, has_cover: a.has_art && !!a.cover_px })),
+      h("td", { style: { width: "56px" } }, cover(a)),
       h("td", a.artist), h("td.strong", a.album),
       h("td", h("div.issues", ...problemChips(a))))))));
 }
@@ -161,10 +168,9 @@ function renderRight() {
       "What is wrong with it shows here, with a search of the Internet Archive for what is missing."));
     return;
   }
-  const cover = a.cover ? h("img.thumb.lg", { src: url("/library/file", { path: a.cover }), alt: "" }) : h("div.thumb.lg", icon("image"));
   const dupes = a.findings.filter((f) => f.kind === "duplicates");
   clear(right,
-    h("div.album-head", cover,
+    h("div.album-head", cover(a, "thumb.lg"),
       h("div.grow",
         h("h2", a.album),
         h("div.s", [a.artist, a.year, `${a.track_count} tracks`, a.folder + "/"].filter(Boolean).join(" · "))),
@@ -292,8 +298,14 @@ function artPicker(a, art) {
     h("div.art-row", ...art.slice(0, 8).map((im) => {
       const key = `cover:${im.id}`, asking = state.confirm === key;
       return h("div.art-pick",
-        h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label }),
-        h("div.muted.small.ellipsis", im.source.startsWith("coverart") ? "Cover Art Archive" : im.identifier),
+        h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label,
+          onload: (e) => {                                  // its size, so a small thumbnail is not chosen by mistake
+            const img = e.target, small = Math.min(img.naturalWidth, img.naturalHeight) < 500;
+            img.nextSibling.textContent = `${img.naturalWidth}×${img.naturalHeight}${small ? " · small" : ""} · ${img.nextSibling.dataset.from}`;
+            img.nextSibling.style.color = small ? "var(--warn-text)" : "";
+          } }),
+        h("div.muted.small.ellipsis", { "data-from": im.source.startsWith("coverart") ? "Cover Art Archive" : im.identifier },
+          im.source.startsWith("coverart") ? "Cover Art Archive" : im.identifier),
         h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), {
           onclick: () => (has && !asking ? ask(key) : useCover(a.folder, im.id, has)), disabled: !!state.busy,
         }, state.busy === key ? h("span.spinner") : null, has ? (asking ? "Yes, replace it" : "Replace cover") : "Use as cover"));

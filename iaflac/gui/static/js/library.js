@@ -33,6 +33,11 @@ export async function load() {
     state.selected = null;
     state.album = null;
     renderAlbum();
+  } else if (state.selected && state.data.albums.length) {
+    // the open album may have changed (a cover or tracks added from the Health Check): show it as it is now
+    api("/library/album", { query: { folder: state.selected } })
+      .then((al) => { if (al.folder === state.selected) { state.album = al; renderAlbum(); } })
+      .catch(() => {});
   }
 }
 

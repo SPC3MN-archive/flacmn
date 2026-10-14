@@ -206,7 +206,9 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     @api.get("/api/library/file")
     def library_file(path: str):
         p = core.library_file(path)
-        return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"))
+        # revalidated each time (a 304 when unchanged), so a cover replaced under the same name shows at once
+        return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"),
+                            headers={"Cache-Control": "no-cache"})
 
     # ---- Library Health Check (/api/health is the app's own status) ------------------------------------------
     @api.get("/api/health-check")

@@ -313,7 +313,7 @@ In the app this is the **Health Check** tab. Each album is checked for:
 
 | Problem | What counts |
 |---|---|
-| **Missing songs** | gaps in the track numbers, fewer tracks than `TRACKTOTAL`/`DISCTOTAL` say, or (with MusicBrainz on) songs of the album's release that are not in the folder. The release is the one in the tags, else the smallest official release holding every song you have, so a standard edition is not flagged for the deluxe edition's bonus tracks |
+| **Missing songs** | gaps in the track numbers, fewer tracks than `TRACKTOTAL`/`DISCTOTAL` say, or (with MusicBrainz on) songs of the album's release that are not in the folder. Releases are found from the MusicBrainz IDs in the tags (album, release-track or recording IDs, as Picard writes them), so an album named differently from MusicBrainz is still found. Without IDs, they come from a loose name search (also without a suffix such as " - 50th Anniversary") or from searches for the songs' titles. A release only counts if it holds every song you have (matched by ID, else by title). The release in the tags wins; otherwise the smallest one is used, so a standard edition is not flagged for the deluxe edition's bonus tracks |
 | **Low quality** | lossy files (MP3, AAC, Ogg...), lossy below 220 kbps (marked bad), lossless below CD resolution, unreadable files, an album mixing lossless and lossy tracks |
 | **Missing art** | no embedded cover and no `cover.jpg`/`folder.jpg`, or a cover under 500 px |
 | **Duplicates** | the same album in two or more folders (years and edition words such as "Deluxe" or "Remastered" ignored), or the same song twice in one folder |

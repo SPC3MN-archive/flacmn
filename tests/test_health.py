@@ -35,7 +35,7 @@ def jpeg(px: int = 600) -> bytes:
 
 
 def write_track(path: Path, data: bytes, title: str, track: int, artist="Test Artist", album="Test Album",
-                total: int = 0, disc: int = 0, art: bytes = None) -> None:
+                total: int = 0, disc: int = 0, art: bytes = None, tags: dict = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
     if path.suffix == ".flac":
@@ -52,6 +52,8 @@ def write_track(path: Path, data: bytes, title: str, track: int, artist="Test Ar
             pic = Picture()
             pic.type, pic.mime, pic.data = 3, "image/jpeg", art
             f.add_picture(pic)
+        for k, v in (tags or {}).items():
+            f[k] = v
         f.save()
     else:
         from mutagen.id3 import ID3, TALB, TIT2, TPE1, TPE2, TRCK
@@ -464,3 +466,102 @@ class Replace(Base):
         cand = Pipeline(ia).load("t-mp3", media="mp3")
         with self.assertRaises(health.HealthError):
             health.replace_album(ia, self.root, self.scan().albums[0], cand, trash=self.trash)
+
+
+class FakeMBIds:
+    """MusicBrainz where the album is called something else ("The Test Album (Remastered)"), so a search by the
+    album's name finds nothing; only the recording IDs or the song titles lead to it."""
+
+    def __init__(self):
+        titles = ["One", "Two", "Three", "Four"]
+        self.album = mb_release("rel-album", titles, title="Test Album: The Remastered Collection")
+        self.single = mb_release("rel-single", ["One"], title="One (single)")
+        for rel in (self.album, self.single):
+            for t in rel["media"][0]["tracks"]:
+                t["id"] = f"trk-{rel['id']}-{t['title']}"
+                t["recording"] = {"id": f"rec-{t['title']}", "title": t["title"]}
+        self.calls = []
+
+    def search_releases(self, artist, album, limit=15):
+        self.calls.append("search_releases")
+        return []
+
+    def recording_releases(self, rid):
+        self.calls.append(("recording", rid))
+        out = [{"id": "rel-single", "title": "One (single)", "release-group": {"primary-type": "Single"}, "media": [{"track-count": 1}]}]
+        return out + [{"id": "rel-album", "title": self.album["title"], "status": "Official",
+                       "release-group": {"primary-type": "Album"}, "media": [{"track-count": 4}]}]
+
+    def releases_with_track(self, tid):
+        self.calls.append(("track", tid))
+        return []
+
+    def search_recordings(self, artist, title, limit=15):
+        self.calls.append(("search_recordings", title))
+        return [{"id": f"rec-{title}", "releases": [{"id": "rel-album", "title": self.album["title"],
+                                                    "media": [{"track-count": 4}]}]}]
+
+    def release(self, rid):
+        self.calls.append(("release", rid))
+        return {"rel-album": self.album, "rel-single": self.single}[rid]
+
+
+class MusicBrainzByIds(Base):
+    def test_track_ids_find_an_album_named_differently(self):
+        folder = self.root / "Test Artist" / "Test Album (2011 Remaster)"
+        for n, t in ((1, "One"), (2, "Two"), (4, "Four")):
+            write_track(folder / f"{n:02d} {t}.flac", flac_bytes(), t, n, album="Test Album (2011 Remaster)",
+                        tags={"MUSICBRAINZ_TRACKID": f"rec-{t}"})
+        (folder / "cover.jpg").write_bytes(jpeg())
+        mb = FakeMBIds()
+        a = self.scan(mb_client=mb).albums[0]
+        f = [f for f in a.findings if f.kind == health.MISSING][0]
+        self.assertEqual([m["title"] for m in f.missing], ["Three"])
+        self.assertIn(("recording", "rec-One"), mb.calls)
+        self.assertIn("Remastered Collection", a.musicbrainz)
+        self.assertEqual(a.mb_match, "rel-album", "the album, not the one-track single")
+        self.assertEqual(a.mb_release_id, "", "a match is never taken for the tags' own release")
+
+    def test_song_titles_find_it_when_there_are_no_ids(self):
+        self.album("Test Artist/Test Album (2011 Remaster)", [(1, "One"), (2, "Two"), (3, "Three"), (4, "Four")],
+                   album="Test Album (2011 Remaster)", cover=jpeg())
+        mb = FakeMBIds()
+        a = self.scan(mb_client=mb).albums[0]
+        self.assertTrue(a.musicbrainz.startswith("complete"), a.musicbrainz)
+        self.assertTrue(any(c[0] == "search_recordings" for c in mb.calls if isinstance(c, tuple)))
+
+    def test_ids_match_even_when_a_title_is_spelled_differently(self):
+        folder = self.root / "Test Artist" / "Test Album"
+        for n, t in ((1, "One"), (2, "Two"), (3, "3"), (4, "Four")):          # "3" is "Three" on MusicBrainz
+            write_track(folder / f"{n:02d} {t}.flac", flac_bytes(), t, n,
+                        tags={"MUSICBRAINZ_TRACKID": f"rec-{'Three' if t == '3' else t}"})
+        a = self.scan(mb_client=FakeMBIds()).albums[0]
+        self.assertTrue(a.musicbrainz.startswith("complete"), a.musicbrainz)
+
+
+class CoverRefresh(Api):
+    """Replacing a cover from the Health Check: the old file goes, the new one is what the album shows, and the
+    window is never left showing the old image from its cache."""
+
+    def test_replace_cover_shows_the_new_one(self):
+        folder = "Test Artist/Test Album"
+        album_dir = self.root / folder
+        (album_dir / "cover.jpg").unlink()
+        (album_dir / "AlbumArt_{ABC}_Large.jpg").write_bytes(jpeg(200))      # what Windows Media Player leaves
+        self.wait(self.http.post("/api/health-check/scan", json={}).json()["job_id"])
+        before = self.http.get("/api/health-check/album", params={"folder": folder}).json()
+        self.assertEqual(before["cover_file"], "AlbumArt_{ABC}_Large.jpg")
+        self.core.health_art["img1"] = __import__("iaflac.cdart", fromlist=["ArtImage"]).ArtImage(
+            id="img1", kind="front", source="upload", ref=str(Path(self.tmp.name) / "new.jpg"))
+        Path(self.tmp.name, "new.jpg").write_bytes(jpeg(900))
+        r = self.http.post("/api/health-check/cover", json={"folder": folder, "image_id": "img1", "replace": True})
+        self.assertEqual(r.status_code, 200, r.text)
+        after = self.http.get("/api/health-check/album", params={"folder": folder}).json()
+        self.assertEqual(after["cover_file"], "cover.jpg")
+        self.assertEqual(after["cover_px"], 900)
+        self.assertNotIn("missing_art", after["kinds"])
+        self.assertNotEqual(before["signature"], after["signature"], "the cover URL's version changes")
+        self.assertFalse((album_dir / "AlbumArt_{ABC}_Large.jpg").exists(), "the old cover is gone from the album")
+        img = self.http.get("/api/library/file", params={"path": f"{folder}/cover.jpg"})
+        self.assertEqual(img.headers.get("cache-control"), "no-cache")
+        self.assertEqual(health.image_px(img.content), 900)

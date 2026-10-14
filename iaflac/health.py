@@ -55,7 +55,7 @@ LOSSY = {"MP3", "M4A", "AAC", "OGG", "OPUS", "WMA"}
 TAGGED = (".flac", ".mp3", ".m4a", ".ogg", ".opus")
 MIN_COVER_PX = 500                   # below this a cover looks soft on a tablet or TV
 TITLE_MATCH = 0.85
-CACHE_VERSION = 1
+CACHE_VERSION = 3          # 2: track MusicBrainz IDs; 3: a release MusicBrainz matched is never cached as the tags' own
 
 
 class HealthError(RuntimeError):
@@ -85,9 +85,11 @@ class AlbumHealth:
                                                      #   "rate", "length", "error"}], name relative to the album folder
     has_art: bool = False
     cover_px: int = 0                # the cover's shorter side in pixels, 0 when unknown or absent
+    cover_file: str = ""             # the cover image beside the tracks ("cover.jpg"), "" when there is none
     tracktotal: dict = field(default_factory=dict)   # disc -> the largest TRACKTOTAL the tags claim
     disctotal: int = 0
-    mb_release_id: str = ""
+    mb_release_id: str = ""          # the release ID in the tags (MUSICBRAINZ_ALBUMID), "" when untagged
+    mb_match: str = ""               # the release the MusicBrainz comparison chose (not cached: worked out each check)
     genre: str = ""
     date: str = ""
     findings: list = field(default_factory=list)     # [Finding]
@@ -153,11 +155,24 @@ def describe(t: dict) -> str:
     return fmt
 
 
+COVER_STEM = re.compile(r"^(cover|folder|front|albumart.*|album art.*|albumartsmall)$", re.I)
+IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp")
+
+
 def cover_files(folder: Path) -> list:
+    """The image files beside the tracks that players show as the album's cover: cover.jpg, folder.jpg, front.png,
+    Windows Media Player's AlbumArt_{...}_Large.jpg and the like, best first; or a lone image there, whatever its
+    name. Scans in subfolders (Artwork/, Scans/) are not covers."""
     try:
-        return sorted(p for p in folder.iterdir() if p.is_file() and p.name.lower() in COVER_NAMES)
+        images = [p for p in folder.iterdir() if p.is_file() and p.suffix.lower() in IMAGE_EXTS
+                  and not p.name.startswith(".")]
     except OSError:
         return []
+    named = [p for p in images if COVER_STEM.match(p.stem)]
+    if not named:
+        return images if len(images) == 1 else []
+    order = {n: i for i, n in enumerate(COVER_NAMES)}
+    return sorted(named, key=lambda p: (order.get(p.name.lower(), len(order)), "small" in p.name.lower(), p.name.lower()))
 
 
 def signature(files: list) -> str:
@@ -235,7 +250,8 @@ def read_album(root: Path, folder: Path, files: list) -> AlbumHealth:
                        "title": t.get("title") or title_from_name(name), "format": t.get("format", "?"),
                        "kbps": t.get("kbps") or 0, "bits": t.get("bits") or 0, "rate": t.get("rate") or 0,
                        "length": t.get("length") or 0, "error": t.get("error", ""), "tracktotal": total_from_tag,
-                       "disctotal": t.get("disctotal") or 0, "has_art": bool(t.get("has_art"))})
+                       "disctotal": t.get("disctotal") or 0, "has_art": bool(t.get("has_art")),
+                       "mb_recording_id": t.get("mb_recording_id", ""), "mb_track_id": t.get("mb_track_id", "")})
     parts = Path(rel).parts
     folder_artist = parts[0] if len(parts) > 1 else ""
     folder_album = parts[-1] if parts else folder.name
@@ -262,7 +278,8 @@ def read_album(root: Path, folder: Path, files: list) -> AlbumHealth:
         if t["tracktotal"]:
             totals[t["disc"]] = max(totals.get(t["disc"], 0), t["tracktotal"])
     entry = AlbumHealth(folder=rel, artist=artist or "?", album=album, year=year, tracks=tracks,
-                        has_art=bool(covers) or has_embedded, cover_px=cover_px, tracktotal=totals,
+                        has_art=bool(covers) or has_embedded, cover_px=cover_px,
+                        cover_file=covers[0].name if covers else "", tracktotal=totals,
                         disctotal=max([t["disctotal"] for t in tracks] or [0]),
                         mb_release_id=_majority([t.get("mb_release_id") for t in raw]),
                         genre=_majority([t.get("genre") for t in raw]), date=date,
@@ -450,65 +467,132 @@ def _title_matches(a: str, b: str) -> bool:
     return bool(a and b) and matching.similarity(a, b) >= TITLE_MATCH
 
 
-def _covers(release_titles: list, local_titles: list) -> bool:
-    return all(any(_title_matches(lt, rt) for rt in release_titles) for lt in local_titles)
+def _same_track(local: dict, theirs: tuple) -> bool:
+    """A file and a release track (mb.release_tracks' tuple) are the same song: the same release-track or recording
+    ID when both are known, else the same title."""
+    title, _secs, track_id, recording_id, _artist = theirs
+    if local.get("mb_track_id") and track_id:
+        if local["mb_track_id"] == track_id:
+            return True
+    if local.get("mb_recording_id") and recording_id:
+        if local["mb_recording_id"] == recording_id:
+            return True
+    return _title_matches(local.get("title", ""), title)
 
 
-def compare_musicbrainz(mb_client, h: AlbumHealth, lookups: int = 4) -> Optional[Finding]:
-    """The album's MusicBrainz release, and which of its tracks are not in the folder. With a release ID in the tags
-    that release is used; otherwise the smallest official release of the same artist and title whose tracklist holds
-    every song that is here (the standard edition you have, not the deluxe one with bonus tracks). Sets h.musicbrainz
-    to what happened. Returns a missing_tracks Finding, or None when nothing is missing or no release fits."""
+def _covered(local: list, flat: list) -> bool:
+    """Every song that is here is on the release (one title may differ in an album of five or more, which a remaster
+    note or a typo in a tag easily causes)."""
+    found = sum(1 for t in local if any(_same_track(t, x) for x in flat))
+    return found == len(local) or (len(local) >= 5 and found >= len(local) - 1)
+
+
+def _release_count(r: dict) -> int:
+    return r.get("track-count") or sum(m.get("track-count", 0) for m in r.get("media", [])) or 0
+
+
+def candidate_releases(mb_client, h: AlbumHealth) -> list:
+    """[(release id, exact)] to try, best first. Exact ones come from the tags: the album's release ID, the release a
+    release-track ID belongs to. Then the releases the tagged recordings are on, the releases whose name is like the
+    album's (loosely: a release only counts later if it holds the songs that are here), and, when nothing else turned
+    up, the releases that a few of the songs, searched by title, are on."""
     from . import musicbrainz as mb
 
-    local = [t["title"] for t in h.tracks if t["title"]]
+    out, seen = [], set()
+
+    def add(rid, exact=False):
+        if rid and rid not in seen:
+            seen.add(rid)
+            out.append((rid, exact))
+
+    add(h.mb_release_id, True)
+    for tid in list(dict.fromkeys(t["mb_track_id"] for t in h.tracks if t.get("mb_track_id")))[:2]:
+        for r in mb_client.releases_with_track(tid):
+            add(r.get("id"), True)
+    scored: dict = {}                                   # release id -> [hits, release dict]
+
+    def consider(r: dict, weight: int = 1) -> None:
+        if r.get("id") and r["id"] not in seen:
+            entry = scored.setdefault(r["id"], [0, r])
+            entry[0] += weight
+
+    tracks = sorted_tracks(h)
+    recordings = list(dict.fromkeys(t["mb_recording_id"] for t in tracks if t.get("mb_recording_id")))
+    for rid in [recordings[i] for i in sorted({0, len(recordings) // 2, len(recordings) - 1})] if recordings else []:
+        for r in mb_client.recording_releases(rid):
+            consider(r, 2)
+    names = [h.album]
+    base = re.split(r"\s+[-–—:]\s+|:\s+", h.album, maxsplit=1)[0].strip()
+    if base and base.casefold() != h.album.casefold() and len(base) >= 3:
+        names.append(base)                          # "Kind of Blue - 50th Anniversary": the plain album is wanted too
+    for r in [r for name in names for r in mb_client.search_releases(h.artist, name, limit=15)]:
+        artist_ok =matching.similarity(h.artist, mb.credit_name(r.get("artist-credit") or [])) >= 0.7
+        title = r.get("title", "")
+        if artist_ok and (matching.similarity(h.album, title) >= 0.6 or matching.containment(h.album, title) >= 0.8
+                          or matching.containment(title, h.album) >= 0.8):      # "Kind of Blue - 50th Anniversary"
+            consider(r)
+    if not scored:
+        titled = [t["title"] for t in tracks if t["title"]]
+        for title in list(dict.fromkeys(titled[i] for i in sorted({0, len(titled) // 2})))[:2]:
+            for rec in mb_client.search_recordings(h.artist, title, limit=10):
+                for r in rec.get("releases", []):
+                    consider(r)
+
+    def rank(item):
+        hits, r = item
+        group = r.get("release-group") or {}
+        return (-hits, matching.similarity(h.album, r.get("title", "")) < 0.6,
+                (group.get("primary-type") or "Album").lower() != "album", (r.get("status") or "official").lower() != "official",
+                _release_count(r) or 999)
+
+    tried = set()
+    for hits, r in sorted(scored.values(), key=rank):
+        shape = (_release_count(r), matching.normalize(r.get("title", "")))
+        if shape in tried and shape[0]:                 # the same tracklist pressed again: one lookup is enough
+            continue
+        tried.add(shape)
+        add(r["id"])
+    return out
+
+
+def compare_musicbrainz(mb_client, h: AlbumHealth, lookups: int = 5) -> Optional[Finding]:
+    """The album's MusicBrainz release, and which of its songs are not in the folder. Releases are found by the
+    MusicBrainz IDs in the tags when there are any (so an album named a little differently from MusicBrainz is still
+    found), else by a loose name search or by its songs' titles; a release counts only if it holds every song that is
+    here. The tags' own release wins; otherwise the smallest such release (the standard edition you have, not the
+    deluxe one with bonus tracks). Sets h.musicbrainz to what happened. Returns a missing_tracks Finding, or None when
+    nothing is missing or no release fits."""
+    from . import musicbrainz as mb
+
+    local = [t for t in h.tracks if t["title"] or t.get("mb_recording_id") or t.get("mb_track_id")]
     if not local:
-        h.musicbrainz = "no track titles to compare"
+        h.musicbrainz = "no track titles or IDs to compare"
         return None
-    releases = []
+    fits = []
     try:
-        if h.mb_release_id:
-            releases = [mb_client.release(h.mb_release_id)]
-        else:
-            hits = mb_client.search_releases(h.artist, h.album, limit=15)
-
-            def count(r):
-                return r.get("track-count") or sum(m.get("track-count", 0) for m in r.get("media", []))
-
-            fits = [r for r in hits if count(r) >= len(local)
-                    and matching.similarity(h.album, r.get("title", "")) >= TITLE_MATCH
-                    and matching.similarity(h.artist, mb.credit_name(r.get("artist-credit") or [])) >= TITLE_MATCH]
-            fits.sort(key=lambda r: (count(r), (r.get("status") or "").lower() != "official", -int(r.get("score", 0))))
-            seen_counts = set()
-            for r in fits:
-                if len(releases) >= lookups:
-                    break
-                if count(r) in seen_counts:              # the same tracklist pressed again: one lookup is enough
-                    continue
-                seen_counts.add(count(r))
-                releases.append(mb_client.release(r["id"]))
+        candidates = candidate_releases(mb_client, h)
+        for rid, exact in candidates[:lookups]:
+            release = mb_client.release(rid)
+            flat = [(d, i, t) for d, tracks in enumerate(mb.release_tracks(release), 1) for i, t in enumerate(tracks, 1)]
+            if flat and _covered(local, [x for _, _, x in flat]):
+                fits.append((not exact, len(flat), release, flat))
     except mb.MBError as exc:
         h.musicbrainz = f"MusicBrainz: {exc}"
         return None
-    for release in releases:
-        discs = mb.release_tracks(release)
-        flat = [(d, i, t[0]) for d, tracks in enumerate(discs, 1) for i, t in enumerate(tracks, 1)]
-        titles = [t for _, _, t in flat]
-        if not _covers(titles, local):
-            continue
-        name = f"{release.get('title', '')} ({release.get('date', '')[:4] or 'undated'}" \
-               f"{', ' + release.get('country') if release.get('country') else ''}, {len(flat)} tracks)"
-        absent = [{"disc": d, "track": i, "title": title} for d, i, title in flat
-                  if not any(_title_matches(lt, title) for lt in local)]
-        if not absent:
-            h.musicbrainz = f"complete: every song of {name}"
-            return None
-        h.musicbrainz = f"compared with {name}"
-        h.mb_release_id = h.mb_release_id or release.get("id", "")
-        shown = ", ".join(f"“{m['title']}”" for m in absent[:4]) + (", ..." if len(absent) > 4 else "")
-        return Finding(MISSING, "bad", f"Missing {len(absent)} of {len(flat)} songs on MusicBrainz: {shown}", absent)
-    h.musicbrainz = "no MusicBrainz release has every song that is here" if releases else "not found on MusicBrainz"
-    return None
+    if not fits:
+        h.musicbrainz = "no MusicBrainz release has every song that is here" if candidates else "not found on MusicBrainz"
+        return None
+    _, _, release, flat = min(fits, key=lambda f: (f[0], f[1]))
+    name = f"{release.get('title', '')} ({release.get('date', '')[:4] or 'undated'}" \
+           f"{', ' + release.get('country') if release.get('country') else ''}, {len(flat)} tracks)"
+    absent = [{"disc": d, "track": i, "title": x[0]} for d, i, x in flat if not any(_same_track(t, x) for t in local)]
+    h.mb_match = release.get("id", "")
+    if not absent:
+        h.musicbrainz = f"complete: every song of {name}"
+        return None
+    h.musicbrainz = f"compared with {name}"
+    shown = ", ".join(f"\u201c{m['title']}\u201d" for m in absent[:4]) + (", ..." if len(absent) > 4 else "")
+    return Finding(MISSING, "bad", f"Missing {len(absent)} of {len(flat)} songs on MusicBrainz: {shown}", absent)
 
 
 def apply_musicbrainz(mb_client, h: AlbumHealth) -> None:
@@ -568,7 +652,7 @@ def scan(root: Path, *, mb_client=None, cache: Optional[Path] = None, use_cache:
     try:
         cache.parent.mkdir(parents=True, exist_ok=True)
         tmp = cache.with_name(cache.name + ".tmp")
-        facts = [{**asdict(a), "findings": [], "musicbrainz": ""} for a in report.albums]
+        facts = [{**asdict(a), "findings": [], "musicbrainz": "", "mb_match": ""} for a in report.albums]
         tmp.write_text(json.dumps({"version": CACHE_VERSION, "root": str(root), "albums": facts}), encoding="utf-8")
         os.replace(tmp, cache)
     except OSError:
@@ -666,17 +750,23 @@ def suggestion(h: AlbumHealth, cand) -> dict:
             "licence": item.licenseurl}
 
 
+def suggestions_for(h: AlbumHealth, cands: list) -> list:
+    """What each upload offers this album, best first."""
+    return sorted((suggestion(h, c) for c in cands), key=_suggestion_key)
+
+
 def _suggestion_key(s: dict) -> tuple:
     return (-len(s["fixes"]), not s["provides_all"], -len(s["provides"]), not s["lossless"], s["match"] != "exact",
             -s["downloads"])
 
 
-def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: int = 8,
+def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: int = 8, found: Optional[list] = None,
                    progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None) -> dict:
     """Search the Internet Archive for this album and say what each upload could fix. Only item records are read
     (no audio): {"query", "suggestions": [...best first], "art": [ArtImage dicts], "notes": [...]}. The art list is
     the front covers of the uploads, plus the Cover Art Archive's (hosted by the Internet Archive) when the album's
-    MusicBrainz release is known, for a missing cover or to replace the one the album has."""
+    MusicBrainz release is known, for a missing cover or to replace the one the album has. The uploads themselves
+    (Candidates) are added to `found` when it is given, so the suggestions can be worked out again after a fix."""
     from . import cdart
     from .pipeline import Options, Pipeline
     from .queries import Want
@@ -685,7 +775,9 @@ def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: in
     opts = Options(top=50, deep="none", max_candidates=max_candidates, fallback=("wav", "vbr"))
     pipe = Pipeline(client, progress=progress, cancel=cancel)
     res = pipe.search_one(want, opts)
-    suggestions = sorted((suggestion(h, c) for c in res.found), key=_suggestion_key)
+    if found is not None:
+        found.extend(res.found)
+    suggestions = suggestions_for(h, res.found)
     art = []                                             # for every album: a missing or small cover, or one to swap
     for c in res.found:
         fronts = [im for im in cdart.from_archive_item(c.item) if im.kind == "front"]
@@ -693,11 +785,12 @@ def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: in
         if cover and not fronts:                         # a lone image the name rules call "other"
             fronts = [im for im in cdart.from_archive_item(c.item) if im.ref.endswith("/" + cover["name"])]
         art += fronts[:2]
-    if mb_client is not None and h.mb_release_id:
+    release_id = h.mb_release_id or h.mb_match
+    if mb_client is not None and release_id:
         check(cancel)
         try:
-            listing = mb_client.art_listing(h.mb_release_id)
-            art += [im for im in cdart.from_caa(listing, {"id": h.mb_release_id}, "coverartarchive") if im.kind == "front"]
+            listing = mb_client.art_listing(release_id)
+            art += [im for im in cdart.from_caa(listing, {"id": release_id}, "coverartarchive") if im.kind == "front"]
         except Exception as exc:                         # the cover search is extra: never lose the uploads over it
             res.notes.append(f"Cover Art Archive: {exc}")
     return {"folder": h.folder, "query": want.label, "suggestions": suggestions,

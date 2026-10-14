@@ -321,9 +321,16 @@ In the app this is the **Health Check** tab. Each album is checked for:
 Checking reads tags and headers only. Each album is cached by its files' sizes and dates, so a second check only
 reads what changed.
 
-**Search the Internet Archive** (one album at a time) lists the uploads of that album and what each one fixes: which
-of the missing songs it has (matched by title, or by number when the upload has the same numbering as your copy), whether
-it is a lossless copy, and its cover, plus the Cover Art Archive's front cover when the MusicBrainz release is known.
+**Search the Internet Archive** (one album at a time; "Every album" lists the healthy ones too) searches like Album
+Search, with your search settings and every format. It searches under the album's own title and under its plain title
+too: "Blonde (FULL ALBUM)" is also searched as "Blonde", which is what most uploads are called. Every upload is listed,
+best audio first, with its quality: Lossless, Hi-res (guessed from the bitrate until a header is read), or Lossy with
+its bitrate (from the file sizes and lengths). Each one says what it offers your copy:
+- which of the missing songs it has (matched by title, or by number when the upload has the same numbering)
+- whether it is better than your copy: lossless for a lossy album, or a clearly higher bitrate (220 kbps or more, and
+  32 more than yours)
+- its cover, plus the Cover Art Archive's front cover when the MusicBrainz release is known
+
 Only item listings are read. Then:
 
 - **Add to album** downloads the ticked tracks into the album folder. Each one is checked against archive.org's
@@ -332,11 +339,11 @@ Only item listings are read. Then:
 - **Use as cover** saves `cover.jpg` for an album with none. **Replace cover** (it asks first) moves your cover file
   to the Trash, along with a copy of the embedded cover, writes the new one, and embeds it in the tracks that had one
   embedded. Only their picture changes.
-- **Replace album** (any lossless upload; it asks first and shows both track counts and formats) downloads the upload
+- **Replace album** (any lossless upload, or a clearly higher-bitrate one for a lossy album; it asks first and shows both track counts and formats) downloads the upload
   into a hidden staging folder beside your album and checks every file against archive.org's checksums. Only then does
   your folder go to the Trash, with anything in it that is not audio copied across, and the new one take its place
   under the same folder name, tagged with your artist and album names. If the download fails or is cancelled, your
-  album is untouched, and trying again resumes it. A lossy upload never replaces an album.
+  album is untouched, and trying again resumes it. A lossy upload only replaces a lossy album, and only when it is clearly better.
 
 **Merge** keeps the best copy of every song in one folder: lossless over lossy, then the higher resolution or bitrate.
 The folder with the most lossless songs stays. Songs that only the other copy has are moved in and given the album's

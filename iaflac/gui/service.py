@@ -904,6 +904,7 @@ class App:
         def run(job: Job):
             cands: list = []
             found = health.search_archive(self.client, entry, mb_client=self.mb, found=cands,
+                                          opts=self.options(all_formats=True),        # as Album Search, every format
                                           progress=self.jobs.progress(job), cancel=job.cancelled)
             self.health_cands[folder] = cands
             for im in found["art"]:
@@ -953,9 +954,12 @@ class App:
         """Replace the album with a lossless upload found by the search (a job: download into staging, verify, swap)."""
         entry = self._health_entry(folder)
         found = self.health_found.get(folder) or {}
-        media = next((s["media"] for s in found.get("suggestions", []) if s["identifier"] == identifier), None)
-        if media not in ("flac", "wav"):
-            raise ValueError("only a lossless upload found by this album's search can replace it")
+        offer = next((s for s in found.get("suggestions", []) if s["identifier"] == identifier), None)
+        if offer is None:
+            raise ValueError("search the Internet Archive for this album first: only an upload it found can replace it")
+        if not (offer["lossless"] or offer["upgrade"]):
+            raise ValueError("that upload is lossy and not a clear step up from your copy, so it does not replace it")
+        media = offer["media"]
         root = self._library()
 
         def run(job: Job):

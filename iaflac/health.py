@@ -53,6 +53,7 @@ KINDS = (MISSING, QUALITY, ART, DUPES)
 LABEL = {MISSING: "Missing songs", QUALITY: "Low quality", ART: "Missing art", DUPES: "Duplicates"}
 LOSSY = {"MP3", "M4A", "AAC", "OGG", "OPUS", "WMA"}
 TAGGED = (".flac", ".mp3", ".m4a", ".ogg", ".opus")
+HIRES_KBPS = 1250                  # a lossless upload averaging more than this is almost surely above 16 bit / 48 kHz
 MIN_COVER_PX = 500                   # below this a cover looks soft on a tablet or TV
 TITLE_MATCH = 0.85
 CACHE_VERSION = 3          # 2: track MusicBrainz IDs; 3: a release MusicBrainz matched is never cached as the tags' own
@@ -719,32 +720,70 @@ def match_missing(h: AlbumHealth, item_tracks: list) -> list:
     return out
 
 
+def upload_kbps(tracks: list) -> int:
+    """An upload's average bitrate from its files' sizes and lengths (as archive.org lists them), 0 when unknown."""
+    secs = sum(f.length or 0 for f in tracks)
+    if not tracks or any(not f.length for f in tracks) or secs <= 0:
+        return 0
+    return round(sum(f.size for f in tracks) * 8 / secs / 1000)
+
+
+def album_kbps(h: AlbumHealth) -> int:
+    """The album's average bitrate over its lossy files, 0 when it has none."""
+    rates = [t["kbps"] for t in h.tracks if t["format"] in LOSSY and t["kbps"]]
+    return round(sum(rates) / len(rates)) if rates else 0
+
+
+def quality_label(lossless: bool, kbps: int) -> str:
+    """'Lossless', 'Hi-res' or 'Lossy ~320 kbps'. Hi-res is a guess from the bitrate before any header is read: a 16-bit
+    44.1 kHz FLAC averages roughly 600-1,100 kbps, a 24-bit one 1,300 kbps and up."""
+    if lossless:
+        return "Hi-res" if kbps > HIRES_KBPS else "Lossless"
+    return f"Lossy ~{kbps} kbps" if kbps else "Lossy"
+
+
+def is_upgrade(h: AlbumHealth, lossless: bool, kbps: int) -> bool:
+    """Would this upload be better audio than the album? Lossless beats any lossy album; a lossy upload must be high
+    bitrate and clearly above the album's (a 320 kbps MP3 for a 128 kbps one)."""
+    if any(t["format"] in LOSSY for t in h.tracks):
+        if lossless:
+            return True
+        ours = album_kbps(h)
+        return bool(kbps) and kbps >= HIGH_MP3_KBPS and kbps >= ours + 32
+    return False
+
+
 def suggestion(h: AlbumHealth, cand) -> dict:
-    """What one archive.org upload offers this album: which missing songs it has, whether it is a lossless copy of the
-    whole album (for a low-quality one), and whether it ships a cover."""
+    """What one archive.org upload offers this album: which missing songs it has, whether it is better audio than the
+    album (lossless, or a much higher bitrate for a lossy album), and whether it ships a cover."""
     from .download import pick_cover
     from .quality import assess
 
     item = cand.item
     tracks = item.flacs
     lossless = item.media in ("flac", "wav")
+    kbps = upload_kbps(tracks)
     provides = [{"disc": m["disc"], "track": m["track"], "title": m["title"] or _file_title(f), "file": f.name,
                  "size": f.size, "format": PurePosixPath(f.name).suffix.lstrip(".").upper()}
                 for m, f in match_missing(h, tracks)]
     cover = pick_cover(item)
+    upgrade = is_upgrade(h, lossless, kbps) and len(tracks) >= len(h.tracks)
     fixes = []
     want = len(h.missing())
     if want and provides:
         fixes.append(MISSING)
-    if QUALITY in h.kinds and lossless and len(tracks) >= len(h.tracks):
+    if upgrade:
         fixes.append(QUALITY)
     if ART in h.kinds and cover is not None:
         fixes.append(ART)
     m = cand.match
+    measured = assess(cand)
     return {"identifier": item.identifier, "title": item.title, "creator": item.creator, "year": item.year,
-            "url": item.url, "media": item.media, "lossless": lossless, "format": assess(cand).format,
-            "tracks": len(tracks), "bytes": sum(f.size for f in tracks), "downloads": item.downloads,
-            "match": ("exact" if m.bucket == 0 else "close") if m else "", "fixes": fixes,
+            "url": item.url, "media": item.media, "lossless": lossless, "kbps": kbps,
+            "quality": quality_label(lossless, kbps), "format": measured.format if measured.tested else
+            (item.media.upper() + (f" ~{kbps} kbps" if kbps else "")),
+            "upgrade": upgrade, "tracks": len(tracks), "bytes": sum(f.size for f in tracks),
+            "downloads": item.downloads, "match": ("exact" if m.bucket == 0 else "close") if m else "", "fixes": fixes,
             "provides": provides, "provides_all": bool(want) and len(provides) == want,
             "cover": {"name": cover.name, "size": cover.size} if cover is not None else None,
             "licence": item.licenseurl}
@@ -756,13 +795,28 @@ def suggestions_for(h: AlbumHealth, cands: list) -> list:
 
 
 def _suggestion_key(s: dict) -> tuple:
-    return (-len(s["fixes"]), not s["provides_all"], -len(s["provides"]), not s["lossless"], s["match"] != "exact",
-            -s["downloads"])
+    """The missing songs first (when the album lacks any), then the best audio (lossless, then lossy by bitrate), then
+    what else it fixes, the closer match, and popularity."""
+    return (not s["provides_all"], -len(s["provides"]), not s["lossless"],
+            -(s["kbps"] if not s["lossless"] else 0), -len(s["fixes"]), s["match"] != "exact", -s["downloads"])
 
 
-def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: int = 8, found: Optional[list] = None,
+def search_titles(album: str) -> list:
+    """The titles to search archive.org for: the album's own, then the plain title without bracketed notes or a
+    ' - ...' suffix ('Blonde (FULL ALBUM)' -> 'Blonde', 'Kind of Blue - 50th Anniversary' -> 'Kind of Blue'), which
+    is what most uploads are called."""
+    out = [album]
+    plain = re.sub(r"\s*[(\[][^)\]]*[)\]]", "", album).strip()
+    plain = re.split(r"\s+[-\u2013\u2014:]\s+|:\s+", plain, maxsplit=1)[0].strip()
+    if len(plain) >= 2 and plain.casefold() != album.casefold():
+        out.append(plain)
+    return out
+
+
+def search_archive(client, h: AlbumHealth, *, mb_client=None, opts=None, found: Optional[list] = None,
                    progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None) -> dict:
-    """Search the Internet Archive for this album and say what each upload could fix. Only item records are read
+    """Search the Internet Archive for this album, as Album Search does (every format; `opts` are the app's search
+    settings), under its own title and its plain one, and say what each upload offers. Only item records are read
     (no audio): {"query", "suggestions": [...best first], "art": [ArtImage dicts], "notes": [...]}. The art list is
     the front covers of the uploads, plus the Cover Art Archive's (hosted by the Internet Archive) when the album's
     MusicBrainz release is known, for a missing cover or to replace the one the album has. The uploads themselves
@@ -771,15 +825,25 @@ def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: in
     from .pipeline import Options, Pipeline
     from .queries import Want
 
-    want = Want(raw=f"{h.artist} - {h.album}", artist=h.artist, album=h.album)
-    opts = Options(top=50, deep="none", max_candidates=max_candidates, fallback=("wav", "vbr"))
+    opts = opts or Options(top=50, deep="none", max_candidates=10, fallback=("wav", "vbr"), all_formats=True)
     pipe = Pipeline(client, progress=progress, cancel=cancel)
-    res = pipe.search_one(want, opts)
+    cands, notes, seen = [], [], set()
+    titles = search_titles(h.album)
+    for title in titles:
+        check(cancel)
+        res = pipe.search_one(Want(raw=f"{h.artist} - {title}", artist=h.artist, album=title), opts)
+        notes += [n for n in res.notes if n not in notes and not n.startswith("no FLAC candidate")]
+        for c in res.found:
+            if c.identifier not in seen:
+                seen.add(c.identifier)
+                cands.append(c)
+    if not cands:
+        notes.append("nothing on archive.org matched " + " or ".join(f"\u201c{t}\u201d" for t in titles))
     if found is not None:
-        found.extend(res.found)
-    suggestions = suggestions_for(h, res.found)
+        found.extend(cands)
+    suggestions = suggestions_for(h, cands)
     art = []                                             # for every album: a missing or small cover, or one to swap
-    for c in res.found:
+    for c in cands:
         fronts = [im for im in cdart.from_archive_item(c.item) if im.kind == "front"]
         cover = next((s["cover"] for s in suggestions if s["identifier"] == c.identifier and s["cover"]), None)
         if cover and not fronts:                         # a lone image the name rules call "other"
@@ -792,9 +856,10 @@ def search_archive(client, h: AlbumHealth, *, mb_client=None, max_candidates: in
             listing = mb_client.art_listing(release_id)
             art += [im for im in cdart.from_caa(listing, {"id": release_id}, "coverartarchive") if im.kind == "front"]
         except Exception as exc:                         # the cover search is extra: never lose the uploads over it
-            res.notes.append(f"Cover Art Archive: {exc}")
-    return {"folder": h.folder, "query": want.label, "suggestions": suggestions,
-            "art": [im.to_dict() for im in art], "notes": list(res.notes), "searched_at": time.time()}
+            notes.append(f"Cover Art Archive: {exc}")
+    return {"folder": h.folder, "query": " / ".join(f"{h.artist} - {t}" for t in titles), "titles": titles,
+            "suggestions": suggestions,
+            "art": [im.to_dict() for im in art], "notes": notes, "searched_at": time.time()}
 
 
 # ---- fixing: only ever adding files ---------------------------------------------------------------------------------
@@ -1018,7 +1083,8 @@ def embed_cover(path: Path, picture: tuple) -> bool:
 
 def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_client=None, trash: Optional[Path] = None,
                   progress: Optional[Callable[[dict], None]] = None, cancel: Optional[CancelCheck] = None) -> dict:
-    """Replace the album with a lossless archive.org upload of it, never risking the original: the upload is downloaded
+    """Replace the album with a better archive.org upload of it (lossless; or, for a lossy album, a lossy one of a
+    clearly higher bitrate: see is_upgrade), never risking the original: the upload is downloaded
     into a hidden staging folder beside the album, checked against archive.org's checksums and tagged with your album's
     artist and title. Only when every file has verified does the old folder go to the Trash (anything in it that is not
     audio is carried over first) and the new one take its place, under the old folder's name. A failed or cancelled
@@ -1026,8 +1092,8 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     from . import save, tagging
     from .replace import ReplaceError, staging_folder, swap_in
 
-    if cand.item.media not in ("flac", "wav"):
-        raise HealthError("that upload is lossy (MP3): an album is only replaced with a lossless copy")
+    if cand.item.media not in ("flac", "wav") and not is_upgrade(h, False, upload_kbps(cand.item.flacs)):
+        raise HealthError("that upload is lossy and not a clear step up from your copy, so it does not replace it")
     root = Path(root).expanduser().resolve()
     existing = (root / h.folder).resolve()
     if not existing.is_relative_to(root) or existing == root or not existing.is_dir():

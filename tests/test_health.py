@@ -565,3 +565,45 @@ class CoverRefresh(Api):
         img = self.http.get("/api/library/file", params={"path": f"{folder}/cover.jpg"})
         self.assertEqual(img.headers.get("cache-control"), "no-cache")
         self.assertEqual(health.image_px(img.content), 900)
+
+
+class SearchLikeAlbumSearch(Base):
+    """The Health Check finds what Album Search finds: an album tagged 'Blonde (FULL ALBUM)' is also searched as
+    'Blonde', every format is listed, and better copies (lossless, or a much higher bitrate) are marked."""
+
+    def test_search_titles(self):
+        self.assertEqual(health.search_titles("Blonde (FULL ALBUM)"), ["Blonde (FULL ALBUM)", "Blonde"])
+        self.assertEqual(health.search_titles("Kind of Blue - 50th Anniversary"), ["Kind of Blue - 50th Anniversary", "Kind of Blue"])
+        self.assertEqual(health.search_titles("channel ORANGE"), ["channel ORANGE"])
+
+    def test_the_plain_title_finds_the_better_uploads(self):
+        self.album("Frank Ocean/Blonde (FULL ALBUM) (2016)", [(1, "Nikes"), (2, "Ivy")], fmt="mp3", artist="Frank Ocean",
+                   album="Blonde (FULL ALBUM)", kbps=128, cover=jpeg())
+        flac = {f"{n:02d} - {t}.flac": flac_bytes() for n, t in ((1, "Nikes"), (2, "Ivy"))}
+        mp3 = {f"{n:02d} - {t}.mp3": mp3_bytes(320, frames=400) for n, t in ((1, "Nikes"), (2, "Ivy"))}
+        same = {f"{n:02d} - {t}.mp3": mp3_bytes(128, frames=400) for n, t in ((1, "Nikes"), (2, "Ivy"))}
+        ia = FakeIA([FakeItem("blonde-flac", "Frank Ocean - Blonde", "Frank Ocean", flac),
+                     FakeItem("blonde-320", "Frank Ocean - Blonde", "Frank Ocean", mp3, fmt="VBR MP3"),
+                     FakeItem("blonde-full", "Blonde (FULL ALBUM)", "Frank Ocean", same, fmt="VBR MP3")])
+        for item, frames, kbps in ((ia.items["blonde-320"], 400, 320), (ia.items["blonde-full"], 400, 128)):
+            for f in item.metadata["files"]:
+                f["length"] = str(frames * 1152 / 44100)          # archive.org lists lengths; the bitrate comes from them
+        h = self.scan().albums[0]
+        out = health.search_archive(ia, h)
+        by = {s["identifier"]: s for s in out["suggestions"]}
+        self.assertEqual(set(by), {"blonde-flac", "blonde-320", "blonde-full"}, out["query"])
+        self.assertEqual([s["identifier"] for s in out["suggestions"]][0], "blonde-flac", "lossless first")
+        self.assertTrue(by["blonde-flac"]["upgrade"])
+        self.assertTrue(by["blonde-320"]["upgrade"], by["blonde-320"])
+        self.assertEqual(by["blonde-320"]["quality"], "Lossy ~320 kbps")
+        self.assertFalse(by["blonde-full"]["upgrade"], "the same bitrate as yours is not better")
+
+    def test_upgrade_rules(self):
+        h = health.AlbumHealth("A/B", "A", "B", tracks=[{"format": "MP3", "kbps": 128}])
+        self.assertTrue(health.is_upgrade(h, True, 0))
+        self.assertTrue(health.is_upgrade(h, False, 320))
+        self.assertFalse(health.is_upgrade(h, False, 160), "below high bitrate")
+        flac = health.AlbumHealth("A/B", "A", "B", tracks=[{"format": "FLAC", "kbps": 900}])
+        self.assertFalse(health.is_upgrade(flac, True, 2500), "lossless and hi-res are both high quality")
+        self.assertEqual(health.quality_label(True, 1435), "Hi-res")
+        self.assertEqual(health.quality_label(True, 800), "Lossless")

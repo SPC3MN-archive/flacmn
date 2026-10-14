@@ -22,7 +22,7 @@ const ICON = { missing_tracks: "music", low_quality: "alert", missing_art: "imag
 
 const state = {
   data: null, kind: "all", filter: "", selected: null, album: null, musicbrainz: false,
-  progress: null, searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", replacing: "",
+  progress: null, searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", replacing: "", showAll: false,
 };
 let left = null, right = null, hooks = {};
 const els = {};
@@ -103,6 +103,7 @@ function renderHead() {
     { onclick: () => { state.kind = key; renderLeft(); } }, icon("check"), text);
   clear(els.kinds, d?.checked ? [kindChip("all", `All problems (${counts.albums - counts.healthy || 0})`),
     ...KINDS.map((k) => kindChip(k, `${LABEL[k]} (${counts[k] || 0})`)),
+    kindChip("every", `Every album (${counts.albums || 0})`),
     h("label.field.sm", { style: { width: "200px", marginLeft: "auto" } }, icon("search"),
       h("input", { placeholder: "Filter…", value: state.filter, oninput: (e) => { state.filter = e.target.value; renderRows(); } }))] : null);
 }
@@ -122,7 +123,9 @@ function renderRows() {
         + "Then search the Internet Archive for what is missing, or merge the duplicates.")));
   }
   const q = state.filter.trim().toLowerCase();
-  const rows = flagged().filter((a) => (state.kind === "all" || a.kinds.includes(state.kind))
+  // "Every album" lists the healthy ones too, so any album can be searched for a better copy or another cover
+  const pool = state.kind === "every" ? (d.albums || []) : flagged();
+  const rows = pool.filter((a) => (state.kind === "all" || state.kind === "every" || a.kinds.includes(state.kind))
     && (!q || `${a.artist} ${a.album}`.toLowerCase().includes(q)));
   if (!rows.length) {
     return clear(els.rows, h("div.empty", icon("check"), h("b", flagged().length ? "Nothing matches" : "Every album is healthy"),
@@ -133,7 +136,8 @@ function renderRows() {
     h("tbody", ...rows.map((a) => h("tr" + (a.folder === state.selected ? ".selected" : ""), { onclick: () => select(a.folder), title: a.folder },
       h("td", { style: { width: "56px" } }, cover(a)),
       h("td", a.artist), h("td.strong", a.album),
-      h("td", h("div.issues", ...problemChips(a))))))));
+      h("td", h("div.issues", ...(a.findings.length ? problemChips(a)
+        : [h("span.row", { style: { color: "var(--good-text)" } }, icon("check"), "Healthy")]))))))));
 }
 
 function problemChips(a) {
@@ -146,7 +150,7 @@ function problemChips(a) {
 
 // ---- right: one album -------------------------------------------------------------------------------------------
 async function select(folder, keep) {
-  if (state.selected !== folder || !keep) { state.plan = null; state.picks = {}; state.confirm = ""; }
+  if (state.selected !== folder || !keep) { state.plan = null; state.picks = {}; state.confirm = ""; state.showAll = false; }
   state.selected = folder;
   renderRows();
   if (!keep) clear(right, h("div.empty", h("span.spinner"), "Reading the album…"));
@@ -177,8 +181,9 @@ function renderRight() {
       h("button.btn.secondary.sm", { onclick: () => hooks.openLibrary && hooks.openLibrary(a.folder) }, icon("library"), "Library")),
     h("div.scroll.grow.health-body",
       h("div.section-label", "Problems"),
-      h("div.findings", ...a.findings.map((f) => h("div.finding." + f.severity,
-        icon(f.severity === "bad" ? "x" : "alert"), h("b", LABEL[f.kind]), h("span", f.text)))),
+      h("div.findings", ...(a.findings.length ? a.findings.map((f) => h("div.finding." + f.severity,
+        icon(f.severity === "bad" ? "x" : "alert"), h("b", LABEL[f.kind]), h("span", f.text)))
+        : [h("div.muted.small", "None found. You can still search for a better copy or another cover.")])),
       a.musicbrainz ? h("div.muted.small", icon("info"), ` MusicBrainz: ${a.musicbrainz}`) : null,
       dupes.length ? mergeSection(a, dupes) : null,
       archiveSection(a),
@@ -277,16 +282,22 @@ function archiveSection(a) {
       state.searching ? h("span.spinner") : icon("search"), s ? "Search again" : "Search the Internet Archive"));
   if (state.searching) return h("div", head, h("div.muted.small", state.searchStage || "Searching archive.org…"));
   if (!s) {
-    return h("div", head, h("div.muted.small", "Looks for uploads of this album that have the missing songs, a lossless "
-      + "copy to replace it with, or a cover. Only their listings are read; nothing is downloaded until you choose."));
+    return h("div", head, h("div.muted.small", "Lists every upload of this album, best audio first: the ones with the "
+      + "missing songs, better quality to replace it with, or a cover. Only their listings are read; nothing is "
+      + "downloaded until you choose."));
   }
-  const useful = s.suggestions.filter((x) => x.fixes.length || x.lossless);
-  const art = s.art || [];
+  const all = s.suggestions, art = s.art || [];
+  const better = all.filter((x) => x.upgrade).length;
+  const shown = state.showAll ? all : all.slice(0, 8);
   return h("div", head,
+    h("div.muted.small", `Searched for ${s.query}: ${all.length} upload${all.length === 1 ? "" : "s"}`
+      + (better ? `, ${better} better than your copy` : "") + "."),
     art.length ? artPicker(a, art) : null,
-    useful.length ? useful.slice(0, 6).map((x) => suggestionBox(a, x))
-      : h("div.empty.small", icon("search"), h("b", "Nothing found that fixes this"),
-        s.suggestions.length ? `${s.suggestions.length} upload(s) of the album, all lossy and none with what is missing.` : "No uploads of this album on archive.org."),
+    all.length ? shown.map((x) => suggestionBox(a, x))
+      : h("div.empty.small", icon("search"), h("b", "No uploads of this album on archive.org"),
+        "Try Album Search with a shorter title."),
+    all.length > shown.length ? h("button.btn.secondary.sm", { onclick: () => { state.showAll = true; renderRight(); } },
+      `Show all ${all.length} uploads`) : null,
     s.notes?.length ? h("div.muted.small", s.notes.join(" · ")) : null);
 }
 
@@ -320,7 +331,9 @@ function ask(key) {
 
 function suggestionBox(a, x) {
   const fixes = x.fixes.map((k) => chip(k === "missing_tracks" ? (x.provides_all ? "Has every missing song" : `Has ${x.provides.length} missing song(s)`)
-    : k === "low_quality" ? "Lossless copy" : "Has a cover", "good", { icon: "check" }));
+    : k === "low_quality" ? (x.lossless ? "Better than yours: lossless" : `Better than yours: ~${x.kbps} kbps`)
+    : "Has a cover", "good", { icon: "check" }));
+  const qkind = x.lossless ? "good" : x.upgrade ? "warn" : "bad";
   const picks = state.picks[x.identifier] || (state.picks[x.identifier] = new Set(x.provides.map((p) => p.file)));
   const tracks = x.provides.length ? h("div.provides", ...x.provides.map((p) => h("label.check",
     h("input", { type: "checkbox", checked: picks.has(p.file), onchange: (e) => { e.target.checked ? picks.add(p.file) : picks.delete(p.file); } }),
@@ -331,7 +344,7 @@ function suggestionBox(a, x) {
     h("div.row", h("div.grow",
       h("div.strong.ellipsis", x.title || x.identifier),
       h("div.muted.small", [x.identifier, x.format, `${x.tracks} tracks`, fmtBytes(x.bytes), x.year, x.match && `${x.match} match`].filter(Boolean).join(" · "))),
-      chip(x.lossless ? "Lossless" : "Lossy", x.lossless ? "good" : "bad", { dot: true })),
+      chip(x.quality, qkind, { dot: true, title: x.kbps ? `about ${x.kbps} kbps on average, from the file sizes` : "" })),
     fixes.length ? h("div.issue-line", ...fixes) : null,
     tracks,
     asking ? h("div.finding.warn", icon("alert"), h("span",
@@ -340,12 +353,12 @@ function suggestionBox(a, x) {
       + "files copied across. Your artist and album names are kept."
       + (x.tracks < a.track_count ? ` This upload has ${a.track_count - x.tracks} fewer track(s) than yours.` : ""))) : null,
     h("div.row", { style: { marginTop: "8px" } }, h("div.grow"),
-      x.lossless ? h("button.btn.ghost.sm", {
+      h("button.btn.ghost.sm", {
         title: "Look at it (spectrogram, tags) in Album Search first",
-        onclick: () => hooks.openSearch && hooks.openSearch(a.artist, a.album),
-      }, "Open in Album Search") : null,
+        onclick: () => hooks.openSearch && hooks.openSearch(a.artist, (a.search?.titles || [a.album]).slice(-1)[0]),
+      }, "Open in Album Search"),
       asking ? h("button.btn.secondary.sm", { onclick: () => ask("") }, "Cancel") : null,
-      x.lossless ? h("button.btn.sm" + (asking ? ".danger" : ".secondary"), {
+      x.lossless || x.upgrade ? h("button.btn.sm" + (asking ? ".danger" : ".secondary"), {
         onclick: () => (asking ? replaceAlbum(a.folder, x) : ask(rkey)), disabled: !!state.busy,
       }, running ? h("span.spinner") : icon("refresh"),
         running ? (state.replacing || "Replacing…") : asking ? "Yes, replace the album" : "Replace album") : null,

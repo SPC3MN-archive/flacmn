@@ -22,6 +22,8 @@ from fastapi.staticfiles import StaticFiles
 from .. import __version__
 from ..ia_client import IAClient
 from . import audio
+from ..health import HealthError
+from ..retag import RetagError
 from .service import App, NotFound
 
 STATIC = Path(__file__).resolve().parent / "static"
@@ -68,6 +70,11 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
 
     @api.exception_handler(ValueError)
     async def bad_value(_request, exc):
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    @api.exception_handler(HealthError)
+    @api.exception_handler(RetagError)
+    async def health_error(_request, exc):
         return JSONResponse({"error": str(exc)}, status_code=400)
 
     @api.exception_handler(audio.AudioError)
@@ -194,6 +201,22 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     @api.get("/api/library/album")
     def library_album(folder: str):
         return core.library_album(folder)
+    @api.get("/api/library/tags")
+    def album_tags(folder: str):
+        return core.album_tags(folder)
+
+    @api.post("/api/library/tags/musicbrainz")
+    def album_tags_musicbrainz(body: dict = Body(...)):
+        return core.album_tags_musicbrainz(body["folder"], body.get("artist", ""), body.get("album", ""))
+
+    @api.post("/api/library/tags/preview")
+    def album_tags_preview(body: dict = Body(...)):
+        return core.album_tags_preview(body["folder"], body["meta"], body.get("release_id", ""))
+
+    @api.put("/api/library/tags")
+    def album_tags_save(body: dict = Body(...)):
+        return core.album_tags_save(body["folder"], body["meta"], bool(body.get("rename")))
+
     @api.post("/api/library/open")
     def library_open(body: dict = Body(...)):
         return core.open_album(body["path"])
@@ -201,7 +224,51 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     @api.get("/api/library/file")
     def library_file(path: str):
         p = core.library_file(path)
-        return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"))
+        # revalidated each time (a 304 when unchanged), so a cover replaced under the same name shows at once
+        return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"),
+                            headers={"Cache-Control": "no-cache"})
+
+    # ---- Library Health Check (/api/health is the app's own status) ------------------------------------------
+    @api.get("/api/health-check")
+    def health_report():
+        return core.health_report()
+
+    @api.post("/api/health-check/scan")
+    def health_scan(body: dict = Body(default={})):
+        return core.health_scan(bool(body.get("musicbrainz")))
+
+    @api.get("/api/health-check/album")
+    def health_album(folder: str):
+        return core.health_album(folder)
+
+    @api.post("/api/health-check/search")
+    def health_search(body: dict = Body(...)):
+        return core.health_search(body["folder"])
+
+    @api.post("/api/health-check/fetch")
+    def health_fetch(body: dict = Body(...)):
+        return core.health_fetch(body["folder"], body["identifier"], list(body.get("files") or []))
+
+    @api.get("/api/health-check/image/{image_id}")
+    def health_image(image_id: str):
+        data, mime = core.health_image(image_id)
+        return Response(data, media_type=mime, headers={"Cache-Control": "max-age=86400"})
+
+    @api.post("/api/health-check/cover")
+    def health_cover(body: dict = Body(...)):
+        return core.health_cover(body["folder"], body["image_id"], bool(body.get("replace")))
+
+    @api.post("/api/health-check/replace")
+    def health_replace(body: dict = Body(...)):
+        return core.health_replace(body["folder"], body["identifier"])
+
+    @api.post("/api/health-check/merge-plan")
+    def health_merge_plan(body: dict = Body(...)):
+        return core.health_merge_plan(list(body.get("folders") or []))
+
+    @api.post("/api/health-check/merge")
+    def health_merge(body: dict = Body(...)):
+        return core.health_merge(list(body.get("folders") or []), body.get("token", ""))
 
     # ---- CD artwork --------------------------------------------------------------------------------------------
     @api.post("/api/art/find")

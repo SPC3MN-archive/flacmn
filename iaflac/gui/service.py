@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .. import __version__, binaries, musicbrainz as mb, paths, quality, queries, save, tagging
-from .. import cassette, cdart, designs, jewelcase, library_index
+from .. import cassette, cdart, designs, health, jewelcase, library_index, retag
 from ..ia_client import IAClient, IAError
 from ..names import folder_component
 from ..model import track_files
@@ -125,6 +125,11 @@ class App:
         self.uploads: dict = {}               # album folder -> [ArtImage] you uploaded (kept across Find again)
         self.art_styles: dict = {}            # album folder -> {part: design} for the parts flacmn generates
         self._texture_version = 0
+        self.health_index: Optional[health.HealthReport] = None
+        self._health_job: Optional[str] = None
+        self.health_found: dict = {}          # album folder -> its last Internet Archive search (health.search_archive)
+        self.health_cands: dict = {}          # album folder -> the uploads that search found (Candidates)
+        self.health_art: dict = {}            # image id -> cdart.ArtImage offered as a cover by those searches
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
                                    concurrency=self.settings.download_concurrency)
@@ -520,6 +525,46 @@ class App:
         return {"folder": folder, "tracks": tracks, "issues": tagging.validate(path),
                 "cover": next((p.relative_to(root).as_posix() for p in path.iterdir() if p.name.lower() in tagging.COVER_NAMES), None)}
 
+    # ---- editing an album's tags (Library → Edit tags) ---------------------------------------------------------
+    def album_tags(self, folder: str) -> dict:
+        """The album's tags as its files say, for the editor."""
+        meta, skipped = retag.read_album(self._album_dir(folder))
+        return {"folder": folder, "meta": meta.to_dict(), "skipped": skipped}
+
+    def album_tags_musicbrainz(self, folder: str, artist: str = "", album: str = "") -> dict:
+        """Search MusicBrainz for the album (a job): its releases, best first, scored on track count, lengths and names."""
+        path = self._album_dir(folder)
+
+        def run(job: Job):
+            meta, _ = retag.read_album(path)
+            found = mb.find_matches(self.mb, meta, artist.strip(), album.strip())
+            if not found or found[0].score < 0.6:         # a misspelled album name: find the album by its songs
+                more = mb.find_matches_by_songs(self.mb, meta, artist.strip(), skip={m.release_id for m in found})
+                found = sorted(found + more, key=lambda m: -m.score)[:8]
+            return {"folder": folder, "matches": [x.to_dict() for x in found]}
+
+        return {"job_id": self.jobs.submit("musicbrainz", f"MusicBrainz: {artist or folder} / {album}", run).id}
+
+    def album_tags_preview(self, folder: str, draft: dict, release_id: str = "") -> dict:
+        """What saving would change: the draft as it is, or with a MusicBrainz release applied to it first."""
+        old, _ = retag.read_album(self._album_dir(folder))
+        new, warnings = retag.meta_from_dict(draft), []
+        if release_id:
+            new, warnings = retag.from_release(new, self.mb.release(release_id))
+        return {"meta": new.to_dict(), "diff": retag.preview(old, new), "warnings": warnings,
+                "renames": retag.plan_renames(self._album_dir(folder), new),
+                "ids_added": bool(new.mb_release_id) and new.mb_release_id != old.mb_release_id}
+
+    def album_tags_save(self, folder: str, draft: dict, rename: bool = False) -> dict:
+        path = self._album_dir(folder)
+        result = retag.write(path, retag.meta_from_dict(draft), rename=rename)
+        self.library = None                              # read the music folder again on next use
+        self._opened.pop(str(path), None)
+        if self.health_index is not None and self.health_index.get(folder) is not None:
+            self._health_refresh(folder)
+        self.broadcast({"type": "library", "changed": folder})
+        return result
+
     def library_file(self, rel: str) -> Path:
         """A file of an album (its cover, for the picker): relative to the music folder, or inside an opened album."""
         opened = [Path(p) for p in self.settings.opened]
@@ -814,6 +859,186 @@ class App:
 
     def art_summary(self) -> dict:
         return {"albums": [self._art_row(a) for a in sorted(self.arts.values(), key=lambda a: a.folder.casefold())]}
+
+    # ---- Library Health Check -----------------------------------------------------------------------------------
+    # Missing songs, low quality, missing art and duplicates across the music folder (health.py); per album, a search
+    # of the Internet Archive for what is missing, and the fixes: fetch tracks, save a cover, merge duplicates.
+    def health_report(self) -> dict:
+        lib = self.settings.library_path
+        out = {"root": self.settings.library, "checked": self.health_index is not None, "running": self._health_job,
+               "library_ok": bool(lib and lib.is_dir()), "labels": health.LABEL}
+        if self.health_index is not None:
+            out.update(self.health_index.to_dict())
+            for a in out["albums"]:
+                a["searched"] = a["folder"] in self.health_found
+        return out
+
+    def health_scan(self, musicbrainz: bool = False) -> dict:
+        """Check every album in the background (one check at a time); progress and a "health" event follow. Albums with
+        MusicBrainz IDs in their tags are always compared with their release; `musicbrainz` searches for the rest."""
+        root = self._library()
+        with self._lock:
+            if self._health_job:
+                return {"job_id": self._health_job}
+
+            def run(job: Job):
+                try:
+                    self.health_index = health.scan(root, mb_client=self.mb, search_untagged=musicbrainz,
+                                                    progress=self.jobs.progress(job), cancel=job.cancelled)
+                    return self.health_index.counts()
+                finally:
+                    with self._lock:
+                        self._health_job = None
+                    self.broadcast({"type": "health"})
+
+            label = "health check" + (" with a MusicBrainz search" if musicbrainz else "") + f": {root}"
+            self._health_job = self.jobs.submit("health", label, run).id
+            return {"job_id": self._health_job}
+
+    def _health_entry(self, folder: str) -> health.AlbumHealth:
+        entry = self.health_index.get(folder) if self.health_index is not None else None
+        if entry is None:
+            raise NotFound(f"no health check of {folder!r}: run the check first")
+        return entry
+
+    def _health_refresh(self, folder: str, gone: tuple = ()) -> None:
+        """Check one album again after a fix (and forget any albums merged away), keeping the rest of the report."""
+        if self.health_index is None:
+            return
+        root = self._library()
+        self.health_index.albums = [a for a in self.health_index.albums if a.folder not in gone]
+        try:
+            fresh = health.check_one(root, folder, self.mb if self.health_index.mb_tags else None,
+                                     search_untagged=self.health_index.musicbrainz)
+        except health.HealthError:
+            fresh = None
+            self.health_index.albums = [a for a in self.health_index.albums if a.folder != folder]
+            gone = (*gone, folder)
+        else:
+            self.health_index.albums = [fresh if a.folder == folder else a for a in self.health_index.albums]
+        health.mark_duplicates(self.health_index)
+        if fresh is not None and folder in self.health_found:
+            # keep the search, but say again what each upload offers the album as it is now (a track just added is
+            # no longer missing; a cover just saved is no longer needed)
+            self.health_found[folder]["suggestions"] = health.suggestions_for(fresh, self.health_cands.get(folder, []))
+        for f in (folder, *gone):
+            if f in gone:
+                self.health_found.pop(f, None)
+                self.health_cands.pop(f, None)
+            art = self.arts.get(f)
+            if art is not None:                          # Case Art: forget scans of the folder that were moved away
+                art.images = [im for im in art.images if im.source not in cdart.LOCAL or Path(im.ref).is_file()]
+        self.library = None                              # the music folder changed: read again on next use
+        self.broadcast({"type": "health"})
+
+    def health_album(self, folder: str) -> dict:
+        entry = self._health_entry(folder)
+        out = entry.to_dict(tracks=True)
+        out["tracks"] = health.sorted_tracks(entry)
+        out["cover"] = f"{folder}/{entry.cover_file}" if entry.cover_file else None
+        out["search"] = self.health_found.get(folder)
+        return out
+
+    def health_search(self, folder: str) -> dict:
+        """Search the Internet Archive for what this album is missing (a job; its result is the search)."""
+        entry = self._health_entry(folder)
+
+        def run(job: Job):
+            cands: list = []
+            found = health.search_archive(self.client, entry, mb_client=self.mb, found=cands,
+                                          opts=self.options(all_formats=True),        # as Album Search, every format
+                                          progress=self.jobs.progress(job), cancel=job.cancelled)
+            self.health_cands[folder] = cands
+            for im in found["art"]:
+                self.health_art[im["id"]] = cdart.ArtImage(**im)
+            self.health_found[folder] = found
+            return found
+
+        return {"job_id": self.jobs.submit("health-search", f"archive.org for {entry.artist} / {entry.album}", run).id}
+
+    def health_fetch(self, folder: str, identifier: str, files: list) -> dict:
+        """Download chosen tracks of an upload into the album folder (checked, tagged, nothing overwritten)."""
+        entry = self._health_entry(folder)
+        found = self.health_found.get(folder) or {}
+        media = next((s["media"] for s in found.get("suggestions", []) if s["identifier"] == identifier), None)
+        c = self.cand(identifier, media=media)
+        root = self._library()
+        health.plan_fetch(root, entry, c.item, files)        # refuse at once, not in the background
+
+        def run(job: Job):
+            try:
+                return health.fetch_tracks(self.client, root, entry, c.item, files, progress=self.jobs.progress(job),
+                                           cancel=job.cancelled)
+            finally:
+                self._health_refresh(folder)
+
+        return {"job_id": self.jobs.submit("health-fetch", f"add {len(files)} track(s) to {folder}", run).id}
+
+    def health_image(self, image_id: str) -> tuple:
+        im = self.health_art.get(image_id)
+        if im is None:
+            raise NotFound(f"no image {image_id}")
+        try:
+            data = cdart.ArtFetcher(self.mb, self.client).get(im)
+        except (mb.MBError, IAError, OSError, ValueError) as exc:
+            raise FetchError(f"could not fetch the image: {exc}") from exc
+        return data, image_mime(data)
+
+    def health_cover(self, folder: str, image_id: str, replace: bool = False) -> dict:
+        """Save a found cover; with `replace`, in place of the album's own (which goes to the Trash)."""
+        entry = self._health_entry(folder)
+        data, _ = self.health_image(image_id)
+        out = health.save_cover(self._library(), entry, data, replace=replace)
+        self._health_refresh(folder)
+        found = self.health_found.get(folder)
+        if found is not None:
+            # the choice is made: the covers found are no longer offered (Search again brings them back)
+            fresh = self.health_index.get(folder) if self.health_index is not None else None
+            found["art"] = []
+            found["cover_done"] = {"written": out["written"], "px": fresh.cover_px if fresh else 0,
+                                   "embedded": out.get("embedded", 0), "replaced": bool(out.get("trash"))}
+        return out
+
+    def health_replace(self, folder: str, identifier: str) -> dict:
+        """Replace the album with a lossless upload found by the search (a job: download into staging, verify, swap)."""
+        entry = self._health_entry(folder)
+        found = self.health_found.get(folder) or {}
+        offer = next((s for s in found.get("suggestions", []) if s["identifier"] == identifier), None)
+        if offer is None:
+            raise ValueError("search the Internet Archive for this album first: only an upload it found can replace it")
+        if not (offer["lossless"] or offer["upgrade"] or offer.get("redownload")):
+            raise ValueError("that upload is lossy and not a clear step up from your copy, so it does not replace it")
+        media = offer["media"]
+        root = self._library()
+
+        def run(job: Job):
+            self.jobs.progress(job)({"stage": "replace", "step": "preparing", "identifier": identifier})
+            c = self.cand(identifier, media=media)
+            if not c.probes and not c.alt_stats:
+                self.pipeline(job).probe(c)
+            try:
+                return health.replace_album(self.client, root, entry, c, opts=self.save_options(), mb_client=self.mb,
+                                            progress=self.jobs.progress(job), cancel=job.cancelled,
+                                            complete=bool(offer.get("redownload")) and not offer["upgrade"])
+            finally:
+                self._health_refresh(folder)
+
+        # the queue shows this like a download: the album, and where the new copy comes from
+        label = f"{entry.artist} / {entry.album} \u2190 {identifier}"
+        return {"job_id": self.jobs.submit("health-replace", label, run).id}
+
+    def health_merge_plan(self, folders: list) -> dict:
+        return health.plan_merge(self._library(), folders)
+
+    def health_merge(self, folders: list, token: str) -> dict:
+        root = self._library()
+
+        def run(job: Job):
+            result = health.apply_merge(root, folders, token, progress=self.jobs.progress(job))
+            self._health_refresh(result["target"], gone=tuple(result["trashed_folders"]))
+            return result
+
+        return {"job_id": self.jobs.submit("health-merge", f"merge {len(folders)} folder(s)", run).id}
 
     # ---- audio -------------------------------------------------------------------------------------------------
     def remote_file(self, identifier: str, name: str):

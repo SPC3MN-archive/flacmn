@@ -26,7 +26,7 @@ from .tagging import COVER_NAMES, DISC_DIR, read_track, validate
 AUDIO = {".flac", ".mp3", ".m4a", ".wav", ".ogg", ".opus", ".aiff", ".aif", ".wv", ".ape"}
 LOSSLESS = {"FLAC", "WAV", "AIFF", "AIF", "WV", "APE"}
 CHECK_FAILED = "could not check tags"
-CACHE_VERSION = 2          # bump when the checks change, so albums cached with the old checks are read again
+CACHE_VERSION = 3          # bump when the checks change, so albums cached with the old checks are read again
 YEAR_SUFFIX = re.compile(r"\s*[(\[]((?:19|20)\d\d)[)\]]\s*$")
 
 
@@ -123,6 +123,11 @@ def album_folders(root: Path) -> list:
     return sorted(albums.items(), key=lambda kv: str(kv[0]).casefold())
 
 
+def with_covers(folder: Path, files: list) -> list:
+    """The album's audio files plus its cover files, so adding or replacing a cover counts as a change."""
+    return list(files) + [folder / n for n in COVER_NAMES if (folder / n).is_file()]
+
+
 def signature(files: list) -> str:
     h = hashlib.sha1()
     for p in files:
@@ -174,7 +179,7 @@ def read_album(root: Path, folder: Path, files: list) -> AlbumEntry:
                        size=sum(p.stat().st_size for p in files if p.exists()),
                        seconds=round(sum(t.get("length") or 0 for t in tracks), 1),
                        has_cover=any(t.get("has_art") for t in tracks) or any((folder / n).exists() for n in COVER_NAMES),
-                       signature=signature(files))
+                       signature=signature(with_covers(folder, files)))
     try:
         entry.issues = validate(folder) if any(p.suffix.lower() in (".flac", ".mp3") for p in files) else []
     except Exception as exc:
@@ -212,7 +217,7 @@ def scan(root: Path, *, cache: Optional[Path] = None, use_cache: bool = True,
         rel = folder.relative_to(root).as_posix()
         old = known.get(rel)
         failed = any(str(i).startswith(CHECK_FAILED) for i in (old or {}).get("issues", []))   # retried, not remembered
-        if old and not failed and old.get("signature") == signature(files):
+        if old and not failed and old.get("signature") == signature(with_covers(folder, files)):
             entry = AlbumEntry(**{k: v for k, v in old.items() if k in fields})
         else:
             entry = read_album(root, folder, files)

@@ -2,10 +2,11 @@
 
 import { connect, on } from "./api.js";
 import { h, hydrateIcons, toast } from "./ui.js";
-import { mountSearch } from "./search.js";
+import { mountSearch, searchFor } from "./search.js";
 import { mountSpectrogram, loadCandidate, updateCandidate as updateSpec } from "./spectrogram.js";
 import { mountTags, loadTags } from "./tags.js";
-import { mountLibrary, load as loadLibrary } from "./library.js";
+import { mountLibrary, load as loadLibrary, openAlbum as openLibraryAlbum } from "./library.js";
+import { mountHealth, load as loadHealth } from "./health.js";
 import { mountNowPlaying } from "./nowplaying.js";
 import { mountArtLibrary, load as loadArtLibrary } from "./artlib.js";
 import { mountCdArt, openAlbum, refresh as refreshArt, refreshPicker } from "./cdart.js";
@@ -20,6 +21,7 @@ function show(view) {
   document.getElementById("settings-btn").classList.toggle("active", view === "settings");
   if (view === "settings") showSettings();
   if (view === "library") loadLibrary();
+  if (view === "health") loadHealth();
   if (view === "cdart") refreshArt();
 }
 for (const b of document.querySelectorAll("[data-view]")) b.addEventListener("click", () => show(b.dataset.view));
@@ -55,10 +57,23 @@ mountLibrary(libTop, libBottom, {
   count: (n) => { badge.hidden = !n; badge.textContent = n; },
 });
 
+// ---- Library Health Check -------------------------------------------------------------------------------------------
+const healthView = document.getElementById("view-health");
+const healthLeft = h("div.card"), healthRight = h("div.card");
+healthView.append(healthLeft, healthRight);
+const healthBadge = document.getElementById("health-badge");
+mountHealth(healthLeft, healthRight, {
+  openSettings: () => show("settings"),
+  openSearch: (artist, album) => { show("search"); searchFor(artist, album); },
+  openLibrary: (folder) => { show("library"); openLibraryAlbum(folder); },
+  libraryChanged: () => { loadLibrary(); loadArtLibrary(); },
+  count: (n) => { healthBadge.hidden = !n; healthBadge.textContent = n; },
+});
+
 // ---- Settings --------------------------------------------------------------------------------------------------------
 mountSettings(document.getElementById("view-settings"), {
   changed: (s, values) => {
-    if ("library" in values) { loadLibrary(); loadArtLibrary(); }
+    if ("library" in values) { loadLibrary(); loadArtLibrary(); loadHealth(); }
     if ("paper" in values || "disc_hole_mm" in values || "bleed_mm" in values) refreshArt();
   },
 });

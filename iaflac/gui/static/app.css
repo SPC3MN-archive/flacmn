@@ -462,6 +462,62 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .two-col td { height: 30px; }
 .two-col > table { align-self: start; }
 
+/* ---- Library Health Check ------------------------------------------------------------------------------------ */
+#view-health { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.health-kinds { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; flex: none; }
+.health-body { display: flex; flex-direction: column; gap: 8px; }
+.findings { display: flex; flex-direction: column; gap: 6px; }
+.finding { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; }
+.finding b { flex: none; font-weight: 650; }
+.finding .icon { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+.finding.bad { background: var(--bad-tint); color: var(--bad-text); }
+.finding.warn { background: var(--warn-tint); color: var(--warn-text); }
+.health-box { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.health-box .strong { font-weight: 650; }
+.small { font-size: 11.5px; }
+.provides { display: flex; flex-direction: column; gap: 4px; padding-left: 2px; }
+.art-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.art-pick { width: 132px; display: flex; flex-direction: column; gap: 4px; }
+.art-pick img { width: 132px; height: 132px; object-fit: cover; border-radius: 6px; background: var(--surface-sunk); }
+@media (max-width: 1180px) { #view-health { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(420px, auto) minmax(520px, auto); } }
+
+/* ---- Library → Edit tags ------------------------------------------------------------------------------------ */
+.tagedit-mb { display: flex; background: var(--surface-sunk); border-radius: 8px; padding: 10px 12px; flex: none; }
+.tagedit-mb .src { color: var(--primary-text); font-weight: 600; font-size: 12.5px; flex: none; }
+.tagedit-mb .field { height: 30px; background: var(--raised); }
+.tagedit-matches { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow: auto; }
+.tagedit-match { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; background: var(--raised); font-size: 12.5px; }
+.tagedit-match.on { box-shadow: inset 0 0 0 1.5px var(--primary); }
+.tagedit-match .score { font-weight: 700; color: var(--primary-text); width: 26px; text-align: right; flex: none; }
+.tag-fields .field.changed, .tagedit-table input.changed { border-color: var(--amber); background: var(--warn-tint); }
+.tagedit-table th:nth-child(5) { width: 22%; } .tagedit-table th:nth-child(4) { width: 22%; }
+/* while tags are edited the editor gets the room: full width, most of the height; Now playing steps aside */
+#view-library.tag-editing { grid-template-rows: minmax(120px, 24%) minmax(0, 1fr); }
+#view-library.tag-editing > .card:not(.lib-top):not(.np-card) { grid-column: 1 / -1; }
+#view-library.tag-editing > .np-card { display: none; }
+
+/* the review: where the changes come from, then the album's and each track's changes as "now -> after saving" */
+.rv-summary { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-sunk);
+              margin-bottom: 10px; flex: none; }
+.rv-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--raised); display: grid; place-items: center; flex: none; }
+.rv-icon .icon { width: 16px; height: 16px; color: var(--primary-text); }
+.rv-body { display: flex; flex-direction: column; gap: 14px; }
+.rv-section { display: flex; flex-direction: column; gap: 6px; }
+.rv-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft); }
+.rv-row { display: grid; grid-template-columns: 140px minmax(0, 360px) 18px minmax(0, 1fr); align-items: center; gap: 8px;
+          font-size: 12.5px; padding: 2px 0; }
+.rv-label { color: var(--text-2); }
+.rv-val { padding: 2px 8px; border-radius: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          justify-self: start; max-width: 100%; }                       /* as wide as the value, not the column */
+.rv-val.old { color: var(--text-3); text-decoration: line-through; }
+.rv-val.new { background: var(--good-tint); color: var(--good-text); font-weight: 600; }
+.rv-val i { font-style: italic; text-decoration: none; opacity: .8; }
+.rv-arrow { color: var(--text-3); text-align: center; }
+.rv-track { display: flex; flex-direction: column; gap: 2px; padding: 6px 0 8px; border-bottom: 1px dashed var(--border-soft); }
+.rv-track:last-child { border-bottom: 0; }
+.rv-track-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; margin-bottom: 2px; }
+.rv-num { font-variant-numeric: tabular-nums; color: var(--text-3); font-size: 12px; flex: none; }
+
 /* ---- Settings ------------------------------------------------------------------------------------------------ */
 #view-settings { grid-template-columns: repeat(3, minmax(300px, 392px)); justify-content: center; align-content: start; }
 .set-col { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }

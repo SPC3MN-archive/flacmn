@@ -126,6 +126,25 @@ class MBClient:
     def release(self, release_id: str) -> dict:
         return self._get(f"{WS}/release/{release_id}", {"inc": RELEASE_INC})
 
+    def recording_releases(self, recording_id: str) -> list:
+        """Every release a recording (the MUSICBRAINZ_TRACKID tag) is on, with its release group and media."""
+        data = self._get(f"{WS}/recording/{recording_id}", {"inc": "releases+release-groups+media"})
+        return data.get("releases", [])
+
+    def releases_with_track(self, track_id: str) -> list:
+        """The release a release track (the MUSICBRAINZ_RELEASETRACKID tag) belongs to."""
+        data = self._get(f"{WS}/release/", {"query": f"tid:{track_id}", "limit": 5})
+        return data.get("releases", [])
+
+    def search_recordings(self, artist: str, title: str, limit: int = 15) -> list:
+        """Recordings of a song by an artist, each with the releases it is on."""
+        def q(s: str) -> str:
+            return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+        if not title:
+            return []
+        query = f"recording:{q(title)}" + (f" AND artist:{q(artist)}" if artist else "")
+        return self._get(f"{WS}/recording/", {"query": query, "limit": limit}).get("recordings", [])
+
     def group_releases(self, release_group_id: str, limit: int = 100) -> list:
         """Every release (pressing) in a release group, with its media track counts and Cover Art Archive counts."""
         data = self._get(f"{WS}/release", {"release-group": release_group_id, "inc": "media", "limit": limit})
@@ -347,6 +366,43 @@ def find_matches(client: MBClient, meta: AlbumMeta, artist: str = "", album: str
         except MBError:
             continue
         out.append(score_release(meta, full, artist, album))
+    out.sort(key=lambda m: -m.score)
+    return out[:limit]
+
+
+def find_matches_by_songs(client: MBClient, meta: AlbumMeta, artist: str = "", limit: int = 8, lookups: int = 6,
+                          skip=()) -> list:
+    """When the album's name finds nothing (it is misspelled, or named differently), find its releases through its
+    songs instead: a few track titles are searched with the artist, the releases those recordings are on are ranked by
+    how many of the searched songs they hold and how close their track count is, and the best are looked up and
+    scored like find_matches (track count, lengths, names). Returns ReleaseMatch list, best first."""
+    artist = artist or meta.albumartist
+    titled = [t.title for t in sorted(meta.tracks, key=lambda t: (t.disc, t.track)) if t.title]
+    if not titled:
+        return []
+    picks = list(dict.fromkeys(titled[i] for i in sorted({0, len(titled) // 2, len(titled) - 1})))
+    total = len(meta.tracks)
+    seen: dict = {}                                   # release id -> [songs found on it, track count]
+    for title in picks:
+        try:
+            recordings = client.search_recordings(artist, title, limit=15)
+        except MBError:
+            continue
+        for rec in recordings:
+            for r in rec.get("releases", []):
+                rid = r.get("id")
+                if not rid or rid in skip:
+                    continue
+                count = r.get("track-count") or sum(m.get("track-count", 0) for m in r.get("media", []))
+                entry = seen.setdefault(rid, [set(), count])
+                entry[0].add(title)
+    ranked = sorted(seen.items(), key=lambda kv: (-len(kv[1][0]), abs((kv[1][1] or 999) - total)))
+    out = []
+    for rid, _ in ranked[:lookups]:
+        try:
+            out.append(score_release(meta, client.release(rid), artist, ""))
+        except MBError:
+            continue
     out.sort(key=lambda m: -m.score)
     return out[:limit]
 

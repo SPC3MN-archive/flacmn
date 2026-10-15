@@ -378,7 +378,8 @@ def apply(folder: Path, meta: AlbumMeta, paths: dict, cover: Optional[bytes] = N
 
 def read_track(path: Path) -> dict:
     """Normalised tags of one file: {"title", "artist", "albumartist", "album", "track", "tracktotal", "disc",
-    "disctotal", "date", "genre", "has_art", "format", "bits", "rate", "kbps", "length"}."""
+    "disctotal", "date", "genre", "has_art", "format", "bits", "rate", "kbps", "length"}, plus the MusicBrainz IDs
+    (release, release group, recording and release track) when the file carries them."""
     from mutagen import File, MutagenError
     out = {"path": str(path), "has_art": False, "format": path.suffix.lower().lstrip(".").upper()}
     try:
@@ -404,7 +405,10 @@ def read_track(path: Path) -> dict:
                    album=get("ALBUM", ""), track=track, tracktotal=int(get("TRACKTOTAL") or get("TOTALTRACKS") or ttotal or 0),
                    disc=disc, disctotal=int(get("DISCTOTAL") or get("TOTALDISCS") or dtotal or 0),
                    date=get("DATE") or get("YEAR", ""), genre=get("GENRE", ""), mb_release_id=get("MUSICBRAINZ_ALBUMID", ""),
-                   mb_releasegroup_id=get("MUSICBRAINZ_RELEASEGROUPID", ""), source_url=get("IAFLAC_SOURCE", ""))
+                   mb_releasegroup_id=get("MUSICBRAINZ_RELEASEGROUPID", ""), source_url=get("IAFLAC_SOURCE", ""),
+                   mb_recording_id=get("MUSICBRAINZ_TRACKID", ""), mb_track_id=get("MUSICBRAINZ_RELEASETRACKID", ""),
+                   label=get("LABEL") or get("ORGANIZATION", ""), catalog=get("CATALOGNUMBER", ""),
+                   mb_albumartist_id=get("MUSICBRAINZ_ALBUMARTISTID", ""))
     else:
         tags = audio.tags or {}
 
@@ -417,8 +421,18 @@ def read_track(path: Path) -> dict:
         out.update(title=text("TIT2"), artist=text("TPE1"), albumartist=text("TPE2"), album=text("TALB"), track=track,
                    tracktotal=ttotal, disc=disc, disctotal=dtotal, date=text("TDRC"), genre=text("TCON"),
                    mb_release_id=text("TXXX:MusicBrainz Album Id"),
-                   mb_releasegroup_id=text("TXXX:MusicBrainz Release Group Id"), source_url=text("TXXX:IAFLAC_SOURCE"))
+                   mb_releasegroup_id=text("TXXX:MusicBrainz Release Group Id"), source_url=text("TXXX:IAFLAC_SOURCE"),
+                   mb_recording_id=_ufid(tags) or text("TXXX:MusicBrainz Track Id"),
+                   mb_track_id=text("TXXX:MusicBrainz Release Track Id"), label=text("TPUB"),
+                   catalog=text("TXXX:CATALOGNUMBER"), mb_albumartist_id=text("TXXX:MusicBrainz Album Artist Id"))
     return out
+
+
+def _ufid(tags) -> str:
+    """The MusicBrainz recording ID Picard stores in an MP3 (UFID frame owned by musicbrainz.org)."""
+    frame = tags.get("UFID:http://musicbrainz.org") if hasattr(tags, "get") else None
+    data = getattr(frame, "data", b"") or b""
+    return data.decode("ascii", "replace") if data else ""
 
 
 def folder_cover(folder: Path) -> Optional[Path]:

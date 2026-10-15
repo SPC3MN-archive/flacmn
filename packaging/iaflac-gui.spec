@@ -11,7 +11,7 @@ from PyInstaller.utils.hooks import collect_submodules
 
 ROOT = Path(SPECPATH).parent
 BIN = ROOT / "packaging" / "bin"
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 
 tools = [(str(p), "bin") for p in sorted(BIN.glob("*")) if p.is_file() and p.name != ".gitkeep"] if BIN.is_dir() else []
 if not tools:

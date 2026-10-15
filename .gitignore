@@ -24,6 +24,3 @@ preview/
 # app data written next to a source checkout (download queue, library index)
 .gui/
 .library-index/
-
-# the owner's personal wish list: never commit it
-missing.txt

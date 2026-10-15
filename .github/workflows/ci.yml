@@ -1,0 +1,29 @@
+name: tests
+
+on:
+  push:
+    branches: [main, gui]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: flac and ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install flac ffmpeg
+      - name: flac and ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: choco install -y flac ffmpeg
+      - name: install
+        run: python -m pip install -e ".[gui,dev]"
+      - name: unit tests (offline)
+        run: python -m unittest discover -s tests -t . -v

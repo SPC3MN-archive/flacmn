@@ -9,11 +9,25 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from iaflac import health
+from iaflac import binaries, health
 from iaflac.model import ItemInfo
 
 
 def flac_bytes(seconds: float = 2.0, rate: int = 44100, bits: int = 16, channels: int = 2) -> bytes:
+    """A FLAC file of silence. With flac installed it is a real one (so it passes `flac -t`, which the fetch checks);
+    without, just the header with its length, which is all the tag reading needs. Long ones stay header-only either
+    way (they only carry a track length for MusicBrainz scoring)."""
+    flac = binaries.flac()                  # the same flac the app uses (PATH, or the bundled/packaging copy)
+    if flac and bits == 16 and seconds <= 30:
+        import numpy as np
+        import os
+        import subprocess
+        from tests.helpers import pcm_wav
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst = os.path.join(tmp, "in.wav"), os.path.join(tmp, "out.flac")
+            Path(src).write_bytes(pcm_wav(np.zeros((int(seconds * rate), channels)), rate))
+            subprocess.run([flac, "-s", "-f", "-o", dst, src], check=True, **binaries.NO_WINDOW)
+            return Path(dst).read_bytes()
     total = int(seconds * rate)
     packed = (rate << 44) | ((channels - 1) << 41) | ((bits - 1) << 36) | total
     info = struct.pack(">HH", 4096, 4096) + b"\0\0\0" + b"\0\0\0" + packed.to_bytes(8, "big") + bytes(16)
@@ -41,7 +55,8 @@ def write_track(path: Path, data: bytes, title: str, track: int, artist="Test Ar
     if path.suffix == ".flac":
         from mutagen.flac import FLAC, Picture
         f = FLAC(str(path))
-        f.add_tags()
+        if f.tags is None:
+            f.add_tags()
         f["TITLE"], f["ARTIST"], f["ALBUMARTIST"], f["ALBUM"] = title, artist, artist, album
         f["TRACKNUMBER"] = str(track)
         if total:

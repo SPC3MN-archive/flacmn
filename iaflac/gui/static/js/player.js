@@ -1,5 +1,5 @@
 // Playback: one <audio> element playing an album from a track onward, moving on to the next track by itself.
-// From the Pi library player (SPC3MN/piplayer): album playback, keyboard control (Space, ←/→, +/-), and an idle
+// From the Pi library player (apps/flacmn-player): album playback, keyboard control (Space, ←/→, +/-), and an idle
 // timer the Now playing card uses to show the oscilloscope when nobody has touched anything for a while.
 
 import { url } from "./api.js";

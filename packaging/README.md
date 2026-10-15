@@ -17,7 +17,7 @@ python -m iaflac.gui --browser    # in your browser instead (easier for UI work:
 **macOS, from a checkout, no installer**
 
 ```bash
-git clone https://github.com/SPC3MN/iaflac && cd iaflac && git checkout gui
+git clone https://github.com/SPC3MN/SPCMN-brand && cd SPCMN-brand/apps/flacmn
 bash packaging/macos/dev_setup.sh            # .venv, packages, flac + ffmpeg (Homebrew), tests, then opens the app
 bash packaging/macos/dev_setup.sh --app      # also builds dist/flacmn.app (self-contained tools via build_macos.sh)
 bash packaging/macos/dev_setup.sh --no-run   # set up and test only

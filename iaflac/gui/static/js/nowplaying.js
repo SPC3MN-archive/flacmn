@@ -1,4 +1,4 @@
-// The Now playing card, from the Pi library player (SPC3MN/piplayer): three tabs.
+// The Now playing card, from the Pi library player (apps/flacmn-player): three tabs.
 //   Art    the cover large, with the track, album and artist beside it (wrapped and shrunk to fit: never cut off),
 //          a progress bar you can click to seek, and previous / play-pause / next
 //   Scope  just the oscilloscope, the waveform, filling the card

@@ -6,8 +6,9 @@
 //   wave  about 20 ms of the left channel, triggered on a rising zero crossing so the trace holds still
 //   xy    a stereo figure that keeps its shape open: x is the mid (L+R) a quarter-cycle later plus some of the side
 //         (L-R), y is the mid now; the delay follows the dominant pitch, so a tone draws a loop and chords draw
-//         rosettes. Each axis has its own automatic gain, so the figure fills the box, and the older part of the
-//         trace fades like phosphor so the newest line reads clearly.
+//         rosettes. The figure is turned 45° clockwise so its long diagonal lies horizontal. Each axis has its own
+//         automatic gain, so the figure fills the box, and the older part of the trace fades like phosphor so the
+//         newest line reads clearly.
 //
 // Nothing clips: the wave's gain backs off at once on loud passages (recovering slowly), and the XY figure is never
 // drawn past this frame's fit. The trace can take an album's colour (Scope.colour), as on the Pi library player.
@@ -101,7 +102,8 @@ export class Scope {
     let mx = 1e-4, my = 1e-4;
     for (let j = 0; j < n; j++) {
       const i = j * STEP, k = i + D, mid = (at(l, k) + at(r, k)) / 2, side = (at(l, k) - at(r, k)) / 2;
-      xs[j] = mid + side * 0.9; ys[j] = (at(l, i) + at(r, i)) / 2 - side * 0.5;
+      const fx = mid + side * 0.9, fy = (at(l, i) + at(r, i)) / 2 - side * 0.5;
+      xs[j] = (fx + fy) * Math.SQRT1_2; ys[j] = (fy - fx) * Math.SQRT1_2;  // turned 45° clockwise: lies horizontal
       mx = Math.max(mx, Math.abs(xs[j])); my = Math.max(my, Math.abs(ys[j]));
     }
     const tx = Math.min(40, 0.95 / mx), ty = Math.min(40, 0.95 / my);

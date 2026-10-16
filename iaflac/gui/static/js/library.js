@@ -1,41 +1,53 @@
-// Library: every album in the library folder with its quality and what a player like Volumio would trip over, and one
-// album's tracks. Below the list, the open album and its tracks on the left, and the Now playing card on the right
-// (nowplaying.js). Playing a track plays the album on from there (player.js).
+// Library, the home screen: every album in the library folder on the left, filtered by "Needs attention", lossy or
+// no cover; one album on the right with everything about it at once: its facts, its tracks (click one to play the album
+// from there), what needs fixing and how (the library check, health.js), and its cover and the others found for it.
 
 import { api, url, on, waitJob } from "./api.js";
-import { h, clear, icon, chip, fmtTime, fmtBytes, toast, errorText, albumQualityChip } from "./ui.js";
+import { h, clear, icon, fmtTime, fmtBytes, toast, errorText, albumQualityChip } from "./ui.js";
 import { now, onChange, playAlbum, toggle, playingPath } from "./player.js";
 import { openTagEditor } from "./tagedit.js";
+import { mountHealth, onHealth, healthData, problemsOf, select as selectHealth, load as loadHealth, run as runCheck,
+  checking, progressText } from "./health.js";
 
-const state = { data: null, filter: "", selected: null, album: null, scanning: false, colw: null, editing: false };
-let top = null, bottom = null, hooks = {};
+const state = { data: null, filter: "", show: "all", selected: null, album: null, scanning: false, editing: false };
+let list = null, pane = null, hooks = {};
+const els = {};
 
-export function mountLibrary(topCard, bottomCard, opts) {
-  top = topCard;
-  bottom = bottomCard;
+export function mountLibrary(listCard, paneEl, opts) {
+  list = listCard;
+  pane = paneEl;
   hooks = opts;
-  onChange(renderAlbum);
+  onChange(renderTracks);
   on("library", () => load());
-  renderTop();
+  mountHealth({
+    openSettings: opts.openSettings, openSearch: opts.openSearch,
+    libraryChanged: () => { load(); opts.libraryChanged && opts.libraryChanged(); },
+    tagIssues: (folder) => (folder === state.album?.folder ? state.album.issues : []),
+    editTags: (folder) => editTags(folder),
+    coverOf: (folder) => (folder === state.album?.folder && state.album.cover ? coverSrc(state.album) : null),
+  });
+  onHealth(() => { renderHead(); renderRows(); });
+  renderList();
   renderAlbum();
+  loadHealth();
 }
 
 export async function load() {
   try {
     state.data = await api("/library");
     state.data.albums = (state.data.albums || []).filter((a) => !a.opened);   // folders opened in Case Art aren't the library
-    state.colw = null;                                           // measure the columns again for this library
   } catch (e) {
     state.data = { error: errorText(e), albums: [] };
   }
   hooks.count && hooks.count(state.data.albums?.length || 0);
-  renderTop();
+  renderHead();
+  renderRows();
   if (state.selected && !state.data.albums.some((a) => a.folder === state.selected)) {
     state.selected = null;
     state.album = null;
     renderAlbum();
-  } else if (state.selected && state.data.albums.length) {
-    // the open album may have changed (a cover or tracks added from the Health Check): show it as it is now
+  } else if (state.selected && state.data.albums.length && !state.editing) {
+    // the open album may have changed (a cover or tracks added by a fix): show it as it is now
     api("/library/album", { query: { folder: state.selected } })
       .then((al) => { if (al.folder === state.selected) { state.album = al; renderAlbum(); } })
       .catch(() => {});
@@ -45,6 +57,7 @@ export async function load() {
 export function albums() { return state.data?.albums || []; }
 
 export function coverUrl(folder, name = "cover.jpg") { return url("/library/file", { path: `${folder}/${name}` }); }
+const coverSrc = (al) => url("/library/file", { path: al.cover, v: String(Date.now()).slice(0, -4) });
 
 export function coverThumb(entry, cls = "thumb") {
   if (!entry.has_cover) return h("div." + cls, icon("image"));
@@ -60,7 +73,7 @@ export function coverThumb(entry, cls = "thumb") {
 
 async function rescan() {
   state.scanning = true;
-  renderTop();
+  renderHead();
   try {
     const { job_id } = await api("/library/scan", { method: "POST" });
     await waitJob(job_id);
@@ -70,130 +83,117 @@ async function rescan() {
     toast(`Rescan failed: ${errorText(e)}`, "bad");
   } finally {
     state.scanning = false;
-    renderTop();
+    renderHead();
   }
 }
 
-function issueChips(a) {
-  const out = [];
-  for (const t of a.issues || []) out.push(chip(t.charAt(0).toUpperCase() + t.slice(1), "warn", { icon: "alert" }));
-  return out;
-}
+// ---- the list ----------------------------------------------------------------------------------------------------
+const FILTERS = [
+  ["all", "All", () => true],
+  ["attention", "Needs attention", (a) => !!problemsOf(a.folder) || (a.issues || []).length > 0],
+  ["lossy", "Lossy", (a) => a.quality === "lossy"],
+  ["nocover", "No cover", (a) => !a.has_cover],
+];
 
-function renderTop() {
-  const d = state.data;
-  const search = h("input", { placeholder: "Filter albums…", value: state.filter,
+function renderList() {
+  els.filter = h("input", { id: "lib-filter", type: "search", placeholder: "Artist or album", value: state.filter,
     oninput: (e) => { state.filter = e.target.value; renderRows(); } });
-  const headSub = d && d.albums && d.albums.length
-    ? `${d.albums.length} albums · ${d.albums.reduce((s, a) => s + a.tracks, 0)} tracks · ${fmtBytes(d.albums.reduce((s, a) => s + a.size, 0))} · ${d.root}`
-    : d?.root || "";
-  els.rows = h("div.scroll.grow");
-  clear(top,
-    h("div.card-head", h("span.card-title", "Library"), h("span.card-sub.grow.ellipsis", headSub),
-      h("label.field", { style: { width: "280px", height: "30px" } }, icon("search"), search),
-      h("button.btn.secondary.sm", { onclick: rescan, disabled: state.scanning || !d?.root },
-        state.scanning ? h("span.spinner") : icon("refresh"), "Rescan")),
+  els.pills = h("div.pills", { role: "group", "aria-label": "Show" });
+  els.meta = h("div.row.list-meta");
+  els.rows = h("ul.list.scroll", { "aria-label": "Albums" });
+  clear(list,
+    h("div.list-head",
+      h("label.sr-only", { for: "lib-filter" }, "Filter your library"),
+      h("span.field", icon("search"), els.filter),
+      els.pills, els.meta),
     els.rows);
+  renderHead();
   renderRows();
 }
 
-const els = {};
+function renderHead() {
+  if (!els.pills) return;
+  const all = albums();
+  clear(els.pills, ...FILTERS.map(([key, label, test]) => h("button.pill", { type: "button", "aria-pressed": String(state.show === key),
+    onclick: () => { state.show = key; renderHead(); renderRows(); } }, `${label} · ${all.filter(test).length}`)));
+  const d = state.data, hd = healthData();
+  const shown = visible().length;
+  const what = state.show === "attention" ? `${shown} album${shown === 1 ? "" : "s"} need${shown === 1 ? "s" : ""} attention`
+    : `${shown} album${shown === 1 ? "" : "s"}`;
+  const size = fmtBytes(all.reduce((s, a) => s + (a.size || 0), 0));
+  clear(els.meta,
+    h("h2.list-count", what), h("span.muted.ellipsis.grow", d?.root ? `${size} · ${d.root}` : ""),
+    h("button.btn.ghost.sm", { type: "button", onclick: runCheck, disabled: checking() || !d?.root,
+      title: hd?.checked ? "Check every album again for missing songs, low quality, covers and duplicates" : "Look for missing songs, low quality, missing covers and duplicates" },
+      checking() ? h("span.spinner") : null, checking() ? progressText() : hd?.checked ? "Check again" : "Check library"),
+    h("button.btn.ghost.sm", { type: "button", onclick: rescan, disabled: state.scanning || !d?.root, title: "Read the library folder again" },
+      state.scanning ? h("span.spinner") : icon("refresh"), "Rescan"));
+}
+
+function visible() {
+  const q = state.filter.trim().toLowerCase(), test = FILTERS.find((f) => f[0] === state.show)[2];
+  return albums().filter((a) => test(a) && (!q || `${a.artist} ${a.album}`.toLowerCase().includes(q)));
+}
+
+function summary(a) {
+  const p = problemsOf(a.folder), tags = (a.issues || []).length;
+  if (p) return [p.text + (tags ? ` · ${tags} tag issue${tags === 1 ? "" : "s"}` : ""), p.bad ? "bad" : "warn"];
+  if (tags) return [tags === 1 ? a.issues[0] : `${tags} tag issues`, "warn"];
+  return ["", ""];
+}
+
 function renderRows() {
+  if (!els.rows) return;
   const d = state.data;
-  if (!d) return clear(els.rows, h("div.empty", h("span.spinner"), "Reading the library…"));
-  if (d.error) return clear(els.rows, h("div.empty", icon("alert"), h("b", "Could not read the library"), d.error));
+  if (!d) return clear(els.rows, h("li.empty", h("span.spinner"), "Reading the library…"));
+  if (d.error) return clear(els.rows, h("li.empty", icon("alert"), h("b", "Could not read the library"), d.error));
   if (!d.root) {
-    return clear(els.rows, h("div.empty", icon("folder"), h("b", "No library folder yet"),
+    return clear(els.rows, h("li.empty", icon("folder"), h("b", "No library folder yet"),
       h("span", "Choose where albums are saved: a local folder, a USB drive or your Volumio share."),
-      h("button.btn.primary.sm", { onclick: () => hooks.openSettings && hooks.openSettings() }, "Open Settings")));
+      h("button.btn.primary.sm", { type: "button", onclick: () => hooks.openSettings && hooks.openSettings() }, "Open Settings")));
   }
-  if (d.scanning && !d.albums.length) return clear(els.rows, h("div.empty", h("span.spinner"), "Reading the library…"));
-  if (!d.albums.length) {
-    return clear(els.rows, h("div.empty", icon("library"), h("b", "No albums found"), h("span", `Nothing in ${d.root} yet.`)));
-  }
-  const q = state.filter.trim().toLowerCase();
-  const rows = d.albums.filter((a) => !q || `${a.artist} ${a.album}`.toLowerCase().includes(q));
-  clear(els.rows, h("table.grid.lib-table",
-    h("thead", h("tr", h("th", ""), h("th", "Artist"), h("th", "Album"), h("th", { "data-fit": "all" }, "Quality"),
-      h("th", "Cover"), h("th", "Issues"))),
-    h("tbody", ...rows.map((a) => h("tr" + (a.folder === state.selected ? ".selected" : ""), { onclick: () => select(a.folder), title: a.folder },
-      h("td", { style: { width: "56px" } }, coverThumb(a)),
-      h("td", a.artist), h("td.strong", a.album), h("td", albumQualityChip(a.quality)),
-      h("td", a.has_cover ? icon("check", "ok-icon") : icon("x", "bad-icon")),
-      h("td", h("div.issues", ...(issueChips(a).length ? issueChips(a) : [h("span.row", { style: { color: "var(--good-text)" } }, icon("check"), "No issues")]))))))));
-  const table = els.rows.querySelector("table");
-  if (!state.colw && !q && table.offsetParent) state.colw = measureColumns(table);   // over the whole library
-  if (state.colw) fitColumns(table, state.colw);
-  for (const el of els.rows.querySelectorAll(".ok-icon")) el.style.color = "var(--green)";
-  for (const el of els.rows.querySelectorAll(".bad-icon")) el.style.color = "var(--red)";
+  if (d.scanning && !d.albums.length) return clear(els.rows, h("li.empty", h("span.spinner"), "Reading the library…"));
+  if (!d.albums.length) return clear(els.rows, h("li.empty", icon("library"), h("b", "No albums found"), h("span", `Nothing in ${d.root} yet.`)));
+  const rows = visible();
+  if (!rows.length) return clear(els.rows, h("li.empty", icon("check"), h("b", state.show === "attention" ? "Nothing needs attention" : "Nothing matches")));
+  clear(els.rows, ...rows.map((a) => {
+    const [issue, sev] = summary(a);
+    return h("li", h("button.list-row" + (a.folder === state.selected ? ".on" : ""), {
+      type: "button", "aria-current": a.folder === state.selected ? "true" : null, title: a.folder, onclick: () => select(a.folder) },
+      coverThumb(a, "thumb.md"),
+      h("span.list-main", h("b.ellipsis", a.album || a.folder), h("span.list-sub.ellipsis", [a.artist, a.year].filter(Boolean).join(" · "))),
+      h("span.list-side", albumQualityChip(a.quality), issue ? h("span.list-issue.ellipsis." + sev, issue) : null)));
+  }));
 }
 
-// Each column as wide as the median of its contents across the library (at least its heading), so a few long names
-// don't push the rest of the table off the card; longer entries end in "…" and show in full on hover. A column marked
-// data-fit="all" (Quality) is as wide as its widest entry, so every chip shows whole. The cover thumbnail keeps its
-// size, and the last column (Issues) takes whatever is left.
-function measureColumns(table) {
-  const rows = [...table.tBodies[0].rows], heads = [...table.tHead.rows[0].cells];
-  const ctx = document.createElement("canvas").getContext("2d");
-  const textWidth = (el) => {                                   // as drawn: font, case and letter spacing
-    const cs = getComputedStyle(el);                              // (cs.font is "" once numbers are tabular)
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    let s = el.textContent.trim();
-    if (cs.textTransform === "uppercase") s = s.toUpperCase();
-    return ctx.measureText(s).width + (parseFloat(cs.letterSpacing) || 0) * s.length;
-  };
-  const median = (a) => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
-  const content = (td) => {
-    const kids = [...td.children];
-    return kids.length ? Math.max(...kids.map((k) => k.getBoundingClientRect().width)) : textWidth(td);
-  };
-  return heads.map((th, c) => {
-    if (c === 0) return 56;
-    if (c === heads.length - 1) return null;
-    const pad = parseFloat(getComputedStyle(th).paddingLeft) + parseFloat(getComputedStyle(th).paddingRight);
-    const widths = rows.map((r) => content(r.cells[c]));
-    const w = th.dataset.fit === "all" ? Math.max(0, ...widths) : median(widths);
-    return Math.ceil(Math.max(w, textWidth(th)) + pad + 1);
-  });
-}
-
-function fitColumns(table, widths) {
-  table.prepend(h("colgroup", ...widths.map((w) => h("col", w ? { style: { width: w + "px" } } : null))));
-  table.classList.add("fitted");
-  for (const td of table.querySelectorAll("tbody td")) {
-    if (!td.children.length && td.scrollWidth > td.clientWidth) td.title = td.textContent;   // the whole name on hover
-  }
-}
-
+// ---- one album -------------------------------------------------------------------------------------------------------
 /** Show one album (from another screen). The list is loaded first if it isn't yet. */
 export async function openAlbum(folder) {
   if (!state.data) await load();
   await select(folder);
 }
 
-// Edit tags: the album's card becomes the editor; when it closes, the album is read again if anything was saved
+// Edit tags: the album's page becomes the editor; when it closes, the album is read again if anything was saved
 function editTags(folder) {
   state.editing = true;
-  const view = document.getElementById("view-library");
-  view.classList.add("tag-editing");
-  openTagEditor(bottom, folder, async (saved) => {
+  const box = h("div.card.tag-edit-card");
+  clear(pane, box);
+  openTagEditor(box, folder, async (saved) => {
     state.editing = false;
-    view.classList.remove("tag-editing");
     if (saved) { await select(folder); load(); } else renderAlbum();
   });
 }
 
 async function select(folder) {
   state.editing = false;
-  document.getElementById("view-library").classList.remove("tag-editing");
   state.selected = folder;
   renderRows();
-  clear(bottom, h("div.empty", h("span.spinner"), "Reading the album…"));
+  clear(pane, h("div.empty", h("span.spinner"), "Reading the album…"));
   try {
     state.album = await api("/library/album", { query: { folder } });
     renderAlbum();
   } catch (e) {
-    clear(bottom, h("div.empty", icon("alert"), h("b", "Could not read the album"), errorText(e)));
+    clear(pane, h("div.empty", icon("alert"), h("b", "Could not read the album"), errorText(e)));
   }
 }
 
@@ -208,39 +208,59 @@ function entryOf(al) {
 }
 
 function renderAlbum() {
-  if (!bottom || state.editing) return;                 // the tag editor has the card until it is saved or cancelled
+  if (!pane || state.editing) return;
   const al = state.album;
   if (!al) {
-    clear(bottom, h("div.empty", icon("library"), h("b", "Choose an album"), "Its tracks and tag issues show here. Click a track to play it."));
+    clear(pane, h("div.empty", icon("library"), h("b", "Choose an album"), "Its tracks, what needs fixing and its cover show here."));
     return;
   }
-  const entry = entryOf(al);
-  const tracks = al.tracks;
+  const entry = entryOf(al), tracks = al.tracks;
   const total = tracks.reduce((s, t) => s + (t.length || 0), 0);
-  const cover = al.cover ? h("img.thumb.lg", { src: url("/library/file", { path: al.cover }), alt: "" }) : h("div.thumb.lg", icon("image"));
-  const table = (list, offset) => h("table.grid.two-col-table",
-    h("thead", h("tr", h("th", "#"), h("th", "Title"), h("th", "Artist"), h("th.r", "Length"), h("th.r", "Tags"))),
-    h("tbody", ...list.map((t, i) => {
-      const bad = !t.title || !t.track || t.error;
-      const playing = playingPath() === t.path;
-      return h("tr" + (bad ? ".changed" : "") + (playing ? ".selected" : ""), { onclick: () => play(i + (offset || 0)), title: t.path },
-        h("td.num", playing ? icon("pause") : (t.disc > 1 ? `${t.disc}-` : "") + (t.track || "–")),
-        h("td.strong", h("div.row", h("span.ellipsis", t.title || t.path.split("/").pop()),
-          bad ? chip(t.error ? "unreadable" : !t.title ? "no title" : "no track number", "solid-warn") : null)),
-        h("td.dim", t.artist || entry.artist), h("td.r.num", fmtTime(t.length)),
-        h("td.r", bad ? h("span", { style: { color: "var(--warn-text)" } }, icon("alert")) : h("span", { style: { color: "var(--green)" } }, icon("check"))));
-    })));
-  const fmtChip = entry.format_label ? chip(entry.format_label, "", {}) : null;
-  const kind = albumQualityChip(entry.quality);
-  const playBtn = h("button.btn.primary.sm", { onclick: () => playAlbum(al, entry, 0) }, icon("play"), "Play album");
-  clear(bottom,
-    h("div.album-head", cover,
-      h("div.grow",
-        h("h2", entry.album || al.folder, kind, fmtChip),
-        h("div.s", [entry.artist, entry.year, `${tracks.length} tracks`, fmtTime(total), al.folder + "/"].filter(Boolean).join(" · "))),
-      playBtn,
-      h("button.btn.secondary", { onclick: () => editTags(al.folder) }, icon("tag"), "Edit tags"),
-      h("button.btn.secondary", { onclick: () => hooks.openArt && hooks.openArt(al.folder) }, icon("disc"), "CD art")),
-    al.issues.length ? h("div.issue-line", { style: { marginTop: 0, marginBottom: "10px" } }, ...al.issues.map((t) => chip(t, "warn", { icon: "alert" }))) : null,
-    h("div.scroll.grow", table(tracks)));
+  const cover = al.cover ? h("img.up-cover", { src: coverSrc(al), alt: "" }) : h("div.up-cover", icon("image"));
+  const lossy = entry.quality === "lossy", p = problemsOf(al.folder);
+  const better = lossy || p?.kinds.includes("missing_tracks");
+  const facts = [
+    ["Format", entry.format_label || "—"], ["Size", fmtBytes(entry.size)],
+    ["Tracks", `${tracks.length} · ${fmtTime(total)}`], ["Cover", al.cover ? al.cover.split("/").pop() : "None"],
+    ["Folder", al.folder + "/"], ["Tags", al.issues.length ? `${al.issues.length} issue${al.issues.length === 1 ? "" : "s"}` : "No issues"],
+  ];
+  els.tracks = h("ol.track-list.scroll", { "aria-label": "Tracks" });
+  els.needs = h("section.needs-section", { "aria-label": "Needs attention" });
+  els.cover = h("section.cover-section", { "aria-label": "Cover" });
+  clear(pane,
+    h("div.up-row",
+      h("div.up-head", cover,
+        h("div.up-info",
+          h("div.up-names", h("h1", entry.album || al.folder),
+            h("p.up-artist", [entry.artist, entry.year].filter(Boolean).join(" · ")),
+            h("p.up-facts", `${tracks.length} tracks · ${fmtTime(total)}`)),
+          h("span.chip.lg." + (lossy ? "bad" : "good"), h("span.dot"),
+            [lossy ? "Lossy" : entry.quality === "hires" ? "Hi-res" : "Lossless", entry.format_label].filter(Boolean).join(" · ")),
+          h("div.row", { style: { gap: "var(--sp-2)", flexWrap: "wrap" } },
+            h("button.btn.primary.lg", { type: "button", onclick: () => playAlbum(al, entry, 0) }, icon("play"), "Play album"),
+            h("button.btn.secondary.lg", { type: "button", onclick: () => editTags(al.folder) }, "Edit tags"),
+            better ? h("button.btn.secondary.lg", { type: "button", onclick: () => hooks.openSearch && hooks.openSearch(entry.artist, entry.album) },
+              lossy ? "Find a lossless copy" : "Find the complete album") : null,
+            h("button.btn.secondary.lg", { type: "button", onclick: () => hooks.openArt && hooks.openArt(al.folder) }, "Case art")))),
+      h("dl.facts", ...facts.map(([k, v]) => h("div", h("dt", k), h("dd.ellipsis", { title: v }, v))))),
+    h("div.album-body",
+      h("section.tracks-section", { "aria-label": "Tracks" }, h("div.section-head", h("h2", "Tracks")), els.tracks),
+      h("div.album-side", els.needs, els.cover)));
+  renderTracks();
+  selectHealth(al.folder, els.needs, els.cover);
+}
+
+function renderTracks() {
+  if (!els.tracks || !els.tracks.isConnected || !state.album) return;
+  const al = state.album;
+  clear(els.tracks, ...al.tracks.map((t, i) => {
+    const flag = t.error ? "Unreadable" : !t.title ? "No title" : !t.track ? "No track number" : "";
+    const playing = playingPath() === t.path;
+    return h("li", h("button.track-row" + (playing ? ".on" : ""), { type: "button", onclick: () => play(i), title: t.path,
+      "aria-current": playing ? "true" : null },
+      h("span.track-n", playing ? "▶" : (t.disc > 1 ? `${t.disc}-` : "") + (t.track || "–")),
+      h("span.ellipsis.grow", t.title || t.path.split("/").pop()),
+      flag ? h("span.chip.warn", flag) : null,
+      h("span.track-len", fmtTime(t.length))));
+  }));
 }

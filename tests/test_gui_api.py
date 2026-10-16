@@ -237,3 +237,14 @@ class InLibrary(unittest.TestCase):
                                                              album="Test Album", year="2001")])
         row = serialize.candidate_summary(cand, None, lib)
         self.assertEqual(row["in_library"]["folder"], "Test Artist/Test Album (2001)")
+
+    def test_a_result_carries_its_cover_link_when_it_has_one(self):
+        from iaflac.gui import serialize
+        from iaflac.pipeline import Pipeline
+        item = make_item("kob-1959", "Test Artist - Test Album", "Test Artist", tracks=2, seed=3)
+        row = serialize.candidate_summary(Pipeline(FakeIA([item])).load("kob-1959"), None, None)
+        self.assertIn("cover_url", row)
+        if row["cover"]:
+            self.assertTrue(row["cover_url"].startswith("https://archive.org/download/kob-1959/"))
+        else:
+            self.assertIsNone(row["cover_url"])

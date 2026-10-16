@@ -39,7 +39,7 @@ class Options:
     max_candidates: int = 10            # how many search hits get fully inspected
     max_deep_bytes: int = 1500 * 1024 * 1024
     spectrogram_dir: Optional[Path] = None
-    fallback: tuple = ()                # when no FLAC is found, look for these instead: ("wav", "vbr")
+    fallback: tuple = ()                # when no FLAC is found, look for these instead (queries.ALL_ALT: every other format)
     all_formats: bool = False           # also list WAV and MP3 uploads when FLAC exists (the GUI ranks everything together)
 
 
@@ -142,7 +142,7 @@ class Pipeline:
     # ---- V1: header probes ----------------------------------------------------------------
 
     def probe_alt(self, cand: Candidate) -> None:
-        """V1 for WAV / VBR MP3 candidates: real headers, format, and (WAV) CD sector alignment."""
+        """V1 for candidates in other formats: real headers, the codec (an .m4a is ALAC or AAC), and CD sector alignment."""
         media, files = cand.item.media, cand.item.flacs
         if len(files) > self.max_probe_tracks:
             step, total = len(files) / self.max_probe_tracks, len(files)
@@ -318,7 +318,7 @@ class Pipeline:
         self._admit(res, loaded, want, opts)
         flac_found = bool(res.found)
         if opts.all_formats and not opts.rip_only:
-            self._alt_search(res, opts, media=opts.fallback or ("wav", "vbr"), instead=not flac_found)
+            self._alt_search(res, opts, media=opts.fallback or queries.ALL_ALT, instead=not flac_found)
         elif not res.found and opts.fallback and not opts.rip_only:
             self._alt_search(res, opts)
         if not res.found:
@@ -351,8 +351,8 @@ class Pipeline:
                 res.found.append(cand)
 
     def _alt_search(self, res: WantResult, opts: Options, media: Optional[tuple] = None, instead: bool = True) -> None:
-        """Search for WAV (lossless) and VBR MP3 uploads, WAV listed first: when no FLAC matched (`instead`), or next
-        to the FLAC results when every format is wanted (Options.all_formats)."""
+        """Search for uploads in the other formats (WAV, AIFF, M4A, APE, WavPack, then VBR MP3): when no FLAC matched
+        (`instead`), or next to the FLAC results when every format is wanted (Options.all_formats)."""
         want = res.want
         kinds = tuple(media or opts.fallback)
         names = " / ".join(queries.ALT_NAME[m] for m in kinds)
@@ -372,7 +372,7 @@ class Pipeline:
             hits = sorted((h for h in pool.values() if h.quick.bucket < 2),
                           key=lambda h: (-round(h.quick.score, 1), -int(h.doc.get("downloads") or 0)))[: opts.max_candidates]
 
-            already = {c.identifier for c in res.found}          # a WAV upload also carries IA's derived VBR MP3s: list it once
+            already = {c.identifier for c in res.found}          # an upload in several formats (FLAC and ALAC, or WAV and IA's VBR MP3s) is listed once, in its best
 
             def load_one(h, media=queries.ALT_MEDIA[media]):
                 if h.doc["identifier"] in already:
@@ -386,8 +386,9 @@ class Pipeline:
             with ThreadPoolExecutor(self.client.max_concurrency) as ex:
                 self._admit(res, [c for c in ex.map(load_one, hits) if c], want, opts)
         if res.found and instead:
-            res.notes.append("no FLAC found for this request: these are " + names + " uploads instead. "
-                             "WAV is lossless and is converted to FLAC when saved; VBR MP3 is lossy and stays MP3")
+            res.notes.append("no FLAC found for this request: these are uploads in other formats instead. "
+                             "Lossless ones (WAV, AIFF, ALAC, APE, WavPack) are converted to FLAC when saved; "
+                             "lossy ones (MP3, AAC) are kept as they are")
 
     def _fallback(self, res: WantResult) -> None:
         """Nothing matched: say so, and show what does exist (the artist's other FLAC items, other lossless formats)."""
@@ -454,7 +455,8 @@ class Pipeline:
         """V2: stream every file through `flac -t` (nothing is stored). V3: spectral check on 3 slices."""
         if cand.item.media != "flac":
             cand.notes.append("no decode or spectrum test for WAV / MP3: the download is checked against archive.org's checksums"
-                              + (" and every WAV is verified as it is encoded to FLAC" if cand.item.media == "wav" else ""))
+                              + (" and every lossless file is verified as it is converted to FLAC"
+                                 if cand.item.media != "mp3" and altmedia.is_lossless(cand.item.media, cand.alt_stats) else ""))
             self.assess(cand)
             return
         item = cand.item

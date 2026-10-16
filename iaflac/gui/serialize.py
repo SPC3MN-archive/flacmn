@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from typing import Optional
+from urllib.parse import quote
 
 from .. import preview, quality, report
+from ..altmedia import CODEC_NAME
 from ..download import pick_cover
 from ..library_index import YEAR_SUFFIX
 from ..matching import guess_artist_album
@@ -47,13 +49,15 @@ def candidate_summary(cand, want=None, library=None) -> dict:
     bare = YEAR_SUFFIX.sub("", album or "")          # "Kind of Blue (1959)" is the library's "Kind of Blue"
     owned = library.find(artist, bare or album) if library is not None and artist and album else None
     runtime = it.runtime_seconds
+    front = pick_cover(it)
     return {
         "identifier": it.identifier, "url": it.url, "title": it.title, "creator": it.creator, "year": it.year,
         "artist": artist, "album": album, "media": it.media,
         "quality": q.to_dict(), "tier": cand.tier, "levels": list(cand.levels),
         "match": _match(cand, want),
         "tracks": len(it.flacs), "runtime_s": round(runtime) if runtime else None, "bytes": it.flac_bytes,
-        "downloads": it.downloads, "rip_files": preview.rip_files(it), "cover": pick_cover(it) is not None,
+        "downloads": it.downloads, "rip_files": preview.rip_files(it), "cover": front is not None,
+        "cover_url": f"https://archive.org/download/{it.identifier}/{quote(front.name)}" if front is not None else None,
         "licence": short_licence(it.licenseurl), "free": it.is_free, "live": it.is_live,
         "collections": it.collections[:4], "source": preview.source_label(it),
         "claims": preview.description_hints(it), "other_lossless": it.other_lossless,
@@ -71,12 +75,15 @@ def candidate_detail(cand, want=None, library=None) -> dict:
     out = candidate_summary(cand, want, library)
     artist = out["artist"]
     tracks = []
+    # an .m4a is named by what it holds once read (archive.org calls ALAC and AAC alike "Apple Lossless Audio")
+    alt = cand.alt_stats
+    codec = CODEC_NAME.get(alt.codec, "") if alt is not None and alt.codec in ("alac", "aac") else ""
     for f in it.flacs:
         probe = cand.probes.get(f.name)
         si = probe.streaminfo if probe is not None and probe.ok else None
         tracks.append({
             "name": f.name, "title": f.tags.get("title") or (probe.tags.get("TITLE") if probe is not None else "")
-            or title_from_name(f.name, artist), "size": f.size, "length": f.length, "format": f.format,
+            or title_from_name(f.name, artist), "size": f.size, "length": f.length, "format": codec or f.format,
             "md5": f.md5,
             "probe": None if probe is None else {
                 "ok": probe.ok, "kind": probe.kind, "detail": probe.detail,

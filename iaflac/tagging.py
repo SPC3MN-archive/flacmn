@@ -32,7 +32,7 @@ DISC_DIR = re.compile(r"(?:^|[\s_\-(\[])(?:cd|disc|disk|dvd)\s*[-_.]?\s*(\d{1,2}
 DISC_TRACK = re.compile(r"^\s*(\d{1,2})[-.](\d{1,3})(?=[\s._\-)])[\s._\-)]*")
 PLAIN_TRACK = re.compile(r"^\s*(\d{1,3})(?=[\s._\-)])[\s._\-)]*")
 NUMBER = re.compile(r"^\s*(\d+)\s*(?:/\s*(\d+))?")
-AUDIO_EXTS = (".flac", ".mp3")
+AUDIO_EXTS = (".flac", ".mp3", ".m4a")
 
 
 @dataclass
@@ -296,14 +296,50 @@ def write_mp3(path: Path, tags: dict, cover: Optional[tuple] = None) -> None:
     id3.save(str(path), v2_version=4)
 
 
+# MP4 (.m4a) atoms: the plain ones iTunes uses, and freeform "----:com.apple.iTunes:..." ones for the rest (as Picard writes)
+MP4_ATOMS = {"TITLE": "\xa9nam", "ARTIST": "\xa9ART", "ALBUMARTIST": "aART", "ALBUM": "\xa9alb", "DATE": "\xa9day",
+             "GENRE": "\xa9gen"}
+MP4_FREE = {"MUSICBRAINZ_ALBUMID": "MusicBrainz Album Id", "MUSICBRAINZ_RELEASEGROUPID": "MusicBrainz Release Group Id",
+            "MUSICBRAINZ_ALBUMARTISTID": "MusicBrainz Album Artist Id", "MUSICBRAINZ_TRACKID": "MusicBrainz Track Id",
+            "MUSICBRAINZ_RELEASETRACKID": "MusicBrainz Release Track Id", "LABEL": "LABEL", "CATALOGNUMBER": "CATALOGNUMBER",
+            "IAFLAC_SOURCE": "IAFLAC_SOURCE"}
+FREE = "----:com.apple.iTunes:"
+
+
+def write_m4a(path: Path, tags: dict, cover: Optional[tuple] = None) -> None:
+    from mutagen.mp4 import MP4, MP4Cover, MP4FreeForm
+    audio = MP4(str(path))                          # only the metadata atoms change; the audio is kept
+    if audio.tags is None:
+        audio.add_tags()
+    for atom in [*MP4_ATOMS.values(), "trkn", "disk", *(FREE + v for v in MP4_FREE.values())]:
+        audio.tags.pop(atom, None)
+    for key, atom in MP4_ATOMS.items():
+        if tags.get(key):
+            audio.tags[atom] = [tags[key]]
+    num = lambda v: int(v) if str(v or "").isdigit() else 0
+    if tags.get("TRACKNUMBER"):
+        audio.tags["trkn"] = [(num(tags["TRACKNUMBER"]), num(tags.get("TRACKTOTAL")))]
+    if tags.get("DISCNUMBER"):
+        audio.tags["disk"] = [(num(tags["DISCNUMBER"]), num(tags.get("DISCTOTAL")))]
+    for key, name in MP4_FREE.items():
+        if tags.get(key):
+            audio.tags[FREE + name] = [MP4FreeForm(str(tags[key]).encode("utf-8"))]
+    if cover is not None:
+        fmt = MP4Cover.FORMAT_PNG if cover[1] == "image/png" else MP4Cover.FORMAT_JPEG
+        audio.tags["covr"] = [MP4Cover(cover[0], imageformat=fmt)]
+    audio.save()
+
+
 def write_track(path: Path, meta: AlbumMeta, t: TrackMeta, cover: Optional[tuple] = None) -> None:
     tags = vorbis_tags(meta, t)
     if path.suffix.lower() == ".flac":
         write_flac(path, tags, cover)
     elif path.suffix.lower() == ".mp3":
         write_mp3(path, tags, cover)
+    elif path.suffix.lower() == ".m4a":
+        write_m4a(path, tags, cover)
     else:
-        raise ValueError(f"cannot tag {path.name}: only FLAC and MP3")
+        raise ValueError(f"cannot tag {path.name}: only FLAC, MP3 and M4A")
 
 
 @dataclass
@@ -395,6 +431,23 @@ def read_track(path: Path) -> dict:
     out["rate"] = getattr(info, "sample_rate", 0)
     out["bits"] = getattr(info, "bits_per_sample", 0)
     out["kbps"] = round((getattr(info, "bitrate", 0) or 0) / 1000)
+    if path.suffix.lower() == ".m4a":                    # the codec inside: ALAC is lossless, AAC is not
+        out["format"] = "ALAC" if str(getattr(info, "codec", "")).lower() == "alac" else "AAC"
+        if out["format"] == "AAC":
+            out["bits"] = 0
+        tags = audio.tags or {}
+        first = lambda k: (tags.get(k) or [""])[0]
+        free = lambda name: bytes(first(FREE + name) or b"").decode("utf-8", "replace") if first(FREE + name) else ""
+        trkn, disk = first("trkn") or (0, 0), first("disk") or (0, 0)
+        out["has_art"] = bool(tags.get("covr"))
+        out.update(title=first("\xa9nam"), artist=first("\xa9ART"), albumartist=first("aART"), album=first("\xa9alb"),
+                   track=trkn[0] or 0, tracktotal=trkn[1] if len(trkn) > 1 else 0, disc=disk[0] or 0,
+                   disctotal=disk[1] if len(disk) > 1 else 0, date=first("\xa9day"), genre=first("\xa9gen"),
+                   mb_release_id=free("MusicBrainz Album Id"), mb_releasegroup_id=free("MusicBrainz Release Group Id"),
+                   source_url=free("IAFLAC_SOURCE"), mb_recording_id=free("MusicBrainz Track Id"),
+                   mb_track_id=free("MusicBrainz Release Track Id"), label=free("LABEL"), catalog=free("CATALOGNUMBER"),
+                   mb_albumartist_id=free("MusicBrainz Album Artist Id"))
+        return out
     if path.suffix.lower() == ".flac":
         tags = {k.upper(): v[0] for k, v in (audio.tags or {}).items()} if audio.tags else {}
         out["has_art"] = bool(audio.pictures)
@@ -444,7 +497,7 @@ def validate(folder: Path) -> list:
     """What a player would trip over in an album folder, as plain sentences (empty list: all good)."""
     files = sorted(p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in AUDIO_EXTS and not is_hidden(p, folder))
     if not files:
-        return ["no FLAC or MP3 files"]
+        return ["no FLAC, MP3 or M4A files"]
     tracks = [read_track(p) for p in files]
     issues = []
     for t in tracks:

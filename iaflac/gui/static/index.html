@@ -15,26 +15,26 @@
 <script src="/static/js/splash.js"></script>
 <header class="topbar">
   <img class="logo" src="/static/logo.svg" alt="flacmn">
-  <nav class="row" id="tabs">
-    <button class="tab active" data-view="search"><span data-icon="search"></span>Album Search</button>
-    <button class="tab" data-view="cdart"><span data-icon="disc"></span>Case Art</button>
-    <button class="tab" data-view="library"><span data-icon="library"></span>Library<span class="badge" id="lib-badge" hidden></span></button>
-    <button class="tab" data-view="health"><span data-icon="pulse"></span>Health Check<span class="badge" id="health-badge" hidden></span></button>
+  <nav class="row" id="tabs" aria-label="Main">
+    <button class="tab active" data-view="library">Library<span class="badge" id="lib-badge" hidden></span></button>
+    <button class="tab" data-view="search">Album Search</button>
+    <button class="tab" data-view="cdart">Case Art</button>
   </nav>
-  <div class="spacer"></div>
-  <button class="queue-chip" id="queue-chip" title="Downloads and background work"><span class="dot"></span><span id="queue-text">Queue · empty</span></button>
-  <button class="icon-btn-dark" id="settings-btn" data-view="settings" title="Settings"><span data-icon="sliders"></span></button>
+  <!-- what is playing, from the library or an Album Search preview: the album and its progress (topbar.js) -->
+  <div class="np-mini" id="np-mini" hidden></div>
+  <button class="queue-chip" id="queue-chip" title="Downloads and background work"><span class="dot"></span><span id="queue-text">Downloads</span></button>
+  <button class="icon-btn-dark" id="settings-btn" data-view="settings" title="Settings" aria-label="Settings"><span data-icon="sliders"></span></button>
 </header>
 
 <main>
-  <section class="view active" id="view-search"></section>
-  <section class="view" id="view-cdart"></section>
-  <section class="view" id="view-library"></section>
-  <section class="view" id="view-health"></section>
-  <section class="view" id="view-settings"></section>
+  <section class="view active" id="view-library" aria-label="Library"></section>
+  <section class="view" id="view-search" aria-label="Album Search"></section>
+  <section class="view" id="view-cdart" aria-label="Case Art"></section>
+  <section class="view" id="view-settings" aria-label="Settings"></section>
 </main>
 
 <div class="popover" id="queue-pop" hidden></div>
+<div class="popover np-pop" id="np-pop" hidden></div>
 <div class="toasts" id="toasts"></div>
 <audio id="player" preload="none"></audio>
 

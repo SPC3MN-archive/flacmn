@@ -39,7 +39,7 @@ class AlbumLadder(unittest.TestCase):
     def test_other_lossless_rung_excludes_flac_requirement(self):
         query = q.other_lossless_rung("Miles Davis", "Kind of Blue").query
         self.assertNotIn("format:Flac", query)
-        self.assertIn("Apple Lossless Audio", query)
+        self.assertIn("Shorten", query)                 # ALAC, APE and the rest are searched with FLAC
 
 
 class GenreQuery(unittest.TestCase):

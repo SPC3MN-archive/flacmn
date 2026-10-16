@@ -20,7 +20,7 @@ def fmt_mb(nbytes: int) -> str:
     return f"{nbytes / 1e6:,.0f} MB"
 
 
-MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "mp3": "VBR MP3"}
+MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "aiff": "AIFF", "m4a": "M4A", "ape": "APE", "wv": "WavPack", "mp3": "VBR MP3"}
 
 
 def facts(c: Candidate) -> str:

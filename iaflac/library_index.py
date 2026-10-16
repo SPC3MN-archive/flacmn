@@ -24,7 +24,7 @@ from .names import clean_album_title
 from .tagging import COVER_NAMES, DISC_DIR, read_track, validate
 
 AUDIO = {".flac", ".mp3", ".m4a", ".wav", ".ogg", ".opus", ".aiff", ".aif", ".wv", ".ape"}
-LOSSLESS = {"FLAC", "WAV", "AIFF", "AIF", "WV", "APE"}
+LOSSLESS = {"FLAC", "WAV", "AIFF", "AIF", "WV", "APE", "ALAC"}      # ALAC: an .m4a whose codec is ALAC (tagging.read_track)
 CHECK_FAILED = "could not check tags"
 CACHE_VERSION = 3          # bump when the checks change, so albums cached with the old checks are read again
 YEAR_SUFFIX = re.compile(r"\s*[(\[]((?:19|20)\d\d)[)\]]\s*$")

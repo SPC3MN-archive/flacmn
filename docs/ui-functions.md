@@ -2,27 +2,39 @@
 
 ## Search
 
-- **Artist box**: artist name to search archive.org for (required: archive.org searches by name).
-- **Album box**: album title; leave empty to list the artist's albums.
-- **Search button**: searches archive.org for FLAC, WAV and MP3 uploads at once, then quick-tests the top few results automatically.
-- **Format filters (FLAC / WAV / MP3)**: show or hide each format in the results without searching again.
-- **Lossless only**: hides MP3 results.
-- **Hide albums I already have**: hides results that match an album in your library.
-- **Sort**: by quality (default), by how well it matches your search, or by popularity on archive.org.
-- **Search notes**: other uploads by the artist that didn't match, albums that exist only in other lossless formats (ALAC, APE), and how many results were left out and why (live recordings, singles).
+- **Search box**: "Artist – Album" (any dash with spaces round it), or just an artist to list their albums.
+- **Search button**: searches archive.org for every format at once (FLAC, WAV, AIFF, M4A, Monkey's Audio, WavPack, MP3),
+  then quick-tests the top few results automatically. An M4A is read to tell ALAC (lossless) from AAC (lossy):
+  archive.org labels both "Apple Lossless Audio", so an unread M4A shows Not checked yet.
+- **Format filters (FLAC / WAV / M4A / MP3 / Other)**: show or hide each format in the results without searching again;
+  Other is AIFF, Monkey's Audio (APE) and WavPack.
+- **Hide albums I have**: hides results that match an album in your library.
+- **Sort**: by quality (default), by how well it matches your search, or by popularity on archive.org. The order holds
+  while the automatic checks finish (rows update in place); **Re-sort** appears when the checks have changed the ranking.
+- **Search notes**: other uploads by the artist that didn't match, albums that exist only in Shorten (SHN), which isn't searched, and how many results were left out and why (live recordings, singles).
 
-## Results (one row per upload, best quality first)
+## Results (the list block on the left, one row per upload, best quality first)
 
-- **Quality class**: Lossless / Hi-res (one class, ranked alike) / Lossy · high bitrate / Lossy / Failed.
-- **Format**: measured once tested, e.g. FLAC 24/96, MP3 VBR ~245 kbps.
-- **Tier**: how sure we are the audio is genuinely lossless, from any source: A strong evidence, B likely, C little evidence either way, L lossy, D failed or fake, ? untested.
-- **Match**: exact or close match to what you typed.
-- **Tracks, length, size, year**: track count, total length, download size and release year.
-- **Rip files**: rip log / cue sheet / AccurateRip present (evidence of a clean CD extraction, when the source is a CD).
-- **Source**: CD rip, vinyl rip, web/store, or plain (not stated).
-- **Tested**: which checks have run (V0–V3).
-- **In library**: marks albums you already have, with the format of your copy.
-- **Row click**: opens the upload in Album Detail.
+- **Name**: the album's name (the upload's title when the name can't be read), with **Best match** on the top row once it is checked.
+- **Details line**: format (e.g. FLAC 16/44.1), source (CD rip, vinyl rip, "with log" when a rip log is there), tracks,
+  year, and "In your library" for albums you already have.
+- **Verdict**: Genuine lossless / Lossless, likely / Lossless / Hi-res (the same, never ranked above) / Lossy / Failed /
+  Not checked yet, in plain words (it sums up the evidence the old Tier and Tested columns showed).
+- **Size**: the download size.
+- **Row click**: shows the upload on the right.
+
+## The chosen upload (right)
+
+- **Header**: the upload's cover (from archive.org), name, artist and year, label, tracks and length; its verdict;
+  **Add to library** with the size; a one-line note when you already have the album, in a higher, the same or a lower quality.
+- **Tags** (beside the header): album artist, album, date, genre, label and catalog number, edited in place (saved as
+  you leave a field), each with where it came from (MB, ia, file, you); the MusicBrainz match with **Change**; **Track
+  tags** opens the per-track tags in their own window.
+- **Listen and check**: every track on the left (click one to play it and see its spectrogram; a dot shows whether its
+  spectrum has a hard cutoff); on the right the player and a flat spectrogram, 0 to 25 kHz up the side, with a dashed
+  line where the sound stops: at the file's own limit (22 kHz for a CD) for genuine lossless audio, at a sharp line
+  lower down for a lossy source; a gentle fade is not called a cutoff. **3D view** shows the waterfall instead.
+  **N checks passed** folds out the evidence (decode test, checksums, rip log, spectrum).
 
 ## Album Detail
 
@@ -60,7 +72,9 @@
 
 - **Destination**: the folder it will create, e.g. Music/Miles Davis/Kind of Blue (1959)/.
 - **File names**: 01 - So What.flac (1-01 - … for multi-disc), plus cover.jpg.
-- **Size and warnings**: download size, lossy notice for MP3, "folder already exists", "no cover art".
+- **Lossless becomes FLAC**: WAV, AIFF, ALAC, APE and WavPack are converted to FLAC as they are saved, and checked
+  sample for sample (`flac --verify` and the length); MP3 and AAC are kept as they are, with their tags.
+- **Size and warnings**: download size, lossy notice for MP3 and AAC, "folder already exists", "no cover art".
 - **Add to queue button**: adds the album to the Download Queue.
 
 ## Download Queue
@@ -70,7 +84,7 @@
 - **Cancel / retry / remove**: stop a download, try a failed one again, or take it off the list.
 - **Clear finished**: removes completed downloads from the list.
 
-# 2. Case Art (CD jewel case and cassette J-card)
+# 2. Case Art (CD jewel case and cassette J-card): the parts on the left, the preview filling the right, one print bar under it
 
 ## Album
 
@@ -108,21 +122,30 @@
 - **Checklist row**: one row per album: front / back / inside / under-tray / disc found (✓) or missing (–).
 - **Find art for whole library**: runs the search for every album in the background (cancellable).
 
-# 3. Library
+# 3. Library (the home screen)
 
-## Albums
+## Albums (the list block on the left)
 
-- **Album table**: cover, artist, album, quality (Lossless / Hi-res / Lossy), cover present, tag issues. Each column is the median width of its contents across the library (Quality fits its widest label); longer names end in "…" and show in full on hover.
-- **Filter box**: narrows the table by artist or album.
-- **Rescan**: re-reads the library folder (only changed albums are re-read).
+- **Album rows**: cover, album, artist and year, quality (Lossless / Hi-res / Lossy) and, when something needs fixing,
+  a few words on what (missing songs, low quality, no cover, duplicates, tag issues).
+- **Filter box**: narrows the list by artist or album.
+- **Show**: All · Needs attention · Lossy · No cover, each with its count.
+- **Check library / Check again**: the library check (missing songs, low-quality files, no cover art, albums you have
+  twice); its results feed Needs attention. **Rescan**: re-reads the library folder (only changed albums are re-read).
 
-## Album View
+## One album (right)
 
-- **Tracks**: title, artist, length, format per track.
-- **Tag issues**: what a player like Volumio would trip over: missing titles or track numbers, gaps, mismatched album names, no cover, or a .cue file that can make it list the album twice.
-- **Play album / CD art**: play the album from the first track (clicking a track plays the album on from there), or open it in Case Art.
+- **Header**: cover, name, artist and year, tracks and length, quality and format; **Play album**, **Edit tags**,
+  **Find a lossless copy** (or **Find the complete album**, opening Album Search), **Case art**; and its facts: format,
+  size, tracks, cover file, folder, tag issues.
+- **Tracks**: click one to play the album from there; problems are marked on the track (no track number, no title, unreadable).
+- **Needs attention**: each problem in plain words with its fix: find the missing songs or a better copy on the
+  Internet Archive (then add the songs, or replace the album), find covers, edit tags, review and merge duplicates.
+  Before the library check has run, it offers **Check library**. Replacements ask twice and send the old files to the Trash.
+- **Cover**: the cover in use and the others found for it (Cover Art Archive, archive.org), with their sizes; **Use
+  this** replaces it (asking first); **Find covers** searches for them.
 
-## Now playing
+## Now playing (opens from the top bar's playing display)
 
 - **Art tab**: the cover, with the track, album and artist beside it (wrapped and shrunk to fit, never cut off), a progress bar you can click to seek, and previous / play-pause / next.
 - **Scope and XY tabs**: just the live oscilloscope (waveform or stereo XY) in the album's colour; its gain backs off on loud passages so the trace never clips.
@@ -133,13 +156,16 @@
 
 ## Top bar (always visible)
 
-- **Navigation**: Album Search · Case Art · Library · Settings.
-- **Activity strip**: running searches, tests, downloads and art lookups, each with progress and a cancel button.
+- **Places**: Library · Album Search · Case Art.
+- **Playing**: what is playing, from the library or an Album Search preview: cover, track, artist and album, progress
+  (click to seek) and play/pause. Click the cover or names for the Now playing card (art, scope, XY).
+- **Downloads**: the queue and running searches, tests and art lookups, each with progress and a cancel button.
+- **Settings**: the sliders button; Escape goes back to the screen you came from.
 
 ## Settings
 
 - **Library folder**: where albums are saved and scanned (local folder, USB drive or Volumio network share).
-- **Search options**: include live recordings; free licences only; only uploads with a rip log or cue sheet; all formats (off = FLAC first, WAV/MP3 only if there's no FLAC).
+- **Search options**: include live recordings; free licences only; only uploads with a rip log or cue sheet; all formats (off = FLAC first, the other formats only if there's no FLAC).
 - **Cover art**: save the front cover only, every image in the upload, or none.
 - **Rip files**: skip or keep logs and cue sheets (skip by default so Volumio doesn't list albums twice).
 - **Art options**: embed the cover in the files, write cover.jpg, use the Cover Art Archive when the upload has no cover.

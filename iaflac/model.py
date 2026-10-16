@@ -72,11 +72,16 @@ VBR_FORMAT = "VBR MP3"
 FILE_TAG_KEYS = ("title", "track", "artist", "creator", "album", "genre", "year", "disc")
 
 
+# the track files of each format other than FLAC and MP3 (altmedia.MEDIA has the rest of what is known about them)
+TRACK_EXTS = {"wav": (".wav", ".wave"), "aiff": (".aiff", ".aif", ".aifc"), "m4a": (".m4a",), "ape": (".ape",), "wv": (".wv",)}
+
+
 def is_track(f: "FileInfo", media: str = "flac") -> bool:
-    """Is this file one of the album's tracks in the given media? Original WAVs, MP3s (the uploader's own, or IA's
-    'VBR MP3' derivatives), or FLAC. See track_files for which MP3s win when an item has both."""
-    if media == "wav":
-        return f.name.lower().endswith((".wav", ".wave")) and f.source != "derivative"
+    """Is this file one of the album's tracks in the given media? The uploader's own WAV, AIFF, M4A (ALAC or AAC),
+    APE or WavPack files; MP3s (the uploader's own, or IA's 'VBR MP3' derivatives); or FLAC. See track_files for which
+    MP3s win when an item has both."""
+    if media in TRACK_EXTS:
+        return f.name.lower().endswith(TRACK_EXTS[media]) and f.source != "derivative"
     if media == "mp3":
         return f.format == VBR_FORMAT or (f.name.lower().endswith(".mp3") and f.source != "derivative")
     return file_kind(f.name) == "flac"
@@ -130,7 +135,7 @@ class ItemInfo:
     downloads: int = 0
     item_size: int = 0
     files: list = field(default_factory=list)      # list[FileInfo]
-    media: str = "flac"                            # what `flacs` (the tracks) means: "flac", or for the fallback "wav" / "mp3" (VBR)
+    media: str = "flac"                            # what `flacs` (the tracks) means: "flac", or another format (altmedia.MEDIA)
 
     @property
     def url(self) -> str:

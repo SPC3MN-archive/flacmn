@@ -1,46 +1,47 @@
-// Library Health Check: every album in the music folder that is missing songs, is in a low-quality format, has no
-// cover art or is there twice (health.py). On the left the flagged albums; on the right the chosen one: what is wrong,
-// a search of the Internet Archive for what it is missing (fetch the missing tracks, use a cover), and the merge of
-// duplicates, which keeps the best copy of every song and moves the rest to the Trash after you have seen the plan.
-// A cover or the whole album can also be replaced with one the search found; the old one goes to the Trash. Every
-// replacement asks twice: the first click says what will happen, the second does it.
+// Library Health Check, inside the Library (library.js): an album's problems (missing songs, low-quality files, no cover
+// art, there twice: health.py) and their fixes, drawn in the album's "Needs attention" and "Cover" sections. The fixes:
+// a search of the Internet Archive for what the album is missing (fetch the missing tracks, use a cover), replace the
+// album with a better copy, and merge duplicates (keeping the best copy of every song; the rest goes to the Trash after
+// you have seen the plan). Every replacement asks twice: the first click says what will happen, the second does it.
 
 import { api, url, on, waitJob, cancelJob } from "./api.js";
 import { h, clear, icon, chip, fmtBytes, fmtTime, toast, errorText } from "./ui.js";
 
-// the album's cover file; the URL carries the album's signature (which covers its cover files), so a replaced cover
-// is fetched anew instead of shown from the window's cache
-function cover(a, cls = "thumb") {
-  if (!a.cover_file) return h("div." + cls, icon("image"));
-  return h("img." + cls, { src: url("/library/file", { path: `${a.folder}/${a.cover_file}`, v: (a.signature || "").slice(0, 12) }),
-    alt: "", loading: "lazy" });
-}
-
 const KINDS = ["missing_tracks", "low_quality", "missing_art", "duplicates"];
-const LABEL = { missing_tracks: "Missing songs", low_quality: "Low quality", missing_art: "Missing art", duplicates: "Duplicates" };
-const ICON = { missing_tracks: "music", low_quality: "alert", missing_art: "image", duplicates: "library" };
+const LABEL = { missing_tracks: "Missing songs", low_quality: "Low quality", missing_art: "No cover", duplicates: "Duplicates" };
 
 const state = {
-  data: null, kind: "all", filter: "", selected: null, album: null, musicbrainz: false,
-  progress: null, searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", showAll: false,
+  data: null, selected: null, album: null, musicbrainz: false, running: false, progress: null,
+  searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", showAll: false,
   replace: null,       // the album replacement running: {folder, identifier, jobId, step, done, total, index, count}
 };
-let left = null, right = null, hooks = {};
-const els = {};
+let needsEl = null, coverEl = null, hooks = {};
+const listeners = new Set();
+const changed = () => { for (const fn of listeners) fn(); };
 
-export function mountHealth(leftCard, rightCard, opts) {
-  left = leftCard;
-  right = rightCard;
+/** hooks: openSettings, openSearch(artist, album), libraryChanged(), tagIssues(folder) -> [text], editTags(folder) */
+export function mountHealth(opts) {
   hooks = opts || {};
   on("health", () => load());
   on("progress", (e) => {
-    if (e.stage === "health" && state.data?.running === e.job_id) {
-      state.progress = e;
-      renderHead();
-    }
+    if (e.stage === "health" && state.data?.running === e.job_id) { state.progress = e; changed(); }
   });
-  renderLeft();
-  renderRight();
+}
+export function onHealth(fn) { listeners.add(fn); }
+export function healthData() { return state.data; }
+export function checking() { return !!state.data?.running; }
+export function progressText() {
+  const p = state.progress;
+  return p ? `Checking… ${p.index} of ${p.total}${p.step === "MusicBrainz" ? " · MusicBrainz" : ""}` : "Checking…";
+}
+export function setMusicBrainz(on) { state.musicbrainz = on; }
+
+/** An album's problems in a few words, for the library list. */
+export function problemsOf(folder) {
+  const a = (state.data?.albums || []).find((x) => x.folder === folder);
+  if (!a || !a.findings.length) return null;
+  const kinds = KINDS.filter((k) => a.kinds.includes(k)).map((k) => LABEL[k]);
+  return { text: kinds.join(", "), bad: a.findings.some((f) => f.severity === "bad"), kinds: a.kinds };
 }
 
 export async function load() {
@@ -50,151 +51,129 @@ export async function load() {
     state.data = { error: errorText(e), albums: [] };
   }
   if (!state.data.running) state.progress = null;
-  hooks.count && hooks.count(flagged().length);
-  renderLeft();
-  if (state.selected) {
-    if (state.data.albums?.some((a) => a.folder === state.selected)) await select(state.selected, true);
-    else { state.selected = null; state.album = null; renderRight(); }
-  }
+  changed();
+  if (state.selected) await select(state.selected, needsEl, coverEl, true);
 }
 
-function flagged() { return (state.data?.albums || []).filter((a) => a.findings.length); }
-
-async function run() {
+export async function run() {
   try {
     const { job_id } = await api("/health-check/scan", { method: "POST", body: { musicbrainz: state.musicbrainz } });
     state.data = { ...(state.data || {}), running: job_id };
-    renderLeft();
+    changed();
+    renderRight();
     await waitJob(job_id);
     await load();
     const c = state.data.counts || {};
     toast(`Checked ${c.albums} albums: ${c.albums - c.healthy} need attention`);
   } catch (e) {
-    toast(`The health check failed: ${errorText(e)}`, "bad");
+    toast(`The library check failed: ${errorText(e)}`, "bad");
     await load();
   }
 }
 
-// ---- left: the flagged albums -----------------------------------------------------------------------------------
-function renderLeft() {
-  els.head = h("div");
-  els.kinds = h("div.filters.health-kinds");
-  els.rows = h("div.scroll.grow");
-  clear(left, els.head, els.kinds, els.rows);
-  renderHead();
-  renderRows();
-}
-
-function renderHead() {
-  const d = state.data;
-  const running = !!d?.running;
-  const c = d?.counts;
-  const sub = running
-    ? (state.progress ? `Checking… ${state.progress.index} / ${state.progress.total}${state.progress.step === "MusicBrainz" ? " · MusicBrainz" : ""}` : "Checking…")
-    : c ? `${c.albums} albums · ${c.healthy} healthy · ${c.albums - c.healthy} need attention` : (d?.root || "");
-  const mb = h("label.check", { title: "Albums whose files carry MusicBrainz IDs (tagged with Picard) are always compared with their "
-      + "release. Tick this to also search MusicBrainz for albums without them: slower, about 5 s per album the first time." },
-    h("input", { type: "checkbox", checked: state.musicbrainz, onchange: (e) => { state.musicbrainz = e.target.checked; } }),
-    "Search MusicBrainz for untagged albums");
-  clear(els.head, h("div.card-head",
-    h("span.card-title", { style: { whiteSpace: "nowrap" } }, "Library Health Check"), h("span.card-sub.grow.ellipsis", sub), mb,
-    h("button.btn.primary.sm", { onclick: run, disabled: running || !d?.library_ok },
-      running ? h("span.spinner") : icon("refresh"), d?.checked ? "Check again" : "Run check")));
-  const counts = d?.counts || {};
-  const kindChip = (key, text) => h("button.toggle-chip" + (state.kind === key ? ".on" : ""),
-    { onclick: () => { state.kind = key; renderLeft(); } }, icon("check"), text);
-  clear(els.kinds, d?.checked ? [kindChip("all", `All problems (${counts.albums - counts.healthy || 0})`),
-    ...KINDS.map((k) => kindChip(k, `${LABEL[k]} (${counts[k] || 0})`)),
-    kindChip("every", `Every album (${counts.albums || 0})`),
-    h("label.field.sm", { style: { width: "200px", marginLeft: "auto" } }, icon("search"),
-      h("input", { placeholder: "Filter…", value: state.filter, oninput: (e) => { state.filter = e.target.value; renderRows(); } }))] : null);
-}
-
-function renderRows() {
-  const d = state.data;
-  if (!d) return clear(els.rows, h("div.empty", h("span.spinner"), "Loading…"));
-  if (d.error) return clear(els.rows, h("div.empty", icon("alert"), h("b", "Could not load the health check"), d.error));
-  if (!d.root) {
-    return clear(els.rows, h("div.empty", icon("folder"), h("b", "No library folder yet"),
-      h("span", "Choose your music folder in Settings first."),
-      h("button.btn.primary.sm", { onclick: () => hooks.openSettings && hooks.openSettings() }, "Open Settings")));
-  }
-  if (!d.checked) {
-    return clear(els.rows, h("div.empty", icon("pulse"), h("b", d.running ? "Checking your library…" : "Check your library"),
-      h("span", "Finds albums with missing songs, low-quality files or no cover art, and albums you have twice. "
-        + "Then search the Internet Archive for what is missing, or merge the duplicates.")));
-  }
-  const q = state.filter.trim().toLowerCase();
-  // "Every album" lists the healthy ones too, so any album can be searched for a better copy or another cover
-  const pool = state.kind === "every" ? (d.albums || []) : flagged();
-  const rows = pool.filter((a) => (state.kind === "all" || state.kind === "every" || a.kinds.includes(state.kind))
-    && (!q || `${a.artist} ${a.album}`.toLowerCase().includes(q)));
-  if (!rows.length) {
-    return clear(els.rows, h("div.empty", icon("check"), h("b", flagged().length ? "Nothing matches" : "Every album is healthy"),
-      flagged().length ? null : h("span", `${d.counts.albums} albums checked.`)));
-  }
-  clear(els.rows, h("table.grid.lib-table.health-table",
-    h("thead", h("tr", h("th", ""), h("th", "Artist"), h("th", "Album"), h("th", "Problems"))),
-    h("tbody", ...rows.map((a) => h("tr" + (a.folder === state.selected ? ".selected" : ""), { onclick: () => select(a.folder), title: a.folder },
-      h("td", { style: { width: "56px" } }, cover(a)),
-      h("td", a.artist), h("td.strong", a.album),
-      h("td", h("div.issues", ...(a.findings.length ? problemChips(a)
-        : [h("span.row", { style: { color: "var(--good-text)" } }, icon("check"), "Healthy")]))))))));
-}
-
-function problemChips(a) {
-  return KINDS.filter((k) => a.kinds.includes(k)).map((k) => {
-    const fs = a.findings.filter((f) => f.kind === k);
-    const bad = fs.some((f) => f.severity === "bad");
-    return chip(LABEL[k], bad ? "bad" : "warn", { icon: ICON[k], title: fs.map((f) => f.text).join("\n") });
-  });
-}
-
-// ---- right: one album -------------------------------------------------------------------------------------------
-async function select(folder, keep) {
+/** Show one album's problems and covers in the two given sections. */
+export async function select(folder, needs, cover, keep) {
+  needsEl = needs;
+  coverEl = cover;
   if (state.selected !== folder || !keep) { state.plan = null; state.picks = {}; state.confirm = ""; state.showAll = false; }
   state.selected = folder;
-  renderRows();
-  if (!keep) clear(right, h("div.empty", h("span.spinner"), "Reading the album…"));
-  try {
-    state.album = await api("/health-check/album", { query: { folder } });
-  } catch (e) {
-    state.album = null;
-    clear(right, h("div.empty", icon("alert"), h("b", "Could not read the album"), errorText(e)));
-    return;
+  state.album = null;
+  if (state.data?.checked && (state.data.albums || []).some((a) => a.folder === folder)) {
+    try { state.album = await api("/health-check/album", { query: { folder } }); }
+    catch (e) { state.album = null; }
   }
-  renderRight();
+  if (state.selected === folder) renderRight();
 }
 
+// ---- the two sections ----------------------------------------------------------------------------------------------
 function renderRight() {
-  if (!right) return;
-  const a = state.album;
-  if (!a) {
-    clear(right, h("div.empty", icon("pulse"), h("b", "Choose an album"),
-      "What is wrong with it shows here, with a search of the Internet Archive for what is missing."));
+  if (!needsEl || !needsEl.isConnected) return;
+  renderNeeds();
+  renderCover();
+}
+
+function section(el, title, ...body) {
+  clear(el, h("div.section-head", h("h2", title)), ...body);
+}
+
+function renderNeeds() {
+  const a = state.album, folder = state.selected;
+  const tags = hooks.tagIssues ? hooks.tagIssues(folder) : [];
+  const d = state.data;
+  if (!d?.checked || !a) {
+    const running = !!d?.running;
+    const items = tags.map((t) => issueRow("warn", "Tags", t, h("button.btn.secondary.sm", { type: "button", onclick: () => hooks.editTags(folder) }, "Edit tags")));
+    section(needsEl, `Needs attention${tags.length ? ` · ${tags.length}` : ""}`,
+      h("div.scroll.grow.needs-body", h("ul.issue-list", ...items,
+        h("li.issue.info", h("span.issue-dot.wait"),
+          h("span.issue-text", h("b", running ? progressText() : "Check your library"),
+            h("span", "Finds missing songs, low-quality files, albums with no cover and albums you have twice, and offers the fixes.")),
+          h("button.btn.primary.sm", { type: "button", onclick: run, disabled: running }, running ? h("span.spinner") : null, running ? "Checking" : "Check library")))));
     return;
   }
   const dupes = a.findings.filter((f) => f.kind === "duplicates");
-  clear(right,
-    h("div.album-head", cover(a, "thumb.lg"),
-      h("div.grow",
-        h("h2", a.album),
-        h("div.s", [a.artist, a.year, `${a.track_count} tracks`, a.folder + "/"].filter(Boolean).join(" · "))),
-      h("button.btn.secondary.sm", { onclick: () => hooks.openLibrary && hooks.openLibrary(a.folder) }, icon("library"), "Library")),
-    h("div.scroll.grow.health-body",
-      h("div.section-label", "Problems"),
-      h("div.findings", ...(a.findings.length ? a.findings.map((f) => h("div.finding." + f.severity,
-        icon(f.severity === "bad" ? "x" : "alert"), h("b", LABEL[f.kind]), h("span", f.text)))
-        : [h("div.muted.small", "None found. You can still search for a better copy or another cover.")])),
-      a.musicbrainz ? h("div.muted.small", icon("info"), ` MusicBrainz: ${a.musicbrainz}`) : null,
-      a.kinds.includes("missing_tracks") ? h("div.row", { style: { gap: "8px" } },
-        h("span.muted.small.grow", "Get the songs that are missing, or download the complete album again in place of this one."),
-        h("button.btn.secondary.sm", { onclick: () => search(a.folder), disabled: state.searching },
-          icon("search"), a.search ? "Search again" : "Find the complete album")) : null,
+  const rows = a.findings.map((f) => issueRow(f.severity, LABEL[f.kind], f.text, actionFor(a, f)));
+  // the tag check repeats some of these in its own words: leave those out
+  const said = (re) => tags.filter((t) => !re.test(t));
+  let extra = tags;
+  if (a.kinds.includes("missing_art")) extra = said(/cover/i);
+  if (a.kinds.includes("missing_tracks")) extra = extra.filter((t) => !/missing track number/i.test(t));
+  for (const t of extra) rows.push(issueRow("warn", "Tags", t, h("button.btn.secondary.sm", { type: "button", onclick: () => hooks.editTags(folder) }, "Edit tags")));
+  const n = rows.length;
+  section(needsEl, `Needs attention${n ? ` · ${n}` : ""}`,
+    h("div.scroll.grow.needs-body",
+      n ? h("ul.issue-list", ...rows) : h("p.muted", "Nothing to fix. You can still look for a better copy or another cover."),
+      a.musicbrainz ? h("p.muted.small", `MusicBrainz: ${a.musicbrainz}`) : null,
       dupes.length ? mergeSection(a, dupes) : null,
-      archiveSection(a),
-      h("div.section-label", { style: { marginTop: "18px" } }, "Tracks"),
-      tracksTable(a)));
+      archiveSection(a)));
+}
+
+function issueRow(sev, kind, text, action) {
+  return h("li.issue", h("span.issue-dot." + (sev === "bad" ? "bad" : "warn")),
+    h("span.issue-text", h("b", kind), h("span", text)), action || null);
+}
+
+function actionFor(a, f) {
+  if (f.kind === "missing_tracks") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find the songs");
+  if (f.kind === "low_quality") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find a better copy");
+  if (f.kind === "missing_art") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find covers");
+  return null;
+}
+
+function renderCover() {
+  const a = state.album, folder = state.selected;
+  const current = hooks.coverOf ? hooks.coverOf(folder) : null;
+  const s = a?.search, art = s?.art || [];
+  const tiles = [h("div.cover-tile.on", { "aria-current": "true" },
+    current ? h("img", { src: current, alt: "" }) : h("div.cover-blank", icon("image")),
+    h("b", current ? "In the folder" : "No cover"), h("span", current ? "In use" : "Find one below"))];
+  for (const im of art.slice(0, 7)) tiles.push(artTile(a, im, !!current));
+  if (!s) {
+    tiles.push(h("button.cover-tile.find", { type: "button", disabled: state.searching || !a,
+      onclick: () => search(folder), title: a ? "" : "Check your library first" },
+      h("div.cover-blank", state.searching ? h("span.spinner") : icon("search")), h("b", "Find covers"),
+      h("span", a ? "Cover Art Archive and archive.org" : "Check your library first")));
+  }
+  section(coverEl, "Cover",
+    s?.cover_done ? coverDone(s.cover_done) : null,
+    h("div.cover-grid", { role: "list" }, ...tiles));
+}
+
+function artTile(a, im, has) {
+  const key = `cover:${im.id}`, asking = state.confirm === key;
+  const from = im.source.startsWith("coverart") ? "Cover Art Archive" : "archive.org";
+  const size = h("span", from);
+  return h("div.cover-tile", { role: "listitem" },
+    h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label,
+      onload: (e) => {                                     // its size, so a small thumbnail is not chosen by mistake
+        const img = e.target, small = Math.min(img.naturalWidth, img.naturalHeight) < 500;
+        size.textContent = `${img.naturalWidth} × ${img.naturalHeight}${small ? " · small" : ""}`;
+        size.style.color = small ? "var(--warn-text)" : "";
+      } }),
+    h("b", from), size,
+    h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), { type: "button",
+      onclick: () => (has && !asking ? ask(key) : useCover(a.folder, im.id, has)), disabled: !!state.busy,
+    }, state.busy === key ? h("span.spinner") : null, has ? (asking ? "Yes, replace" : "Use this") : "Use this"));
 }
 
 function tracksTable(a) {
@@ -282,15 +261,15 @@ async function merge(p) {
 // ---- the Internet Archive -----------------------------------------------------------------------------------------
 function archiveSection(a) {
   const s = a.search;
-  const head = h("div.row", { style: { marginTop: "18px" } },
-    h("div.section-label.grow", "Internet Archive"),
+  const head = h("div.row", { style: { marginTop: "var(--sp-2)" } },
+    h("h3.sub-head.grow", "On the Internet Archive"),
     h("button.btn.primary.sm", { onclick: () => search(a.folder), disabled: state.searching },
       state.searching ? h("span.spinner") : icon("search"), s ? "Search again" : "Search the Internet Archive"));
-  if (state.searching) return h("div", head, h("div.muted.small", state.searchStage || "Searching archive.org…"));
+  if (state.searching) return h("div", head, h("div.muted.small", h("span.spinner"), " ", state.searchStage || "Searching archive.org…"));
   if (!s) {
-    return h("div", head, h("div.muted.small", "Lists every upload of this album, best audio first: the ones with the "
-      + "missing songs, better quality to replace it with, or a cover. Only their listings are read; nothing is "
-      + "downloaded until you choose."));
+    if (a.findings.length) return null;                 // each problem has its own button that starts this search
+    return h("p.muted.small", "Want a better copy or another cover? ",
+      h("button.link", { type: "button", onclick: () => search(a.folder) }, "Search the Internet Archive"));
   }
   const all = s.suggestions, art = s.art || [];
   const better = all.filter((x) => x.upgrade).length, whole = all.filter((x) => x.complete).length;
@@ -298,7 +277,6 @@ function archiveSection(a) {
   return h("div", head,
     h("div.muted.small", `Searched for ${s.query}: ${all.length} upload${all.length === 1 ? "" : "s"}`
       + (whole ? `, ${whole} with the complete album` : "") + (better ? `, ${better} better than your copy` : "") + "."),
-    s.cover_done ? coverDone(s.cover_done) : art.length ? artPicker(a, art) : null,
     all.length ? shown.map((x) => suggestionBox(a, x))
       : h("div.empty.small", icon("search"), h("b", "No uploads of this album on archive.org"),
         "Try Album Search with a shorter title."),
@@ -307,34 +285,10 @@ function archiveSection(a) {
     s.notes?.length ? h("div.muted.small", s.notes.join(" · ")) : null);
 }
 
-function artPicker(a, art) {
-  const has = !!a.cover || a.has_art;
-  return h("div.health-box",
-    h("b", has ? "Covers found: replace yours with one" : "Covers found"),
-    has ? h("div.muted.small", "Replacing moves your cover to the Trash and embeds the new one in tracks that had one embedded.") : null,
-    h("div.art-row", ...art.slice(0, 8).map((im) => {
-      const key = `cover:${im.id}`, asking = state.confirm === key;
-      return h("div.art-pick",
-        h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label,
-          onload: (e) => {                                  // its size, so a small thumbnail is not chosen by mistake
-            const img = e.target, small = Math.min(img.naturalWidth, img.naturalHeight) < 500;
-            img.nextSibling.textContent = `${img.naturalWidth}×${img.naturalHeight}${small ? " · small" : ""} · ${img.nextSibling.dataset.from}`;
-            img.nextSibling.style.color = small ? "var(--warn-text)" : "";
-          } }),
-        h("div.muted.small.ellipsis", { "data-from": im.source.startsWith("coverart") ? "Cover Art Archive" : im.identifier },
-          im.source.startsWith("coverart") ? "Cover Art Archive" : im.identifier),
-        h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), {
-          onclick: () => (has && !asking ? ask(key) : useCover(a.folder, im.id, has)), disabled: !!state.busy,
-        }, state.busy === key ? h("span.spinner") : null, has ? (asking ? "Yes, replace it" : "Replace cover") : "Use as cover"));
-    })));
-}
-
 function coverDone(c) {
   const what = [c.written, c.px ? `${c.px} px` : "", c.embedded ? `also embedded in ${c.embedded} track${c.embedded === 1 ? "" : "s"}` : ""]
     .filter(Boolean).join(" · ");
-  return h("div.health-box", h("div.row", h("span", { style: { color: "var(--green)" } }, icon("check")),
-    h("div.grow", h("b", c.replaced ? "Cover replaced" : "Cover saved"), h("div.muted.small", what)),
-    h("span.muted.small", "Search again to choose a different one.")));
+  return h("p.cover-done", icon("check"), h("b", c.replaced ? "Cover replaced" : "Cover saved"), h("span.muted", what));
 }
 
 // the first click of a replacement only asks; clicking another replacement asks about that one instead

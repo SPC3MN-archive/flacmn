@@ -1,68 +1,74 @@
-// Album Search, top block: the search fields, the format filters and the ranked results (best quality first).
+// Album Search, the left block: one search box, the format filters and the uploads found, each with a verdict in plain
+// words. The order stays put while the automatic checks finish (rows are updated in place); it is re-sorted only when
+// you ask, so a row never moves away under the pointer.
 
 import { api, on, waitJob } from "./api.js";
-import { h, clear, icon, chip, qualityBadge, tierBadge, fmtTime, fmtBytes, toast, errorText } from "./ui.js";
+import { h, clear, icon, fmtBytes, toast, errorText } from "./ui.js";
 
 const state = {
   searchId: null, jobId: null, busy: false, stage: "",
-  results: [], notes: null, selected: null,
-  filters: { flac: true, wav: true, mp3: true, losslessOnly: false, hideOwned: false },
+  results: [], notes: null, selected: null, order: [], stale: false,
+  filters: { flac: true, wav: true, m4a: true, mp3: true, other: true, hideOwned: false },
   sort: "quality",
 };
 let els = {};
 let stageEl = null;                // the status under the loading logo, while it is shown
 let onSelect = () => {};
 
+/** "Radiohead – OK Computer" (any dash with spaces round it) -> artist and album; no dash: the artist alone. */
+export function splitQuery(q) {
+  const m = q.trim().match(/^(.*?)\s+[-–—]\s+(.*)$/);
+  return m ? { artist: m[1].trim(), album: m[2].trim() } : { artist: q.trim(), album: "" };
+}
+
 export function mountSearch(card, { select }) {
   onSelect = select;
-  els.artist = h("input", { placeholder: "", autocomplete: "off", spellcheck: false });
-  els.album = h("input", { placeholder: "leave empty for all albums", autocomplete: "off", spellcheck: false });
-  const submit = (e) => { e.preventDefault(); run(); };
-  for (const i of [els.artist, els.album]) i.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(e); });
-  els.go = h("button.btn.primary", { onclick: submit }, icon("search"), "Search");
+  els.q = h("input", { id: "search-q", type: "search", autocomplete: "off", spellcheck: false,
+    placeholder: "Artist – Album (or just an artist)" });
+  els.q.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); run(); } });
+  els.go = h("button.btn.primary", { type: "button", onclick: run }, "Search");
 
-  const toggle = (key, label) => {
-    const b = h("button.toggle-chip" + (state.filters[key] ? ".on" : ""), {
-      onclick: () => { state.filters[key] = !state.filters[key]; b.classList.toggle("on"); renderTable(); },
-    }, icon("check"), label);
+  const pill = (key, label) => {
+    const b = h("button.pill", { type: "button", "aria-pressed": String(state.filters[key]),
+      onclick: () => { state.filters[key] = !state.filters[key]; b.setAttribute("aria-pressed", String(state.filters[key])); renderNotes(); renderRows(); },
+    }, label);
     return b;
   };
-  const check = (key, label) => h("label.check", h("input", {
-    type: "checkbox", checked: state.filters[key],
-    onchange: (e) => { state.filters[key] = e.target.checked; renderTable(); },
-  }), label);
-  els.sort = h("select", { onchange: (e) => { state.sort = e.target.value; renderTable(); } },
-    h("option", { value: "quality" }, "Quality"), h("option", { value: "match" }, "Match"),
-    h("option", { value: "popularity" }, "Popularity"));
-
-  els.notes = h("div.notes-line");
-  els.results = h("div.results.scroll");
+  els.sort = h("select.sort-select", { "aria-label": "Sort", onchange: (e) => { state.sort = e.target.value; resort(); } },
+    h("option", { value: "quality" }, "Sorted by quality"), h("option", { value: "match" }, "Sorted by match"),
+    h("option", { value: "popularity" }, "Sorted by popularity"));
+  els.count = h("h2.list-count");
+  els.resort = h("button.btn.ghost.sm", { type: "button", hidden: true, onclick: resort, title: "Checks have finished since this list was sorted" }, "Re-sort");
+  els.notes = h("div.list-note");
+  els.rows = h("ul.list.scroll", { "aria-label": "Uploads" });
   clear(card,
-    h("div.search-row",
-      h("label.field.artist", icon("search"), h("span.prefix", "Artist"), els.artist),
-      h("label.field.album", h("span.prefix", "Album"), els.album),
-      els.go,
-      h("div.filters",
-        toggle("flac", "FLAC"), toggle("wav", "WAV"), toggle("mp3", "MP3"),
-        check("losslessOnly", "Lossless only"), check("hideOwned", "Hide albums I have"),
-        h("label.field.sm", { style: { width: "150px" } }, h("span.prefix", "Sort"), els.sort))),
-    els.notes, els.results);
+    h("div.list-head",
+      h("div.row", h("label.sr-only", { for: "search-q" }, "Artist and album"),
+        h("span.field.grow", icon("search"), els.q), els.go),
+      h("div.pills", { role: "group", "aria-label": "Formats" },
+        pill("flac", "FLAC"), pill("wav", "WAV"), pill("m4a", "M4A"), pill("mp3", "MP3"),
+        h("span", { title: "AIFF, Monkey's Audio (APE) and WavPack" }, pill("other", "Other")), pill("hideOwned", "Hide albums I have")),
+      h("div.row.list-meta", els.count, h("span.grow"), els.resort, els.sort),
+      els.notes),
+    els.rows);
   renderNotes();
-  renderTable();
+  renderRows();
 
   on("results", (e) => {
     if (e.search_id !== state.searchId) return;
-    state.results = e.results;
+    take(e.results);
     if (e.notes !== undefined) state.notes = e;
     state.busy = false;
     renderNotes();
-    renderTable();
+    renderRows();
   });
   on("candidate", (e) => {
     const i = state.results.findIndex((r) => r.identifier === e.candidate.identifier);
     if (i >= 0) {
       state.results[i] = e.candidate;
-      renderTable();
+      state.stale = state.sort === "quality";
+      renderNotes();
+      renderRows();
     }
   });
   on("progress", (e) => {
@@ -70,7 +76,27 @@ export function mountSearch(card, { select }) {
     state.stage = describe(e);
     renderNotes();
   });
-  setTimeout(() => els.artist.focus(), 50);
+  setTimeout(() => els.q.focus(), 50);
+}
+
+// new results keep the rows already shown where they are; new uploads join the end
+function take(results) {
+  state.results = results;
+  const ids = new Set(results.map((r) => r.identifier));
+  const kept = state.order.filter((id) => ids.has(id));
+  const known = new Set(kept);
+  state.order = kept.concat(results.map((r) => r.identifier).filter((id) => !known.has(id)));
+  if (kept.length) state.stale = state.sort === "quality";
+}
+
+function resort() {
+  let rows = state.results;                                   // the server's order is best quality first
+  if (state.sort === "match") rows = [...rows].sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
+  else if (state.sort === "popularity") rows = [...rows].sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+  state.order = rows.map((r) => r.identifier);
+  state.stale = false;
+  renderNotes();
+  renderRows();
 }
 
 function describe(e) {
@@ -80,21 +106,17 @@ function describe(e) {
   return "Searching…";
 }
 
-/** Search for an album from another screen (the Health Check's "Open in Album Search"). */
+/** Search for an album from another screen (Library's "Find a better copy"). */
 export function searchFor(artist, album) {
-  els.artist.value = artist || "";
-  els.album.value = album || "";
+  els.q.value = album ? `${artist} – ${album}` : artist || "";
   run();
 }
 
 async function run() {
-  const artist = els.artist.value.trim(), album = els.album.value.trim();
-  if (!artist && !album) { els.artist.focus(); return; }
-  state.busy = true;
-  state.stage = "Searching archive.org…";
-  state.results = [];
-  state.notes = null;
-  renderTable();                     // first: it puts up the loading logo the stage text goes under
+  const { artist, album } = splitQuery(els.q.value);
+  if (!artist && !album) { els.q.focus(); return; }
+  Object.assign(state, { busy: true, stage: "Searching archive.org…", results: [], notes: null, order: [], stale: false });
+  renderRows();                      // first: it puts up the loading logo the stage text goes under
   renderNotes();
   els.go.disabled = true;
   try {
@@ -105,7 +127,7 @@ async function run() {
     // the results event usually arrives first; fetch them in case it was missed
     const res = await api(`/search/${r.search_id}`);
     if (res.search_id === state.searchId) {
-      state.results = res.results;
+      if (!state.order.length) { state.results = res.results; resort(); } else take(res.results);
       state.notes = res;
     }
   } catch (e) {
@@ -114,7 +136,7 @@ async function run() {
     state.busy = false;
     els.go.disabled = false;
     renderNotes();
-    renderTable();
+    renderRows();
   }
 }
 
@@ -126,82 +148,91 @@ function count(x) {
 }
 
 function renderNotes() {
+  const all = state.results.length, shown = visible().length, checked = state.results.filter((r) => r.tier !== "?").length;
+  els.count.textContent = state.busy ? "Searching" : all ? `${all} upload${all === 1 ? "" : "s"} · ${checked} checked` : "Uploads";
+  els.resort.hidden = !state.stale;
   const n = els.notes;
   if (state.busy) {
     const text = state.stage || "Searching…";
-    if (stageEl && stageEl.isConnected) {                  // shown under the loading logo in the results
-      stageEl.lastChild.textContent = text;
-      clear(n);
-    } else clear(n, h("span", text));
+    if (stageEl && stageEl.isConnected) { stageEl.lastChild.textContent = text; clear(n); }
+    else clear(n, h("span", text));
     return;
   }
-  if (!state.notes) {
-    clear(n, icon("info"), h("span.muted", "Search archive.org by artist, album or both. FLAC, WAV and MP3 uploads are ranked together, best quality first."));
-    return;
-  }
-  const r = state.notes;
-  const shown = visible().length;
-  const parts = [];
+  if (!state.notes) { clear(n); return; }
+  const r = state.notes, parts = [];
   const near = count(r.near_misses), other = count(r.lossless_other), out = count(r.excluded);
+  if (shown !== all) parts.push(`${all - shown} hidden by the filters`);
+  if (other) parts.push(`${other} in Shorten (SHN), which isn't searched`);
   if (near) parts.push(`${near} near miss${near === 1 ? "" : "es"}`);
-  if (other) parts.push(`${other} in other lossless formats (ALAC, APE)`);
   if (out) parts.push(`${out} left out`);
-  if (shown !== state.results.length) parts.push(`${state.results.length - shown} hidden by filters`);
   const title = [...(r.notes || []), ...(r.near_misses || []).map((m) => (typeof m === "string" ? m : JSON.stringify(m)))].join("\n");
-  clear(n, icon("info"), h("b", `${state.results.length} upload${state.results.length === 1 ? "" : "s"}`),
-    parts.length ? h("span", { title }, "  ·  " + parts.join("  ·  ")) : null);
+  clear(n, parts.length ? h("span", { title }, parts.join(" · ")) : null);
 }
 
+// which format filter each upload's format answers to: AIFF, APE and WavPack are "Other"
+const FILTER_OF = { flac: "flac", wav: "wav", m4a: "m4a", mp3: "mp3", aiff: "other", ape: "other", wv: "other" };
+
 function visible() {
-  const f = state.filters;
-  let rows = state.results.filter((r) =>
-    ((r.media === "flac" && f.flac) || (r.media === "wav" && f.wav) || (r.media === "mp3" && f.mp3) ||
-      !["flac", "wav", "mp3"].includes(r.media)) &&
-    (!f.losslessOnly || r.quality.lossless) && (!f.hideOwned || !r.in_library));
-  if (state.sort === "match") rows = [...rows].sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
-  else if (state.sort === "popularity") rows = [...rows].sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
-  return rows;
+  const f = state.filters, at = new Map(state.order.map((id, i) => [id, i]));
+  return state.results
+    .filter((r) => (f[FILTER_OF[r.media] || "other"]) && (!f.hideOwned || !r.in_library))
+    .sort((a, b) => (at.get(a.identifier) ?? 1e9) - (at.get(b.identifier) ?? 1e9));
+}
+
+/** A result's verdict in plain words, with its chip colour. */
+export function verdictOf(r) {
+  const q = r.quality;
+  if (q.rank >= 3 || r.tier === "D") return ["Failed", "bad"];
+  if (r.media === "m4a" && (r.tier === "?" || !r.tier)) return ["Not checked yet", "wait"];   // ALAC or AAC: not known until read
+  if (!q.lossless || r.tier === "L") return ["Lossy", "bad"];
+  const base = /hi-?res/i.test(q.label) ? "Hi-res" : "Lossless";
+  if (r.tier === "?" || !r.tier) return ["Not checked yet", "wait"];
+  if (r.tier === "A") return [`Genuine ${base.toLowerCase()}`, "good"];
+  if (r.tier === "B") return [`${base}, likely`, "good"];
+  return [base, "good"];
+}
+
+/** The album's name as best we know it: the guessed album, unless that is only a format word ("FLAC"). */
+export function nameOf(r) {
+  const a = (r.album || "").trim();
+  return a && !/^(flac|wav|mp3|cd rip|lossless|album)$/i.test(a) ? a : r.title || r.identifier;
 }
 
 function sourceShort(s) {
-  if (!s) return "—";
+  if (!s) return "";
   if (s.startsWith("CD rip")) return "CD rip";
   if (s.startsWith("vinyl")) return "vinyl rip";
-  if (s.startsWith("plain")) return "plain";
+  if (s.startsWith("plain")) return "";
   return s.split(" (")[0].replace(" source", "");
 }
 
-function renderTable() {
+function meta(r) {
+  const src = sourceShort(r.source), log = (r.rip_files || []).some((f) => /log/i.test(f));
+  return [r.quality.format || r.media.toUpperCase(), src ? src + (log ? " with log" : "") : log ? "rip log" : "",
+    r.tracks ? `${r.tracks} tracks` : "", r.year, r.in_library ? "In your library" : ""].filter(Boolean).join(" · ");
+}
+
+function renderRows() {
   const rows = visible();
   if (!rows.length) {
     stageEl = state.busy ? h("div.loading-status", h("span.ellipsis", state.stage || "Searching…")) : null;
-    clear(els.results, state.busy ? h("div.empty.loading", h("img.loading-logo", { src: "/static/logo-loading.svg", alt: "Searching" }), stageEl) : h("div.empty",
-      icon(state.notes ? "search" : "music"),
-      state.notes ? h("b", "No uploads to show") : h("b", "No search yet"),
-      state.notes ? h("span", "Try a shorter album title, or turn the format filters back on.") : null));
+    clear(els.rows, state.busy ? h("li.empty.loading", h("img.loading-logo", { src: "/static/logo-loading.svg", alt: "Searching" }), stageEl)
+      : h("li.empty", icon(state.notes ? "search" : "music"),
+        h("b", state.notes ? "No uploads to show" : "Search the Internet Archive"),
+        h("span", state.notes ? "Try a shorter album title, or turn the format filters back on."
+          : "Type an artist and album, like Radiohead – OK Computer. Every format (FLAC, WAV, AIFF, ALAC, APE, WavPack, AAC, MP3) is ranked together, best quality first; lossless ones are saved as FLAC.")));
     return;
   }
-  const head = h("tr", ...["Quality", "Tier", "Format", "Upload", "Source", "Match", "Tracks", "Length", "Size", "Year",
-    "Rip files", "Tested", "Library"].map((t, i) => h("th" + ([6, 7, 8].includes(i) ? ".r" : ""), t)));
-  const body = rows.map((r) => {
-    const tr = h("tr" + (state.selected === r.identifier ? ".selected" : ""), {
-      onclick: () => { state.selected = r.identifier; renderTable(); onSelect(r); },
-      title: r.title || r.identifier,
+  const best = state.sort === "quality" && rows[0].quality.lossless && ["A", "B"].includes(rows[0].tier) ? rows[0].identifier : null;
+  clear(els.rows, ...rows.map((r) => {
+    const [verdict, kind] = verdictOf(r);
+    return h("li", h("button.list-row" + (state.selected === r.identifier ? ".on" : ""), {
+      type: "button", "aria-current": state.selected === r.identifier ? "true" : null, title: r.identifier,
+      onclick: () => { state.selected = r.identifier; renderRows(); onSelect(r); },
     },
-      h("td", qualityBadge(r.quality)),
-      h("td", tierBadge(r.tier)),
-      h("td.strong", r.quality.format || r.media.toUpperCase()),
-      h("td", h("span.ellipsis", { style: { display: "inline-block", maxWidth: "320px", verticalAlign: "middle" } }, r.identifier)),
-      h("td.dim", sourceShort(r.source)),
-      h("td.dim", r.match ? (r.match.bucket === 0 ? "exact" : "close") : "—"),
-      h("td.r.num", r.tracks || "—"),
-      h("td.r.num", fmtTime(r.runtime_s)),
-      h("td.r.num", fmtBytes(r.bytes)),
-      h("td.num", r.year || "—"),
-      h("td", h("span.rip-files", ...(r.rip_files || []).map((f) => chip(f, "mono")))),
-      h("td", chip(r.levels[r.levels.length - 1] || "V0", "primary")),
-      h("td", r.in_library ? chip("Have it", "good", { icon: "check", title: r.in_library.folder }) : null));
-    return tr;
-  });
-  clear(els.results, h("table.grid", h("thead", head), h("tbody", ...body)));
+      h("span.list-main",
+        h("span.list-title", r.identifier === best ? h("span.best", "Best match") : null, h("b.ellipsis", nameOf(r))),
+        h("span.list-sub.ellipsis", meta(r))),
+      h("span.list-side", h("span.chip." + kind, h("span.dot"), verdict), h("span.list-size", fmtBytes(r.bytes)))));
+  }));
 }

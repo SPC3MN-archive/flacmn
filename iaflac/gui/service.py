@@ -26,7 +26,7 @@ from .jobs import DownloadQueue, Job, JobManager, QueueItem
 from .settings import Settings
 
 
-PLAYABLE = {".flac", ".mp3", ".wav", ".ogg", ".m4a", ".opus"}     # any of the item's audio, originals or IA's derivatives
+PLAYABLE = {".flac", ".mp3", ".wav", ".ogg", ".m4a", ".opus", ".aiff", ".aif", ".ape", ".wv"}   # any of the item's audio, originals or IA's derivatives
 def image_mime(data: bytes) -> str:
     if data[:8] == b"\x89PNG\r\n\x1a\n":
         return "image/png"
@@ -221,7 +221,7 @@ class App:
         s = self.settings
         o = Options(top=50, include_live=s.include_live, free_only=s.free_only, rip_only=s.rip_only, deep="none",
                     max_candidates=s.max_candidates,
-                    spectrogram_dir=paths.cache_dir() / "spectrograms", fallback=("wav", "vbr"),
+                    spectrogram_dir=paths.cache_dir() / "spectrograms", fallback=queries.ALL_ALT,
                     all_formats=s.all_formats)
         for k, v in over.items():
             setattr(o, k, v)
@@ -243,7 +243,7 @@ class App:
         except IAError as exc:
             raise NotFound(str(exc)) from exc
         if not c.item.flacs and media is None:      # opened directly by identifier: pick the media it has
-            for m in ("wav", "mp3"):
+            for m in ("wav", "aiff", "m4a", "ape", "wv", "mp3"):
                 if track_files(c.item.files, m):
                     c.item.media = m
                     break

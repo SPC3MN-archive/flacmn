@@ -99,8 +99,9 @@ def mp3_file_type(path: Path) -> str:
 
 
 def album_from_alt(item, stats, artist: str, album: str) -> NewAlbum:
-    """A preview of the rows saving a WAV (becomes FLAC) or VBR MP3 candidate would produce."""
-    fmt = "FLAC" if item.media == "wav" else "MP3"
+    """A preview of the rows saving an upload in another format would produce (lossless becomes FLAC; MP3 and AAC stay)."""
+    from .altmedia import is_lossless
+    fmt = "FLAC" if is_lossless(item.media, stats) else ("AAC" if item.media == "m4a" else "MP3")
     return NewAlbum(artist, album, rows_for_typed([(f.name, stats.file_type, fmt) for f in item.flacs], artist, album))
 
 

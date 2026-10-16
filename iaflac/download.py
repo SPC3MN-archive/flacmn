@@ -59,7 +59,7 @@ class GetResult:
     artist: str = ""                                  # library layout only
     album: str = ""
     cover: Optional[FileInfo] = None
-    media: str = "flac"               # flac | wav (encoded to FLAC after download) | mp3 (VBR, kept as MP3)
+    media: str = "flac"               # flac | a lossless format (converted to FLAC after download) | mp3 / aac .m4a (kept)
 
     @property
     def total_bytes(self) -> int:
@@ -190,31 +190,101 @@ def _fetch(client: IAClient, identifier: str, pf: PlannedFile, on_bytes: Optiona
         resp.close()
 
 
-def encode_wavs(res: GetResult, log: Callable[[str], None]) -> None:
-    """Encode each downloaded WAV to FLAC (lossless, `flac --verify` decodes and compares as it goes), then remove the
-    WAV. The FLAC gets ARTIST/ALBUM/TITLE/TRACKNUMBER tags because a WAV carries none. Failures go in res.failures and
-    leave the WAV where it is."""
+def _source_bits(path: Path) -> int:
+    """The bit depth of a lossless file (ALAC, APE, WavPack), so it is decoded to PCM of the same depth."""
+    try:
+        from mutagen import File
+        info = File(str(path)).info
+        return int(getattr(info, "bits_per_sample", 0) or 0)
+    except Exception:
+        return 0
+
+
+def _length(path: Path) -> float:
+    try:
+        from mutagen import File
+        return float(File(str(path)).info.length or 0)
+    except Exception:
+        return 0.0
+
+
+LOSSLESS_EXTS = (".wav", ".wave", ".aiff", ".aif", ".aifc", ".ape", ".wv")      # and .m4a when it holds ALAC
+
+
+def is_lossless_file(path: Path) -> bool:
+    """Is this downloaded file lossless audio that should become FLAC? An .m4a only when its codec is ALAC."""
+    suffix = path.suffix.lower()
+    if suffix in LOSSLESS_EXTS:
+        return True
+    if suffix == ".m4a":
+        try:
+            from mutagen.mp4 import MP4
+            return str(MP4(str(path)).info.codec).lower() == "alac"
+        except Exception:
+            return False
+    return False
+
+
+def convert_to_flac(src: Path, out: Path, tags: tuple = ()) -> str:
+    """Convert one lossless file to FLAC at `out`; "" when it worked, else why not (and `out` is not left behind).
+    WAV and AIFF go straight into `flac`; ALAC (.m4a), APE and WavPack are first decoded by ffmpeg to PCM of the same
+    bit depth. `flac --verify` decodes the FLAC as it is written and compares it with the PCM it was given, and the FLAC
+    must be as long as the original, so nothing is lost on the way."""
     flac = binaries.flac()
     if not flac:
-        res.failures.append("flac is not installed, so the WAV files cannot be encoded")
+        return "flac is not installed"
+    source, pcm = src, None
+    if src.suffix.lower() not in (".wav", ".wave", ".aiff", ".aif", ".aifc"):
+        ffmpeg = binaries.ffmpeg()
+        if not ffmpeg:
+            return "ffmpeg is not installed"
+        bits = _source_bits(src)
+        codec = "pcm_s16le" if bits and bits <= 16 else "pcm_s24le" if bits and bits <= 24 else "pcm_s32le"
+        pcm = out.with_name(out.name + ".pcm.wav")
+        dec = subprocess.run([ffmpeg, "-nostdin", "-v", "error", "-y", "-i", str(src), "-map", "0:a:0", "-c:a", codec, str(pcm)],
+                             capture_output=True, **binaries.NO_WINDOW)
+        if dec.returncode != 0 or not pcm.exists():
+            pcm.unlink(missing_ok=True)
+            return "could not be decoded (" + next((ln.strip() for ln in dec.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "ffmpeg failed") + ")"
+        source = pcm
+    proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), *tags, str(source)], capture_output=True, **binaries.NO_WINDOW)
+    if pcm is not None:
+        pcm.unlink(missing_ok=True)
+    if proc.returncode != 0 or not out.exists():
+        out.unlink(missing_ok=True)
+        return "flac failed (" + next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "no message") + ")"
+    want, got = _length(src), _length(out)
+    if want and got and abs(want - got) > 0.05:
+        out.unlink(missing_ok=True)
+        return f"the FLAC came out {got:.2f} s long, the original is {want:.2f} s"
+    return ""
+
+
+def encode_lossless(res: GetResult, log: Callable[[str], None]) -> None:
+    """Convert each downloaded lossless track to FLAC (convert_to_flac), then remove the original. The FLAC gets
+    ARTIST/ALBUM/TITLE/TRACKNUMBER tags (they are written properly after). Failures go in res.failures and leave the
+    original where it is."""
+    if not binaries.flac():
+        res.failures.append("flac is not installed, so the lossless files cannot be converted to FLAC")
         return
     todo = [pf for pf in res.planned if pf.final and pf.path.exists()]
     for i, pf in enumerate(todo, 1):
-        log(f"  encoding {i}/{len(todo)}: {pf.final.name}")
+        log(f"  converting {i}/{len(todo)} to FLAC: {pf.final.name}")
         out = pf.final.with_name(pf.final.name + ".part")
         stem = LEADING_TRACK.sub("", pf.final.stem).strip() or pf.final.stem
         number = LEADING_TRACK.match(pf.final.stem)
         tags = [f"--tag=ARTIST={res.artist}", f"--tag=ALBUM={res.album}", f"--tag=TITLE={stem}"]
         if number and number.group(1).isdigit():
             tags.append(f"--tag=TRACKNUMBER={int(number.group(1))}")
-        proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), *tags, str(pf.path)], capture_output=True, **binaries.NO_WINDOW)
-        if proc.returncode != 0 or not out.exists():
-            out.unlink(missing_ok=True)
-            msg = next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "flac failed")
-            res.failures.append(f"{pf.info.name}: could not be encoded to FLAC ({msg}); the WAV was kept")
+        err = convert_to_flac(pf.path, out, tuple(tags))
+        if err:
+            res.failures.append(f"{pf.info.name}: could not be converted to FLAC ({err}); the original was kept")
             continue
         out.replace(pf.final)
         pf.path.unlink()
+
+
+encode_wavs = encode_lossless                        # its old name
 
 
 LEADING_TRACK = re.compile(r"^\s*(?:\d{1,2}[-.])?(\d{1,3})[\s._\-)]*")
@@ -331,9 +401,17 @@ def library_track_name(rel: Path, artist: str) -> Path:
     return rel.with_name(f"{number} {rest}{rel.suffix.lower()}") if rest else rel
 
 
+# lossless formats that are always converted to FLAC when saved; an .m4a is converted when it holds ALAC (`convert`)
+CONVERT = ("wav", "aiff", "ape", "wv")
+
+
+def converts(media: str, convert: Optional[bool] = None) -> bool:
+    return media != "flac" and (convert if convert is not None else media in CONVERT)
+
+
 def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art: str = "cover",
                  rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
-                 media: str = "flac") -> GetResult:
+                 media: str = "flac", convert: Optional[bool] = None) -> GetResult:
     """Where everything would go, without touching the disk. art: cover | all | none. rip: keep | skip.
     track_names: 'library' renames tracks to 'NN Title.flac' like the rest of the library, 'keep' uses archive.org's names."""
     a_dir, al_dir = folder_component(artist), folder_component(album)
@@ -373,7 +451,7 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
         if root not in target.parents:
             res.skipped.append(f"{f.name!r}: would land outside the album folder, refused")
             continue
-        res.planned.append(PlannedFile(f, target, target.with_suffix(".flac") if media == "wav" and id(f) in tracks else None))
+        res.planned.append(PlannedFile(f, target, target.with_suffix(".flac") if converts(media, convert) and id(f) in tracks else None))
     if cover is not None:
         res.cover = cover
         res.planned.append(PlannedFile(cover, (folder / f"cover{Path(cover.name).suffix.lower()}").resolve()))
@@ -382,9 +460,10 @@ def plan_library(item: ItemInfo, library: Path, artist: str, album: str, *, art:
 
 def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, album: str, *, yes: bool = False,
                 art: str = "cover", rip: str = "keep", track_names: str = "keep", folder: Optional[Path] = None,
-                media: str = "flac", log: Callable[[str], None] = lambda m: None,
+                media: str = "flac", convert: Optional[bool] = None, log: Callable[[str], None] = lambda m: None,
                 progress: Optional[Progress] = None, cancel: Optional[CancelCheck] = None) -> GetResult:
-    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder, media=media)
+    res = plan_library(item, library, artist, album, art=art, rip=rip, track_names=track_names, folder=folder, media=media,
+                       convert=convert)
     if not yes:
         return res
     folder = res.folder
@@ -393,7 +472,7 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
         # Never merge into, or overwrite, something that is not ours. A folder holding exactly this album's own
         # files (a finished run, or an interrupted one) is fine: verified files are reported as "already had".
         wanted = {pf.path: pf.info for pf in res.planned}
-        converted = {pf.final for pf in res.planned if pf.final}      # the .flac a WAV becomes is ours too
+        converted = {pf.final for pf in res.planned if pf.final}      # the .flac a lossless file becomes is ours too
         present = [p.resolve() for p in folder.rglob("*")
                    if p.is_file() and not is_hidden(p, folder) and not p.name.endswith(".part")]
         foreign = [p for p in present if p not in wanted and p not in converted]
@@ -406,8 +485,8 @@ def library_get(client: IAClient, item: ItemInfo, library: Path, artist: str, al
     folder.mkdir(parents=True, exist_ok=True)
     marker.write_text(f"{item.identifier}\n")
     _execute(client, item.identifier, res, log, progress, cancel)
-    if media == "wav" and not res.failures:
-        encode_wavs(res, log)
+    if converts(media, convert) and not res.failures:
+        encode_lossless(res, log)
     if not res.failures:
         marker.unlink(missing_ok=True)
     return res

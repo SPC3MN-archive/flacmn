@@ -5,6 +5,7 @@
 import { url } from "./api.js";
 import { toast, errorText } from "./ui.js";
 import { wireAudio } from "./scope.js";
+import { setPlaying } from "./topbar.js";
 
 export const audio = new Audio();
 audio.preload = "auto";
@@ -37,6 +38,9 @@ function start(index) {
   audio.src = url("/audio", { path: t.path });
   wireAudio(audio);
   audio.play().catch((e) => toast(`Cannot play: ${errorText(e)}`, "bad"));
+  setPlaying({ audio, toggle, card: true, title: t.title || t.path.split("/").pop(),
+    sub: [t.artist || now.entry?.artist, now.entry?.album].filter(Boolean).join(" · "),
+    cover: now.album.cover ? url("/library/file", { path: now.album.cover }) : null });
   changed();
 }
 

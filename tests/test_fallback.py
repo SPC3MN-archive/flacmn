@@ -274,7 +274,7 @@ class SaveTheFallback(unittest.TestCase):
         code, out, err, asked = run_cli(cli.cmd_find, self.args(), FakeIA([self.wav]), answers=["1", "y"], interactive=True)
         self.assertEqual(code, 0, err)
         self.assertIn("(WAV, will be converted to FLAC)", asked[1]["shown"])
-        self.assertIn("encoded to FLAC", asked[1]["shown"])
+        self.assertIn("converted to FLAC (verified as it is converted)", asked[1]["shown"])
         self.assertEqual(sorted(os.listdir(self.album())), [f"0{i} Track {i}.flac" for i in range(1, 5)], "no WAV, no .part left")
         tags = FLAC(self.album() / "02 Track 2.flac")
         self.assertEqual((tags["artist"], tags["album"], tags["title"], tags["tracknumber"]),

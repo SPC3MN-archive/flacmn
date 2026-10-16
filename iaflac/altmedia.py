@@ -431,7 +431,7 @@ def assess(item, stats: AltStats, issues: list) -> prov.Provenance:
         kinds = ", ".join(sorted({k for _, k, _ in stats.bad}))
         hard.append(f"{len(stats.bad)}/{stats.n} files are not real {word} files ({kinds})")
     if stats.lossless:
-        what = CODEC_NAME.get(stats.codec, word)
+        what = word if stats.codec == "pcm" else CODEC_NAME.get(stats.codec, word)      # WAV, AIFF; ALAC, APE, WavPack
         if stats.ok:
             reasons.append(f"✓ {stats.ok}/{stats.n} headers are real lossless {what} ({stats.format_label()}); will be converted to FLAC")
         named = prov.scan_claims(item)

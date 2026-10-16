@@ -372,9 +372,9 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .issue-line { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; flex: none; }
 
 /* ---- CD Art -------------------------------------------------------------------------------------------------- */
-#view-cdart { grid-template-columns: minmax(0, 1fr) 472px; grid-template-rows: minmax(0, 1fr); }
-.album-picker { position: relative; width: 340px; flex: none; }
-.album-picker > button { width: 100%; height: 48px; border: 1px solid var(--border); border-radius: 10px; background: var(--raised);
+#view-cdart { grid-template-columns: minmax(400px, 520px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.album-picker { position: relative; width: 100%; flex: none; }
+.album-picker > button { width: 100%; height: 56px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--raised);
                          display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; cursor: pointer; text-align: left; }
 .album-picker .t { font-weight: 700; font-size: var(--fs-md); }
 .album-picker .s { font-size: var(--fs-xs); color: var(--text-2); }
@@ -396,8 +396,8 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .info-bar { display: flex; align-items: center; gap: 8px; background: var(--surface-alt); border-radius: 8px; padding: 0 12px; min-height: 30px;
             font-size: var(--fs-xs); color: var(--text-2); flex: none; flex-wrap: wrap; }
 .info-bar .icon { width: 15px; height: 15px; color: var(--text-2); }
-.parts { flex: 1 1 auto; margin-top: 12px; }
-.part { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; padding: 14px 8px; border-bottom: 1px solid var(--border-soft);
+.parts { flex: 1 1 auto; padding: var(--sp-2) var(--sp-4); }
+.part { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--sp-4); padding: var(--sp-3) var(--sp-2); border-bottom: 1px solid var(--border-soft);
         border-radius: 10px; }
 .part.warn { background: var(--warn-tint); box-shadow: inset 0 0 0 1px var(--warn-line); border-bottom-color: transparent; }
 .part .main-img { width: 180px; height: 180px; border-radius: 6px; object-fit: cover; background: var(--surface-sunk);
@@ -471,8 +471,6 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 .stage3d canvas { display: block; cursor: grab; }
 .tools3d { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 10px; flex: none; align-items: center; }
 .warnings { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; flex: none; min-height: 20px; }
-.print-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: none; }
-.print-row .wide { grid-column: 1 / -1; }
 
 /* ---- Library ------------------------------------------------------------------------------------------------- */
 .lib-table td { height: 56px; }
@@ -573,8 +571,8 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 /* Album Search keeps the spectrogram and the tags side by side in the bottom half at every window size the app
    allows (its minimum width is 1000 px); only a narrower browser tab stacks them */
 @media (max-width: 900px) {
-  #view-search { grid-template-columns: minmax(0, 1fr); grid-template-rows: 440px minmax(480px, auto) minmax(460px, auto); }
-  .spec-body .spec-box { min-height: 240px; }
+  #view-search, #view-library { grid-template-columns: minmax(0, 1fr); grid-template-rows: 420px auto; }
+  .pane { overflow: visible; }
 }
 /* narrower windows: stack the CD Art preview, and Settings */
 @media (max-width: 1180px) {
@@ -769,3 +767,24 @@ details.checks li .icon { color: var(--green); margin-top: 1px; }
 .tag-edit-card { flex: 1; }
 .np-pop .card-head { margin-bottom: var(--sp-3); }
 .sub-head { margin: 0; font-size: var(--fs-sm); font-weight: 700; }
+
+/* ---- Case Art (redesign): the parts as a list block, the preview filling the room, one print bar ---------------- */
+.art-card .list-head { gap: var(--sp-3); }
+.art-card .art-status { font-size: var(--fs-xs); }
+.art-card .art-status:empty { display: none; }
+.art-notes { display: flex; gap: var(--sp-2); align-items: flex-start; flex-wrap: wrap; }
+.art-notes .icon { width: 14px; height: 14px; color: var(--primary); }
+.part .main-img { width: 72px; height: 72px; border-radius: 4px; font-size: 10px; }
+.part h4 { margin: 0 0 2px; font-size: var(--fs-md); }
+.part .src { font-size: var(--fs-xs); color: var(--text-2); }
+.part .meta { margin: var(--sp-1) 0 var(--sp-2); }
+.part .part-options { grid-column: 1 / -1; }
+.case-card { gap: var(--sp-4); }
+.case-head h1 { margin: 0; font-size: var(--fs-xl); font-weight: 700; }
+.case-card .page-wrap { flex: 1 1 auto; min-height: 0; border: 1px solid var(--border); border-radius: var(--r-panel); }
+.case-card .warnings { margin: 0; min-height: 0; }
+.case-card .warnings:empty { display: none; }
+.print-bar { flex: none; display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; padding: var(--sp-4);
+             border: 1px solid var(--border); border-radius: var(--r-panel); background: var(--raised); }
+.print-what { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); color: var(--text-2); }
+.print-what b { font-size: var(--fs-md); color: var(--text); }

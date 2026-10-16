@@ -48,7 +48,7 @@ on("candidate", (e) => { updateSpec(e.candidate); updateUpload(e.candidate); });
 
 // ---- CD Art ----------------------------------------------------------------------------------------------------------
 const art = document.getElementById("view-cdart");
-const artLeft = h("div.card"), artRight = h("div.card.case-card");
+const artLeft = h("div.card.list-card.art-card"), artRight = h("div.pane.case-card");
 art.append(artLeft, artRight);
 mountCdArt(artLeft, artRight, { settings: getSettings });
 mountArtLibrary({ changed: () => refreshPicker() });   // Case Art's album picker: the music folder, plus folders opened on their own

@@ -138,13 +138,15 @@ function renderLeft() {
           : libraryStatus() || `${albums().length} albums in your music folder`)),
       icon("chevron")));
   statusEl = h("div.art-status");
-  const find = h("button.btn.primary", { onclick: find_, disabled: !state.folder || state.finding }, icon("search"), state.art ? "Find again" : "Find art");
+  const find = h("button.btn.secondary.sm", { type: "button", onclick: find_, disabled: !state.folder || state.finding }, icon("search"), state.art ? "Find again" : "Find art");
   const scrolled = left.querySelector(".parts")?.scrollTop || 0;      // keep your place when a choice redraws the list
   const parts = h("div.parts.scroll");
-  const formats = h("div.row.format-row", h("span.section-label", "Format"),
-    h("div.segmented", ...Object.entries(FORMATS).map(([k, f]) =>
-      h("button" + (state.format === k ? ".on" : ""), { onclick: () => setFormat(k) }, f.label))));
-  clear(left, h("div.row", { style: { gap: "16px", flex: "none" } }, picker, find, statusEl), formats, notesBar(), parts);
+  const formats = h("div.segmented", { role: "radiogroup", "aria-label": "Case" }, ...Object.entries(FORMATS).map(([k, f]) =>
+    h("button" + (state.format === k ? ".on" : ""), { type: "button", role: "radio", "aria-checked": String(state.format === k), onclick: () => setFormat(k) }, f.label)));
+  clear(left, h("div.list-head", picker,
+      h("div.row", { style: { justifyContent: "space-between", gap: "var(--sp-3)", flexWrap: "wrap" } }, formats, find),
+      statusEl, notesBar()),
+    parts);
   renderParts(parts);
   parts.scrollTop = scrolled;
   renderStatus();
@@ -198,7 +200,7 @@ function notesBar() {
   const a = state.art;
   if (!a) return null;
   const notes = a.notes || [];
-  return h("div.info-bar", { style: { marginTop: "12px" } }, icon("info"),
+  return h("div.list-note.art-notes", icon("info"),
     a.mb_release_id ? h("span", "Matched ", h("b", [a.artist, a.album, a.year].filter(Boolean).join(" · "))) : h("span", "Not matched to a MusicBrainz release"),
     ...notes.slice(0, 3).map((n) => h("span", "·  " + n)));
 }
@@ -278,7 +280,7 @@ function renderParts(box) {
         : h("div.main-img.missing", "Not found: " + missing(part)),
       h("div", { style: { minWidth: 0 } },
         h("h4", title),
-        h("div.src.ellipsis", chosen ? (borrowed ? `${KIND_NAME[chosen.kind]} used here · ` : "") + (chosen.label || SOURCE[chosen.source] || chosen.source)
+        h("div.src", chosen ? (borrowed ? `${KIND_NAME[chosen.kind]} used here · ` : "") + (chosen.label || SOURCE[chosen.source] || chosen.source)
           : colour ? `Album colour ${colour}` + (onColour(part) ? ` · generated ${onColour(part)} on it` : "")
           : (alts.length ? "" : "No scan found · ") + "Generated: " + missing(part)),
         chosen ? h("div.meta", dpiChip(chosen), chosen.width ? h("span", `${chosen.width} × ${chosen.height} px`) : null) : h("div.meta"),
@@ -344,15 +346,14 @@ function renderRight() {
   const warnings = h("div.warnings", ...warningChips());
   const ready = !!state.art;
   clear(right,
-    h("div.card-head", h("span.card-title.grow", "Case preview"), seg),
+    h("div.section-head.case-head", h("h1", "Case preview"), seg),
     pageWrap, warnings,
-    h("hr.hr", { style: { marginTop: 0 } }),
-    h("div.row", { style: { marginBottom: "10px", flex: "none" } }, h("span.section-label.grow", "Print"),
-      h("span.muted", { style: { fontSize: "11.5px" } }, `${fmt().label} · ${paperName} · ${s.bleed_mm ?? 1.5} mm bleed · ${fmt().pages} pages`)),
-    h("div.print-row",
-      h("button.btn.primary", { onclick: print, disabled: !ready || state.printing }, state.printing ? h("span.spinner") : icon("printer"), "Make PDF"),
-      h("button.btn.secondary", { onclick: openPdf, disabled: !state.pdf }, icon("external"), "Open PDF"),
-      h("button.btn.secondary.wide", { onclick: saveScans, disabled: !ready }, icon("folder"), "Save scans to album folder")));
+    h("div.print-bar",
+      h("div.print-what", h("b", "Print at true size"),
+        h("span", `${fmt().label} · ${paperName} · ${s.bleed_mm ?? 1.5} mm bleed · ${fmt().pages} pages`)),
+      h("button.btn.secondary.lg", { type: "button", onclick: saveScans, disabled: !ready }, "Save scans to album folder"),
+      h("button.btn.secondary.lg", { type: "button", onclick: openPdf, disabled: !state.pdf }, "Open PDF"),
+      h("button.btn.primary.lg", { type: "button", onclick: print, disabled: !ready || state.printing }, state.printing ? h("span.spinner") : icon("printer"), "Make PDF")));
   drawPage();
 }
 

@@ -6,6 +6,7 @@ from typing import Optional
 from urllib.parse import quote
 
 from .. import preview, quality, report
+from ..altmedia import CODEC_NAME
 from ..download import pick_cover
 from ..library_index import YEAR_SUFFIX
 from ..matching import guess_artist_album
@@ -74,12 +75,15 @@ def candidate_detail(cand, want=None, library=None) -> dict:
     out = candidate_summary(cand, want, library)
     artist = out["artist"]
     tracks = []
+    # an .m4a is named by what it holds once read (archive.org calls ALAC and AAC alike "Apple Lossless Audio")
+    alt = cand.alt_stats
+    codec = CODEC_NAME.get(alt.codec, "") if alt is not None and alt.codec in ("alac", "aac") else ""
     for f in it.flacs:
         probe = cand.probes.get(f.name)
         si = probe.streaminfo if probe is not None and probe.ok else None
         tracks.append({
             "name": f.name, "title": f.tags.get("title") or (probe.tags.get("TITLE") if probe is not None else "")
-            or title_from_name(f.name, artist), "size": f.size, "length": f.length, "format": f.format,
+            or title_from_name(f.name, artist), "size": f.size, "length": f.length, "format": codec or f.format,
             "md5": f.md5,
             "probe": None if probe is None else {
                 "ok": probe.ok, "kind": probe.kind, "detail": probe.detail,

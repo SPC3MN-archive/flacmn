@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from . import download, genre as genre_mod, inventory as inv, matching, names as names_mod, paths, preview, queries, replace as replace_mod, report
+from . import altmedia, download, genre as genre_mod, inventory as inv, matching, names as names_mod, paths, preview, queries, replace as replace_mod, report
 from .genre import GenreSpec
 from .ia_client import IAClient, IAError
 from .pipeline import Candidate, Options, Pipeline
@@ -81,8 +81,8 @@ def cmd_verify(args, client: IAClient) -> int:
     return 0
 
 
-FALLBACKS = {"both": ("wav", "vbr"), "wav": ("wav",), "vbr": ("vbr",), "none": ()}
-MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "mp3": "MP3"}
+FALLBACKS = {"both": queries.ALL_ALT, "lossless": ("wav", "aiff", "m4a", "ape", "wv"), "wav": ("wav",), "vbr": ("vbr",), "none": ()}
+MEDIA_WORD = {"flac": "FLAC", "wav": "WAV", "aiff": "AIFF", "m4a": "M4A", "ape": "APE", "wv": "WavPack", "mp3": "MP3"}
 
 
 def options_from(args, run_dir: Path) -> Options:
@@ -433,8 +433,10 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
             continue
         old = old_album = staging = None
         media = cand.item.media
-        if job.replace and media == "mp3":
-            say(f"error: {identifier}: this upload only has lossy MP3 files, so it cannot replace your album with FLAC")
+        convert = media != "flac" and altmedia.is_lossless(media, cand.alt_stats)
+        lossy = media != "flac" and not convert
+        if job.replace and lossy:
+            say(f"error: {identifier}: this upload only has lossy files, so it cannot replace your album with FLAC")
             exit_code = 2
             continue
         if job.replace:
@@ -457,7 +459,7 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         artist = artist if job.replace else names_mod.canonical_artist(artist, known)
         try:
             res = download.library_get(client, cand.item, library, artist, album, yes=yes, art=art,
-                                       rip=rip, track_names=track_names, folder=staging, media=media, log=say)
+                                       rip=rip, track_names=track_names, folder=staging, media=media, convert=convert, log=say)
         except download.DownloadError as exc:
             say(f"error: {identifier}: {exc}")
             exit_code = 2
@@ -468,17 +470,19 @@ def library_flow(client: IAClient, library: Path, inventory: Optional[str], jobs
         if show_plan:
             print(f"\n{identifier}\n  {artist}  /  {album}   ({source})")
             if job.replace:
-                print(f"  REPLACES: {job.replace}\n            now {old.describe()}  ->  {len(flacs)} {'FLAC' if media != 'mp3' else word}")
+                print(f"  REPLACES: {job.replace}\n            now {old.describe()}  ->  {len(flacs)} {'FLAC' if not lossy else word}")
                 if old.tracks != len(flacs):
                     print(f"  ! the old album has {old.tracks} track(s) and the new one {len(flacs)}: check the names above before saying yes")
                 print("  The old folder goes to the Trash (you can put it back); anything else in it, such as booklets, is kept.")
             else:
                 print(f"  destination: {res.folder}")
-            if media == "wav":
-                print("  These are WAV files. Each is downloaded, checked against archive.org's checksum, encoded to FLAC "
-                      "(lossless, verified as it is encoded) and the WAV removed.")
+            if convert:
+                print(f"  These are {word} files (lossless). Each is downloaded, checked against archive.org's checksum, "
+                      "converted to FLAC (verified as it is converted) and the original removed.")
             elif media == "mp3":
-                print("  ** LOSSY: no FLAC or WAV exists for this album. These are VBR MP3 files and will be saved as MP3. **")
+                print("  ** LOSSY: these are VBR MP3 files and will be saved as MP3. **")
+            elif lossy:
+                print("  ** LOSSY: these are AAC files (.m4a) and will be saved as they are. **")
             print(f"  {len(res.planned)} file(s), {mb(res.total_bytes)}: {len(flacs)} {word}"
                   + (f", cover: {res.cover.name}" if res.cover else ", no cover art")
                   + (f", rip evidence: {rip_files} file(s)" if rip == "keep" else ""))
@@ -1029,8 +1033,9 @@ def add_common(p: argparse.ArgumentParser, deep_default: str = "top") -> None:
 
 def add_find_options(p: argparse.ArgumentParser) -> None:
     p.add_argument("--fallback", choices=list(FALLBACKS), default="both",
-                   help="when no FLAC is found, look for WAV (lossless, converted to FLAC when saved) and/or VBR MP3 "
-                        "(lossy, saved as MP3): both (default), wav, vbr or none")
+                   help="when no FLAC is found, look for other formats: both (default: every lossless format, WAV, AIFF, "
+                        "ALAC/AAC .m4a, APE and WavPack, converted to FLAC when saved, and lossy AAC and VBR MP3, kept as "
+                        "they are), lossless, wav, vbr or none")
     p.add_argument("--rip-only", action="store_true", help="only items that ship a rip log or cue sheet")
     p.add_argument("--top", type=int, default=3, help="candidates listed per request (default 3)")
     p.add_argument("--max-candidates", type=int, default=10, help="search hits to inspect per request (default 10)")
@@ -1072,7 +1077,7 @@ def main(argv=None) -> int:
     r.add_argument("items", nargs="*", help='album folders ("Artist/Album" in the library, or a path) or "Artist - Album" requests')
     r.add_argument("--scan", action="store_true", help="list the albums in the library that have audio but no FLAC, and stop")
     add_find_options(r)
-    r.set_defaults(fallback="wav")            # replacing an MP3 album with another MP3 is not the point
+    r.set_defaults(fallback="lossless")       # replacing an MP3 album with another lossy copy is not the point
 
     g = sub.add_parser("genre", help="discover albums by genre instead of by name")
     g.add_argument("genre", help='e.g. shoegaze, "post-punk", ambient (see genres.yml; any phrase works)')

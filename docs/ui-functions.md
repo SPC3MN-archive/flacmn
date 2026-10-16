@@ -3,12 +3,15 @@
 ## Search
 
 - **Search box**: "Artist – Album" (any dash with spaces round it), or just an artist to list their albums.
-- **Search button**: searches archive.org for FLAC, WAV and MP3 uploads at once, then quick-tests the top few results automatically.
-- **Format filters (FLAC / WAV / MP3)**: show or hide each format in the results without searching again.
+- **Search button**: searches archive.org for every format at once (FLAC, WAV, AIFF, M4A, Monkey's Audio, WavPack, MP3),
+  then quick-tests the top few results automatically. An M4A is read to tell ALAC (lossless) from AAC (lossy):
+  archive.org labels both "Apple Lossless Audio", so an unread M4A shows Not checked yet.
+- **Format filters (FLAC / WAV / M4A / MP3 / Other)**: show or hide each format in the results without searching again;
+  Other is AIFF, Monkey's Audio (APE) and WavPack.
 - **Hide albums I have**: hides results that match an album in your library.
 - **Sort**: by quality (default), by how well it matches your search, or by popularity on archive.org. The order holds
   while the automatic checks finish (rows update in place); **Re-sort** appears when the checks have changed the ranking.
-- **Search notes**: other uploads by the artist that didn't match, albums that exist only in other lossless formats (ALAC, APE), and how many results were left out and why (live recordings, singles).
+- **Search notes**: other uploads by the artist that didn't match, albums that exist only in Shorten (SHN), which isn't searched, and how many results were left out and why (live recordings, singles).
 
 ## Results (the list block on the left, one row per upload, best quality first)
 
@@ -69,7 +72,9 @@
 
 - **Destination**: the folder it will create, e.g. Music/Miles Davis/Kind of Blue (1959)/.
 - **File names**: 01 - So What.flac (1-01 - … for multi-disc), plus cover.jpg.
-- **Size and warnings**: download size, lossy notice for MP3, "folder already exists", "no cover art".
+- **Lossless becomes FLAC**: WAV, AIFF, ALAC, APE and WavPack are converted to FLAC as they are saved, and checked
+  sample for sample (`flac --verify` and the length); MP3 and AAC are kept as they are, with their tags.
+- **Size and warnings**: download size, lossy notice for MP3 and AAC, "folder already exists", "no cover art".
 - **Add to queue button**: adds the album to the Download Queue.
 
 ## Download Queue
@@ -160,7 +165,7 @@
 ## Settings
 
 - **Library folder**: where albums are saved and scanned (local folder, USB drive or Volumio network share).
-- **Search options**: include live recordings; free licences only; only uploads with a rip log or cue sheet; all formats (off = FLAC first, WAV/MP3 only if there's no FLAC).
+- **Search options**: include live recordings; free licences only; only uploads with a rip log or cue sheet; all formats (off = FLAC first, the other formats only if there's no FLAC).
 - **Cover art**: save the front cover only, every image in the upload, or none.
 - **Rip files**: skip or keep logs and cue sheets (skip by default so Volumio doesn't list albums twice).
 - **Art options**: embed the cover in the files, write cover.jpg, use the Cover Art Archive when the upload has no cover.

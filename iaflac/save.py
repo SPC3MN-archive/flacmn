@@ -20,7 +20,8 @@ from .events import CancelCheck, Progress
 from .model import track_files
 from .tagging import AlbumMeta
 
-MEDIA_WORD = {"flac": "FLAC", "wav": "WAV → FLAC", "mp3": "MP3 (lossy)"}
+MEDIA_WORD = {"flac": "FLAC", "wav": "WAV → FLAC", "aiff": "AIFF → FLAC", "ape": "APE → FLAC", "wv": "WavPack → FLAC",
+              "m4a": "M4A", "mp3": "MP3 (lossy)"}
 
 
 @dataclass
@@ -95,6 +96,13 @@ def _check_meta(meta: AlbumMeta, item) -> list:
     return problems
 
 
+def _converts(cand) -> bool:
+    """Is this upload converted to FLAC when saved? Every lossless format is; an .m4a only when it holds ALAC."""
+    from .altmedia import is_lossless
+    media = cand.item.media
+    return media != "flac" and is_lossless(media, cand.alt_stats)
+
+
 def plan_save(cand, library: Path, meta: Optional[AlbumMeta] = None, opts: Optional[SaveOptions] = None) -> SavePlan:
     """What saving `cand` would do, without touching the disk. `meta` defaults to tagging.from_candidate(cand).
     Raises ValueError when the names cannot make a folder, or download.DownloadError for an unsafe destination."""
@@ -106,9 +114,10 @@ def plan_save(cand, library: Path, meta: Optional[AlbumMeta] = None, opts: Optio
         raise ValueError("; ".join(problems))
     library = Path(library)
     folder = tagging.album_folder(library, meta)
+    convert = _converts(cand)
     res = download.plan_library(item, library, meta.albumartist, meta.album, art=opts.art, rip=opts.rip,
-                                track_names="keep", folder=folder, media=item.media)
-    ext = {"wav": ".flac"}.get(item.media)
+                                track_names="keep", folder=folder, media=item.media, convert=convert)
+    ext = ".flac" if convert else None
     ext_of = {t.source: ext or Path(t.source).suffix for t in meta.tracks}
     names = tagging.planned_names(meta, ext_of)
     by_source = {pf.info.name: pf for pf in res.planned}
@@ -130,6 +139,8 @@ def plan_save(cand, library: Path, meta: Optional[AlbumMeta] = None, opts: Optio
                              " (match it on MusicBrainz to fetch one from the Cover Art Archive)"))
     if item.media == "mp3":
         plan.warnings.append("lossy: these are MP3 files and stay MP3")
+    elif item.media == "m4a" and not convert:
+        plan.warnings.append("lossy: these are AAC files (.m4a) and stay AAC")
     if plan.folder_exists:
         plan.warnings.append(f"{folder} already exists and has files: saving resumes an unfinished save, "
                              "or stops rather than mix two albums")
@@ -146,7 +157,7 @@ def apply_save(client, cand, plan: SavePlan, opts: Optional[SaveOptions] = None,
     emit = progress or (lambda e: None)
     res = download.library_get(client, item, library, meta.albumartist, meta.album, yes=True, art=opts.art,
                                rip=opts.rip, track_names="keep", folder=folder, media=item.media,
-                               progress=progress, cancel=cancel)
+                               convert=_converts(cand), progress=progress, cancel=cancel)
     out = SaveResult(ok=False, folder=folder, downloaded=res.downloaded, already_had=res.already_had,
                      failures=list(res.failures), problems=list(res.warnings))
     if res.failures:

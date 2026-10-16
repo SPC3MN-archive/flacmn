@@ -15,8 +15,7 @@ BASE = "mediatype:audio AND format:Flac AND -access-restricted-item:true"
 # IA labels rip sidecars as item formats, so "ships a rip log or cue sheet" can be filtered server-side (only when
 # the user asks for it: any genuine lossless source is as welcome as a CD rip)
 RIP_SHAPED = '(format:Log OR format:"Cue Sheet")'
-OTHER_LOSSLESS_Q = ('(format:"Apple Lossless Audio" OR format:WAVE OR format:"Monkey\'s Audio" '
-                    'OR format:WavPack OR format:Shorten)')
+OTHER_LOSSLESS_Q = "format:Shorten"          # lossless formats that are not searched for (the rest are: ALT_FORMAT)
 SEPARATOR = re.compile(r"\s+(?:--|::|[-–—])\s+|\t")
 
 
@@ -116,17 +115,21 @@ def other_lossless_rung(artist: str, album: str) -> Rung:
     q = f"mediatype:audio AND -access-restricted-item:true AND {OTHER_LOSSLESS_Q} AND {_artist_clause(clean_title(artist))}"
     if album:
         q += f" AND title:{phrase(clean_title(album))}"
-    return Rung("other lossless formats (ALAC/WAV/APE/WavPack/SHN)", q, rows=10)
+    return Rung("other lossless formats (SHN)", q, rows=10)
 
 
-ALT_FORMAT = {"wav": "format:WAVE", "vbr": 'format:"VBR MP3"'}
-ALT_NAME = {"wav": "WAV", "vbr": "VBR MP3"}
-ALT_MEDIA = {"wav": "wav", "vbr": "mp3"}          # search key -> ItemInfo.media
+# every format looked for next to FLAC, lossless first: search key -> archive.org format field, name, ItemInfo.media
+ALT_FORMAT = {"wav": "format:WAVE", "aiff": "format:AIFF",
+              "m4a": '(format:"Apple Lossless Audio" OR format:"MPEG-4 Audio")',
+              "ape": 'format:"Monkey\'s Audio"', "wv": "format:WavPack", "vbr": 'format:"VBR MP3"'}
+ALT_NAME = {"wav": "WAV", "aiff": "AIFF", "m4a": "M4A", "ape": "APE", "wv": "WavPack", "vbr": "VBR MP3"}
+ALT_MEDIA = {"wav": "wav", "aiff": "aiff", "m4a": "m4a", "ape": "ape", "wv": "wv", "vbr": "mp3"}
+ALL_ALT = ("wav", "aiff", "m4a", "ape", "wv", "vbr")
 
 
 def alt_rungs(artist: str, album: str, media: str) -> list:
-    """The fallback when no FLAC exists: uploads that have WAV files (lossless, converted to FLAC when saved), or
-    IA's 'VBR MP3' files (lossy, saved as MP3). Same artist/title matching as for FLAC."""
+    """Uploads in another format: WAV, AIFF, ALAC (.m4a), APE or WavPack (lossless, converted to FLAC when saved), or
+    AAC (.m4a) and IA's 'VBR MP3' files (lossy, kept as they are). Same artist/title matching as for FLAC."""
     artist, album = clean_title(artist), clean_title(album)
     base = f"mediatype:audio AND -access-restricted-item:true AND {ALT_FORMAT[media]}"
     name = ALT_NAME[media]

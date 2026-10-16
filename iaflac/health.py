@@ -45,7 +45,10 @@ from .events import CancelCheck, check
 from .library_index import AUDIO, LOSSLESS, YEAR_SUFFIX, _majority, album_folders
 from .model import natural_key
 from .names import clean_album_title, folder_component
+from .altmedia import is_lossless
+from .download import convert_to_flac, is_lossless_file
 from .quality import HIGH_MP3_KBPS
+from .queries import ALL_ALT
 from .tagging import COVER_NAMES, DISC_DIR, folder_cover, number_from_name, parse_number, read_track, title_from_name
 
 MISSING, QUALITY, ART, DUPES = "missing_tracks", "low_quality", "missing_art", "duplicates"
@@ -798,7 +801,7 @@ def suggestion(h: AlbumHealth, cand) -> dict:
 
     item = cand.item
     tracks = item.flacs
-    lossless = item.media in ("flac", "wav")
+    lossless = item.media == "flac" or is_lossless(item.media, cand.alt_stats)
     kbps = upload_kbps(tracks)
     provides = [{"disc": m["disc"], "track": m["track"], "title": m["title"] or _file_title(f), "file": f.name,
                  "size": f.size, "format": PurePosixPath(f.name).suffix.lstrip(".").upper()}
@@ -867,7 +870,7 @@ def search_archive(client, h: AlbumHealth, *, mb_client=None, opts=None, found: 
     from .pipeline import Options, Pipeline
     from .queries import Want
 
-    opts = opts or Options(top=50, deep="none", max_candidates=10, fallback=("wav", "vbr"), all_formats=True)
+    opts = opts or Options(top=50, deep="none", max_candidates=10, fallback=ALL_ALT, all_formats=True)
     pipe = Pipeline(client, progress=progress, cancel=cancel)
     cands, notes, seen = [], [], set()
     titles = search_titles(h.album)
@@ -978,25 +981,13 @@ def _album_tags(h: AlbumHealth, disc: int, track: int, title: str, source_url: s
     return {k: v for k, v in tags.items() if v}
 
 
-def _encode_wav(wav: Path, out: Path) -> None:
-    flac = binaries.flac()
-    if not flac:
-        raise HealthError("flac is not installed, so a WAV track cannot be added as FLAC")
-    proc = subprocess.run([flac, "--best", "--verify", "-s", "-f", "-o", str(out), str(wav)], capture_output=True,
-                          **binaries.NO_WINDOW)
-    if proc.returncode != 0 or not out.exists():
-        out.unlink(missing_ok=True)
-        msg = next((ln.strip() for ln in proc.stderr.decode("utf-8", "replace").splitlines() if ln.strip()), "flac failed")
-        raise HealthError(f"{wav.name} could not be encoded to FLAC ({msg})")
-
-
 def fetch_tracks(client, root: Path, h: AlbumHealth, item, files: list, *, progress: Optional[Callable[[dict], None]] = None,
                  cancel: Optional[CancelCheck] = None) -> dict:
     """Download chosen tracks of an archive.org upload into the album folder. Each file goes to a hidden .part name
     in the album folder, must match archive.org's checksum (and pass `flac -t` when it is FLAC), is tagged with the
     album's names, and only then gets its final name. Nothing that is already in the folder is touched."""
     from .download import PlannedFile, _fetch, flac_test, matches_manifest
-    from .tagging import prepare_cover, write_flac, write_mp3
+    from .tagging import prepare_cover, write_flac, write_m4a, write_mp3
 
     emit = progress or (lambda e: None)
     folder = (Path(root) / h.folder).resolve()
@@ -1032,9 +1023,11 @@ def fetch_tracks(client, root: Path, h: AlbumHealth, item, files: list, *, progr
                 ok, msg = flac_test(staging)
                 if ok is False:
                     raise HealthError(f"{f.name} failed the decode test: {msg}")
-            if staging.suffix in (".wav", ".wave"):
+            if is_lossless_file(staging):                          # any lossless format is added as FLAC
                 encoded = staging.with_suffix(".flac")
-                _encode_wav(staging, encoded)
+                err = convert_to_flac(staging, encoded)
+                if err:
+                    raise HealthError(f"{staging.name} could not be converted to FLAC: {err}")
                 staging.unlink()
                 staging = encoded
             tags = _album_tags(h, p["disc"], p["track"], p["title"], item.url)
@@ -1042,6 +1035,8 @@ def fetch_tracks(client, root: Path, h: AlbumHealth, item, files: list, *, progr
                 write_flac(staging, tags, cover)
             elif staging.suffix == ".mp3":
                 write_mp3(staging, tags, cover)
+            elif staging.suffix == ".m4a":
+                write_m4a(staging, tags, cover)
             final.parent.mkdir(parents=True, exist_ok=True)
             if final.exists():
                 raise HealthError(f"{final.name} appeared in the album folder meanwhile; it was left alone")
@@ -1136,7 +1131,7 @@ def replace_album(client, root: Path, h: AlbumHealth, cand, *, opts=None, mb_cli
     from . import save, tagging
     from .replace import ReplaceError, staging_folder, swap_in
 
-    lossless, kbps = cand.item.media in ("flac", "wav"), upload_kbps(cand.item.flacs)
+    lossless, kbps = cand.item.media == "flac" or is_lossless(cand.item.media, cand.alt_stats), upload_kbps(cand.item.flacs)
     if complete and not not_worse(h, lossless, kbps):
         raise HealthError("that upload is lower quality than your copy, so it does not replace it")
     if not lossless and not complete and not is_upgrade(h, False, kbps):

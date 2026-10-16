@@ -8,7 +8,7 @@ import { h, clear, icon, fmtBytes, toast, errorText } from "./ui.js";
 const state = {
   searchId: null, jobId: null, busy: false, stage: "",
   results: [], notes: null, selected: null, order: [], stale: false,
-  filters: { flac: true, wav: true, mp3: true, hideOwned: false },
+  filters: { flac: true, wav: true, m4a: true, mp3: true, other: true, hideOwned: false },
   sort: "quality",
 };
 let els = {};
@@ -46,7 +46,8 @@ export function mountSearch(card, { select }) {
       h("div.row", h("label.sr-only", { for: "search-q" }, "Artist and album"),
         h("span.field.grow", icon("search"), els.q), els.go),
       h("div.pills", { role: "group", "aria-label": "Formats" },
-        pill("flac", "FLAC"), pill("wav", "WAV"), pill("mp3", "MP3"), pill("hideOwned", "Hide albums I have")),
+        pill("flac", "FLAC"), pill("wav", "WAV"), pill("m4a", "M4A"), pill("mp3", "MP3"),
+        h("span", { title: "AIFF, Monkey's Audio (APE) and WavPack" }, pill("other", "Other")), pill("hideOwned", "Hide albums I have")),
       h("div.row.list-meta", els.count, h("span.grow"), els.resort, els.sort),
       els.notes),
     els.rows);
@@ -161,18 +162,20 @@ function renderNotes() {
   const r = state.notes, parts = [];
   const near = count(r.near_misses), other = count(r.lossless_other), out = count(r.excluded);
   if (shown !== all) parts.push(`${all - shown} hidden by the filters`);
-  if (other) parts.push(`${other} in other lossless formats (ALAC, APE)`);
+  if (other) parts.push(`${other} in Shorten (SHN), which isn't searched`);
   if (near) parts.push(`${near} near miss${near === 1 ? "" : "es"}`);
   if (out) parts.push(`${out} left out`);
   const title = [...(r.notes || []), ...(r.near_misses || []).map((m) => (typeof m === "string" ? m : JSON.stringify(m)))].join("\n");
   clear(n, parts.length ? h("span", { title }, parts.join(" · ")) : null);
 }
 
+// which format filter each upload's format answers to: AIFF, APE and WavPack are "Other"
+const FILTER_OF = { flac: "flac", wav: "wav", m4a: "m4a", mp3: "mp3", aiff: "other", ape: "other", wv: "other" };
+
 function visible() {
   const f = state.filters, at = new Map(state.order.map((id, i) => [id, i]));
   return state.results
-    .filter((r) => ((r.media === "flac" && f.flac) || (r.media === "wav" && f.wav) || (r.media === "mp3" && f.mp3) ||
-      !["flac", "wav", "mp3"].includes(r.media)) && (!f.hideOwned || !r.in_library))
+    .filter((r) => (f[FILTER_OF[r.media] || "other"]) && (!f.hideOwned || !r.in_library))
     .sort((a, b) => (at.get(a.identifier) ?? 1e9) - (at.get(b.identifier) ?? 1e9));
 }
 
@@ -180,6 +183,7 @@ function visible() {
 export function verdictOf(r) {
   const q = r.quality;
   if (q.rank >= 3 || r.tier === "D") return ["Failed", "bad"];
+  if (r.media === "m4a" && (r.tier === "?" || !r.tier)) return ["Not checked yet", "wait"];   // ALAC or AAC: not known until read
   if (!q.lossless || r.tier === "L") return ["Lossy", "bad"];
   const base = /hi-?res/i.test(q.label) ? "Hi-res" : "Lossless";
   if (r.tier === "?" || !r.tier) return ["Not checked yet", "wait"];
@@ -216,7 +220,7 @@ function renderRows() {
       : h("li.empty", icon(state.notes ? "search" : "music"),
         h("b", state.notes ? "No uploads to show" : "Search the Internet Archive"),
         h("span", state.notes ? "Try a shorter album title, or turn the format filters back on."
-          : "Type an artist and album, like Radiohead – OK Computer. Every format is ranked together, best quality first.")));
+          : "Type an artist and album, like Radiohead – OK Computer. Every format (FLAC, WAV, AIFF, ALAC, APE, WavPack, AAC, MP3) is ranked together, best quality first; lossless ones are saved as FLAC.")));
     return;
   }
   const best = state.sort === "quality" && rows[0].quality.lossless && ["A", "B"].includes(rows[0].tier) ? rows[0].identifier : null;

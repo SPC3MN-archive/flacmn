@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
+from urllib.parse import quote
 
 from .. import preview, quality, report
 from ..download import pick_cover
@@ -47,13 +48,15 @@ def candidate_summary(cand, want=None, library=None) -> dict:
     bare = YEAR_SUFFIX.sub("", album or "")          # "Kind of Blue (1959)" is the library's "Kind of Blue"
     owned = library.find(artist, bare or album) if library is not None and artist and album else None
     runtime = it.runtime_seconds
+    front = pick_cover(it)
     return {
         "identifier": it.identifier, "url": it.url, "title": it.title, "creator": it.creator, "year": it.year,
         "artist": artist, "album": album, "media": it.media,
         "quality": q.to_dict(), "tier": cand.tier, "levels": list(cand.levels),
         "match": _match(cand, want),
         "tracks": len(it.flacs), "runtime_s": round(runtime) if runtime else None, "bytes": it.flac_bytes,
-        "downloads": it.downloads, "rip_files": preview.rip_files(it), "cover": pick_cover(it) is not None,
+        "downloads": it.downloads, "rip_files": preview.rip_files(it), "cover": front is not None,
+        "cover_url": f"https://archive.org/download/{it.identifier}/{quote(front.name)}" if front is not None else None,
         "licence": short_licence(it.licenseurl), "free": it.is_free, "live": it.is_live,
         "collections": it.collections[:4], "source": preview.source_label(it),
         "claims": preview.description_hints(it), "other_lossless": it.other_lossless,

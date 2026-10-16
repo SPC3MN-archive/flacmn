@@ -61,6 +61,7 @@ class Candidate:
     notes: list = field(default_factory=list)
     genre_conf: str = ""
     alt_stats: Optional[altmedia.AltStats] = None            # WAV / VBR MP3 candidates (no FLAC exists): header facts
+    left_out: str = ""                                       # why the search left it out (live, a single...), if it did
 
     @property
     def tier(self) -> str:
@@ -103,6 +104,7 @@ class WantResult:
     near_misses: list = field(default_factory=list)    # [{identifier, title, creator, downloads}]
     lossless_other: list = field(default_factory=list)
     excluded: dict = field(default_factory=dict)       # reason -> count
+    left_out: list = field(default_factory=list)       # the excluded uploads that have audio, to show on request
     notes: list = field(default_factory=list)
     found: list = field(default_factory=list)          # search results (metadata only), listed before any testing
     untested: list = field(default_factory=list)       # found but not chosen for testing
@@ -346,9 +348,12 @@ class Pipeline:
                 reason = "not album-shaped (single, or very short)"
             if reason:
                 res.excluded[reason] = res.excluded.get(reason, 0) + 1
-            else:
-                cand.match = matching.match_fields(want.artist, want.album, cand.item.title, cand.item.creator)
+            cand.match = matching.match_fields(want.artist, want.album, cand.item.title, cand.item.creator)
+            if not reason:
                 res.found.append(cand)
+            elif cand.item.flacs and all(c.identifier != cand.identifier for c in res.left_out):
+                cand.left_out = reason
+                res.left_out.append(cand)
 
     def _alt_search(self, res: WantResult, opts: Options, media: Optional[tuple] = None, instead: bool = True) -> None:
         """Search for uploads in the other formats (WAV, AIFF, M4A, APE, WavPack, then VBR MP3): when no FLAC matched

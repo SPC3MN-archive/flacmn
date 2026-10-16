@@ -131,6 +131,10 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
     def results(search_id: str):
         return core.results(search_id)
 
+    @api.post("/api/search/{search_id}/test")
+    def test_results(search_id: str, body: dict = Body(default={})):
+        return core.test_results(search_id, body.get("identifiers"))
+
     @api.get("/api/items/{identifier}")
     def item(identifier: str):
         return core.detail(identifier)

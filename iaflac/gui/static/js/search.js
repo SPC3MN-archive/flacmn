@@ -9,6 +9,8 @@ const state = {
   searchId: null, jobId: null, busy: false, stage: "",
   results: [], notes: null, selected: null, order: [], stale: false,
   filters: { flac: true, wav: true, m4a: true, mp3: true, other: true, hideOwned: false },
+  showLeftOut: false,
+  queued: new Set(),                 // results sent for a quick test and not back yet                // the uploads the search left out (live, singles), listed last when shown
   sort: "quality",
 };
 let els = {};
@@ -66,6 +68,7 @@ export function mountSearch(card, { select }) {
     const i = state.results.findIndex((r) => r.identifier === e.candidate.identifier);
     if (i >= 0) {
       state.results[i] = e.candidate;
+      if (e.candidate.tier !== "?") state.queued.delete(e.candidate.identifier);
       state.stale = state.sort === "quality";
       renderNotes();
       renderRows();
@@ -115,7 +118,7 @@ export function searchFor(artist, album) {
 async function run() {
   const { artist, album } = splitQuery(els.q.value);
   if (!artist && !album) { els.q.focus(); return; }
-  Object.assign(state, { busy: true, stage: "Searching archive.org…", results: [], notes: null, order: [], stale: false });
+  Object.assign(state, { busy: true, stage: "Searching archive.org…", results: [], notes: null, order: [], stale: false, queued: new Set() });
   renderRows();                      // first: it puts up the loading logo the stage text goes under
   renderNotes();
   els.go.disabled = true;
@@ -140,6 +143,36 @@ async function run() {
   }
 }
 
+/** Quick-test the visible results not checked yet, best first: the search checks every result it keeps, so this is
+ *  for the left-out ones once they are shown. */
+async function checkVisible() {
+  const ids = visible().filter((r) => r.tier === "?" && !state.queued.has(r.identifier)).map((r) => r.identifier);
+  if (!ids.length || !state.searchId) return;
+  ids.forEach((id) => state.queued.add(id));
+  renderNotes();
+  try {
+    const r = await api(`/search/${state.searchId}/test`, { method: "POST", body: { identifiers: ids } });
+    if (r.job_id) await waitJob(r.job_id);
+  } catch (e) {
+    toast(`Checking failed: ${errorText(e)}`, "bad");
+  } finally {
+    ids.forEach((id) => state.queued.delete(id));
+    renderNotes();
+    renderRows();
+  }
+}
+
+/** Opening an unchecked result checks it straight away. */
+function checkOne(r) {
+  if (r.tier !== "?" || state.queued.has(r.identifier)) return;
+  state.queued.add(r.identifier);
+  renderNotes();
+  api(`/items/${encodeURIComponent(r.identifier)}/test`, { method: "POST", body: { level: "quick" } })
+    .then((j) => j.job_id && waitJob(j.job_id))
+    .catch(() => {})
+    .finally(() => { state.queued.delete(r.identifier); renderNotes(); });
+}
+
 function count(x) {
   if (!x) return 0;
   if (Array.isArray(x)) return x.length;
@@ -148,7 +181,8 @@ function count(x) {
 }
 
 function renderNotes() {
-  const all = state.results.length, shown = visible().length, checked = state.results.filter((r) => r.tier !== "?").length;
+  const kept = state.results.filter((r) => !r.left_out);
+  const all = kept.length, shown = visible().filter((r) => !r.left_out).length, checked = kept.filter((r) => r.tier !== "?").length;
   els.count.textContent = state.busy ? "Searching" : all ? `${all} upload${all === 1 ? "" : "s"} · ${checked} checked` : "Uploads";
   els.resort.hidden = !state.stale;
   const n = els.notes;
@@ -164,9 +198,30 @@ function renderNotes() {
   if (shown !== all) parts.push(`${all - shown} hidden by the filters`);
   if (other) parts.push(`${other} in Shorten (SHN), which isn't searched`);
   if (near) parts.push(`${near} near miss${near === 1 ? "" : "es"}`);
-  if (out) parts.push(`${out} left out`);
   const title = [...(r.notes || []), ...(r.near_misses || []).map((m) => (typeof m === "string" ? m : JSON.stringify(m)))].join("\n");
-  clear(n, parts.length ? h("span", { title }, parts.join(" · ")) : null);
+  const why = out ? leftOut(r.excluded) : "";
+  const listed = state.results.some((x) => x.left_out);
+  clear(n, parts.length ? h("span", { title }, parts.join(" · ")) : null,
+    out ? h("span", parts.length ? " · " : null, `${out} left out${why ? ` (${why})` : ""}`,
+      listed ? h("button.btn.ghost.sm", { type: "button", "aria-pressed": String(state.showLeftOut),
+        onclick: () => { state.showLeftOut = !state.showLeftOut; renderNotes(); renderRows(); if (state.showLeftOut) checkVisible(); } },
+        state.showLeftOut ? "Hide" : "Show") : null) : null);
+}
+
+// why an upload was left out, in a word or two
+function leftOutWord(reason) {
+  if (!reason) return "";
+  return /^live/.test(reason) ? "Live" : /album-shaped|fewer than/.test(reason) ? "Single or EP"
+    : /licence/.test(reason) ? "Not freely licensed" : /^no /.test(reason) ? "No audio files" : reason;
+}
+
+// why uploads were left out, in a few words: "15 live, 3 singles or EPs"
+function leftOut(excluded) {
+  if (!excluded || typeof excluded !== "object" || Array.isArray(excluded)) return "";
+  const word = (reason) => { const w = leftOutWord(reason); return w === "Live" ? "live" : w === "Single or EP" ? "singles or EPs" : w.toLowerCase(); };
+  const by = {};
+  for (const [reason, n] of Object.entries(excluded)) by[word(reason)] = (by[word(reason)] || 0) + n;
+  return Object.entries(by).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(", ");
 }
 
 // which format filter each upload's format answers to: AIFF, APE and WavPack are "Other"
@@ -175,8 +230,8 @@ const FILTER_OF = { flac: "flac", wav: "wav", m4a: "m4a", mp3: "mp3", aiff: "oth
 function visible() {
   const f = state.filters, at = new Map(state.order.map((id, i) => [id, i]));
   return state.results
-    .filter((r) => (f[FILTER_OF[r.media] || "other"]) && (!f.hideOwned || !r.in_library))
-    .sort((a, b) => (at.get(a.identifier) ?? 1e9) - (at.get(b.identifier) ?? 1e9));
+    .filter((r) => (f[FILTER_OF[r.media] || "other"]) && (!f.hideOwned || !r.in_library) && (state.showLeftOut || !r.left_out))
+    .sort((a, b) => (!!a.left_out - !!b.left_out) || (at.get(a.identifier) ?? 1e9) - (at.get(b.identifier) ?? 1e9));
 }
 
 /** A result's verdict in plain words, with its chip colour. */
@@ -208,7 +263,7 @@ function sourceShort(s) {
 
 function meta(r) {
   const src = sourceShort(r.source), log = (r.rip_files || []).some((f) => /log/i.test(f));
-  return [r.quality.format || r.media.toUpperCase(), src ? src + (log ? " with log" : "") : log ? "rip log" : "",
+  return [leftOutWord(r.left_out), r.quality.format || r.media.toUpperCase(), src ? src + (log ? " with log" : "") : log ? "rip log" : "",
     r.tracks ? `${r.tracks} tracks` : "", r.year, r.in_library ? "In your library" : ""].filter(Boolean).join(" · ");
 }
 
@@ -223,12 +278,12 @@ function renderRows() {
           : "Type an artist and album, like Radiohead – OK Computer. Every format (FLAC, WAV, AIFF, ALAC, APE, WavPack, AAC, MP3) is ranked together, best quality first; lossless ones are saved as FLAC.")));
     return;
   }
-  const best = state.sort === "quality" && rows[0].quality.lossless && ["A", "B"].includes(rows[0].tier) ? rows[0].identifier : null;
+  const best = state.sort === "quality" && !rows[0].left_out && rows[0].quality.lossless && ["A", "B"].includes(rows[0].tier) ? rows[0].identifier : null;
   clear(els.rows, ...rows.map((r) => {
     const [verdict, kind] = verdictOf(r);
-    return h("li", h("button.list-row" + (state.selected === r.identifier ? ".on" : ""), {
+    return h("li", h("button.list-row" + (state.selected === r.identifier ? ".on" : "") + (r.left_out ? ".left-out" : ""), {
       type: "button", "aria-current": state.selected === r.identifier ? "true" : null, title: r.identifier,
-      onclick: () => { state.selected = r.identifier; renderRows(); onSelect(r); },
+      onclick: () => { state.selected = r.identifier; renderRows(); onSelect(r); checkOne(r); },
     },
       h("span.list-main",
         h("span.list-title", r.identifier === best ? h("span.best", "Best match") : null, h("b.ellipsis", nameOf(r))),

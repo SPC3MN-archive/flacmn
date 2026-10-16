@@ -7,6 +7,7 @@ download queue and settings are kept on disk.
 from __future__ import annotations
 
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -45,12 +46,15 @@ class NotFound(LookupError):
     pass
 
 
+QUICK_TEST_AT_ONCE = 3                 # results quick-tested at the same time after a search
+
 @dataclass
 class SearchSession:
     id: str
     want: Optional[Want] = None
     result: object = None             # WantResult
     identifiers: list = field(default_factory=list)
+    left_out: list = field(default_factory=list)       # identifiers the search left out (live, singles), shown on request
     created: float = field(default_factory=time.time)
     done: bool = False
 
@@ -269,7 +273,9 @@ class App:
     def _ranked(self, sess: SearchSession) -> list:
         with self._lock:
             cands = [self.cands[i] for i in sess.identifiers if i in self.cands]
-        return [serialize.candidate_summary(c, sess.want, self.library) for c in quality.rank(cands)]
+            left = [self.cands[i] for i in sess.left_out if i in self.cands and i not in sess.identifiers]
+        # the uploads the search left out come last, whatever their quality: they are shown only on request
+        return [serialize.candidate_summary(c, sess.want, self.library) for c in quality.rank(cands) + quality.rank(left)]
 
     # ---- search ------------------------------------------------------------------------------------------------
     def search(self, text: str = "", artist: str = "", album: str = "") -> dict:
@@ -283,12 +289,16 @@ class App:
             res = pipe.search_one(want, self.options())
             sess.result = res
             sess.identifiers = [c.identifier for c in res.found]
+            found = set(sess.identifiers)
+            left = [c for c in res.left_out if c.identifier not in found]
+            sess.left_out = [c.identifier for c in left]
+            self._remember(left, want)
             self._remember(res.found, want)
             sess.done = True
             self.broadcast({"type": "results", "search_id": sess.id, "results": self._ranked(sess),
                             "notes": res.notes, "near_misses": res.near_misses, "lossless_other": res.lossless_other,
                             "excluded": res.excluded})
-            top = quality.rank(res.found)[: self.settings.auto_test_top]
+            top = quality.rank(res.found)                  # every result is checked, best first
             if top:
                 self._quick_test(top, want, sess)
             return {"search_id": sess.id, "count": len(res.found)}
@@ -299,12 +309,17 @@ class App:
     def _quick_test(self, cands: list, want, sess: Optional[SearchSession]) -> Job:
         def run(job: Job):
             pipe = self.pipeline(job)
-            for c in cands:
+
+            def one(c):
                 if job.cancelled():
-                    break
+                    return
                 if c.tier == "?":
                     pipe.inspect(c, want)
                 self.broadcast({"type": "candidate", "candidate": serialize.candidate_summary(c, want, self.library)})
+
+            # a few at a time, best first: each reads only file headers and the rip log, so a whole search is quick
+            with ThreadPoolExecutor(QUICK_TEST_AT_ONCE) as pool:
+                list(pool.map(one, cands))
             if sess is not None:
                 self.broadcast({"type": "results", "search_id": sess.id, "results": self._ranked(sess)})
             return {"tested": [c.identifier for c in cands]}
@@ -331,6 +346,23 @@ class App:
             raise ValueError("level must be quick")
         c = self.cand(identifier)
         return {"job_id": self._quick_test([c], self.wants.get(identifier), None).id}
+
+    def test_results(self, search_id: str, identifiers: Optional[list] = None) -> dict:
+        """Quick-test the results not checked yet (only the top few are checked after a search): the ones named, in
+        that order, or every unchecked result the search kept, best first."""
+        sess = self.searches.get(search_id)
+        if sess is None:
+            raise NotFound(f"no search {search_id}")
+        with self._lock:
+            known = set(sess.identifiers) | set(sess.left_out)
+            if identifiers is None:
+                cands = quality.rank([self.cands[i] for i in sess.identifiers if i in self.cands])
+            else:
+                cands = [self.cands[i] for i in identifiers if i in known and i in self.cands]
+        cands = [c for c in cands if c.tier == "?"]
+        if not cands:
+            return {"job_id": None, "count": 0}
+        return {"job_id": self._quick_test(cands, sess.want, sess).id, "count": len(cands)}
 
     # ---- metadata ----------------------------------------------------------------------------------------------
     def meta(self, identifier: str, fresh: bool = False) -> dict:

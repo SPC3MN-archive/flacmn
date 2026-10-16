@@ -635,6 +635,8 @@ button.link { border: 0; background: none; padding: 0; color: var(--primary); fo
             background: transparent; text-align: left; cursor: pointer; color: var(--text); }
 .list-row:hover { background: var(--surface-alt); }
 .list-row.on { background: var(--tint); box-shadow: inset 3px 0 var(--primary); }
+.list-row.left-out .list-main { opacity: .72; }
+.list-note .btn.sm { margin-left: var(--sp-2); vertical-align: baseline; }
 .list-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .list-main > b, .list-title b { font-size: var(--fs-md); }
 .list-title { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }

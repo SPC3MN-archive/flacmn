@@ -13,7 +13,7 @@ from .. import paths
 @dataclass
 class Settings:
     library: str = ""                      # where albums are saved (a local folder, a USB drive or a mounted Volumio share)
-    auto_test_top: int = 4                 # quick header test (V1) of this many top results after every search
+    auto_test_top: int = 4                 # no longer used: every result is quick-tested after a search (kept so old settings load)
     max_candidates: int = 10               # search hits read per format
     include_live: bool = False
     free_only: bool = False

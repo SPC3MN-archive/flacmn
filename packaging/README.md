@@ -48,8 +48,9 @@ bash packaging/macos/make_dmg.sh 0.1.0       # -> dist/flacmn-0.1.0-macos-arm64.
 
 ## Releases
 
-`.github/workflows/release.yml` does all of the above on GitHub's runners when a `v*` tag is pushed and attaches a
-Windows installer plus Apple Silicon and Intel disk images to a draft release. The builds are unsigned for now:
+`.github/workflows/release.yml` does all of the above on GitHub's runners when a `v*` tag is pushed and attaches the
+installers to a pre-release. For now only the Apple Silicon disk image is built: the Windows installer and the Intel
+disk image are paused (the workflow's header says how to turn them back on). The builds are unsigned for now:
 Windows SmartScreen and macOS Gatekeeper ask once on first launch (the release notes say how). Signing needs an
 Apple Developer ID (notarization) and a Windows code-signing certificate; both slot into the workflow later.
 

@@ -1,7 +1,9 @@
 name: release
 
-# Push a tag like v0.2.0 to build the Windows installer and the macOS disk images and attach them to a GitHub
-# Release (published as a pre-release, for testing; mark it as the latest release by hand once it is good). "Run workflow" builds without releasing.
+# Push a tag like v0.2.0 to build the installers and attach them to a GitHub Release (published as a pre-release, for
+# testing; mark it as the latest release by hand once it is good). "Run workflow" builds without releasing.
+# Paused: only the Apple Silicon disk image is built for now. To build the others again, remove `if: false` from the
+# windows job, put macos-15-intel back in the matrix, and add windows back to the release job's `needs`.
 on:
   push:
     tags: ["v*"]
@@ -12,6 +14,7 @@ permissions:
 
 jobs:
   windows:
+    if: false                                       # paused: no Windows installer for now
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +52,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        runner: [macos-15, macos-15-intel]          # Apple Silicon and Intel builds
+        runner: [macos-15]                          # Apple Silicon only; macos-15-intel (Intel Macs) is paused
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +84,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [windows, macos]
+    needs: [macos]                                  # add windows back when it is built again
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -94,8 +97,7 @@ jobs:
           prerelease: true                          # test builds: published at once, marked as pre-releases
           files: artifacts/*
           body: |
-            Unsigned builds. First launch:
-            - **Windows:** if SmartScreen says "Windows protected your PC", choose More info → Run anyway.
-            - **macOS:** right-click flacmn in Applications → Open → Open (once). `-arm64` is for Apple Silicon, `-x86_64` for Intel Macs.
+            Unsigned build for Apple Silicon Macs (the Windows and Intel Mac builds are paused for now).
+            First launch: right-click flacmn in Applications → Open → Open (once).
 
             Bundled tools: FLAC (BSD-style licence, Xiph.Org) and FFmpeg built under the LGPL; their sources and licences are listed in `bin/SOURCES.txt` inside the app.

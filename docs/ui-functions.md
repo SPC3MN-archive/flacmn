@@ -4,14 +4,16 @@
 
 - **Search box**: "Artist – Album" (any dash with spaces round it), or just an artist to list their albums.
 - **Search button**: searches archive.org for every format at once (FLAC, WAV, AIFF, M4A, Monkey's Audio, WavPack, MP3),
-  then quick-tests the top few results automatically. An M4A is read to tell ALAC (lossless) from AAC (lossy):
+  then quick-tests every result automatically, a few at a time, best first. An M4A is read to tell ALAC (lossless) from AAC (lossy):
   archive.org labels both "Apple Lossless Audio", so an unread M4A shows Not checked yet.
 - **Format filters (FLAC / WAV / M4A / MP3 / Other)**: show or hide each format in the results without searching again;
   Other is AIFF, Monkey's Audio (APE) and WavPack.
 - **Hide albums I have**: hides results that match an album in your library.
 - **Sort**: by quality (default), by how well it matches your search, or by popularity on archive.org. The order holds
   while the automatic checks finish (rows update in place); **Re-sort** appears when the checks have changed the ranking.
-- **Search notes**: other uploads by the artist that didn't match, albums that exist only in Shorten (SHN), which isn't searched, and how many results were left out and why (live recordings, singles).
+- **Search notes**: other uploads by the artist that didn't match, albums that exist only in Shorten (SHN), which isn't
+  searched, and how many uploads were left out and why (e.g. "3 left out (2 live, 1 singles or EPs)"). **Show** lists
+  them at the bottom, each marked with its reason, and checks them; **Hide** puts them away again.
 
 ## Results (the list block on the left, one row per upload, best quality first)
 
@@ -45,7 +47,7 @@
 
 ## Quick Test
 
-- **Quick test button**: reads the start of each file only, to confirm the files are what they claim, read their format and the rip log. Runs automatically on the top results.
+- **Quick test button**: reads the start of each file only, to confirm the files are what they claim, read their format and the rip log. Runs automatically on every result after a search, and on any unchecked upload when you open it.
 - **Track picker**: choose a track.
 - **Play / pause / seek**: streams the track from archive.org without downloading the album.
 - **Waveform**: the whole track's waveform, drawn once the track has cached; click to jump.

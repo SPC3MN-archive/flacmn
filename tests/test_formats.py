@@ -96,6 +96,17 @@ class Probes(unittest.TestCase):
         p = self.probe("wv", self.wv)
         self.assertEqual((p.ok, p.lossless, p.sample_rate, p.channels), (True, True, 44100, 2))
 
+    @unittest.skipUnless(" libmp3lame " in encoders(FFMPEG or "") if FFMPEG else False, "needs an MP3 encoder")
+    def test_an_mp3_with_big_cover_art_in_its_tag_is_still_read(self):
+        from mutagen.id3 import APIC, ID3
+        mp3 = make(self.dir / "art.mp3", "-c:a", "libmp3lame", "-b:a", "192k")
+        tag = ID3()
+        tag.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="cover", data=bytes(200_000)))
+        tag.save(mp3)                                             # the audio now starts ~200 KB in
+        p = self.probe("mp3", mp3)
+        self.assertTrue(p.ok, p.detail)
+        self.assertEqual((p.codec, p.sample_rate), ("mp3", 44100))
+
     def test_monkeys_audio_header(self):
         # a version 3.99 descriptor and header: 16-bit stereo 44.1 kHz, 3 frames of 73728*4 blocks, the last 1000
         desc = b"MAC " + struct.pack("<HH", 3990, 0) + struct.pack("<I", 52) + bytes(40)

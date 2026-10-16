@@ -335,7 +335,21 @@ def probe_file(media: str, fetch: Callable[[int, int], bytes], size: int, length
         return probe_ape(head)
     if media == "wv":
         return probe_wv(head)
+    end = id3_end(head)
+    if end and end + 4096 > len(head):              # a big ID3 tag (cover art) before the audio: read just past it
+        try:
+            head = fetch(end, HEAD_BYTES).lstrip(b"\x00")   # some taggers pad past the stated size
+        except IAError as exc:
+            return AltProbe(False, "error", str(exc))
     return probe_mp3(head, size, length)
+
+
+def id3_end(head: bytes) -> int:
+    """Where the audio starts after an ID3v2 tag (its size is four 7-bit bytes, plus 10 for the header and a footer)."""
+    if len(head) < 10 or head[:3] != b"ID3":
+        return 0
+    size = (head[6] & 0x7F) << 21 | (head[7] & 0x7F) << 14 | (head[8] & 0x7F) << 7 | (head[9] & 0x7F)
+    return 10 + size + (10 if head[5] & 0x10 else 0)
 
 
 # ---- the album --------------------------------------------------------------------------------------------------

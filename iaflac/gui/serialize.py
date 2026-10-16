@@ -66,6 +66,7 @@ def candidate_summary(cand, want=None, library=None) -> dict:
         "alternates": list(cand.alternates),
         "in_library": owned.to_dict() if owned else None,
         "tested": cand.tier != "?",
+        "left_out": getattr(cand, "left_out", ""),
     }
 
 

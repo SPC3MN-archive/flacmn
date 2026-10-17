@@ -20,7 +20,7 @@ same engine: Album Search (every format ranked together, pick a track to see its
 tags), Case Art (CD jewel cases and cassette J-cards: scans, true-size print sheets and a 3D preview), Library and Health Check (missing songs, low quality, missing art and duplicates; see below), with a download queue that saves albums as
 `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. On a Mac, `bash packaging/macos/dev_setup.sh` does
 the whole setup from a checkout and opens it (`--app` also builds `dist/flacmn.app`). Installers are built by
-`.github/workflows/release.yml`; see `packaging/README.md`.
+`.github/workflows/flacmn-release.yml` at the top of the SPCMN repo; see `packaging/README.md`.
 
 Needs Python 3.10+ with `requests numpy scipy matplotlib pyyaml`, plus the `flac` and `ffmpeg` binaries.
 Run it from this folder. Reports land in `runs/<timestamp>-<name>/` (`report.md`, `report.csv`,

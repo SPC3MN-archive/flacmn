@@ -17,7 +17,7 @@ python -m iaflac.gui --browser    # in your browser instead (easier for UI work:
 **macOS, from a checkout, no installer**
 
 ```bash
-git clone https://github.com/spcmn-studio/flacmn && cd flacmn && git checkout gui
+git clone https://github.com/spcmn-studio/spcmn && cd spcmn/apps/flacmn
 bash packaging/macos/dev_setup.sh            # .venv, packages, flac + ffmpeg (Homebrew), tests, then opens the app
 bash packaging/macos/dev_setup.sh --app      # also builds dist/flacmn.app (self-contained tools via build_macos.sh)
 bash packaging/macos/dev_setup.sh --no-run   # set up and test only
@@ -48,7 +48,7 @@ bash packaging/macos/make_dmg.sh 0.1.0       # -> dist/flacmn-0.1.0-macos-arm64.
 
 ## Releases
 
-`.github/workflows/release.yml` does all of the above on GitHub's runners when a `v*` tag is pushed and attaches the
+`.github/workflows/flacmn-release.yml` (at the top of the SPCMN repo) does all of the above on GitHub's runners when a `flacmn-v*` tag is pushed and attaches the
 installers to a pre-release. For now only the Apple Silicon disk image is built: the Windows installer and the Intel
 disk image are paused (the workflow's header says how to turn them back on). The builds are unsigned for now:
 Windows SmartScreen and macOS Gatekeeper ask once on first launch (the release notes say how). Signing needs an

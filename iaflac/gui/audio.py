@@ -183,7 +183,7 @@ def spectrum3d(path: Path, slices: int = 40, bins: int = 128) -> dict:
     """The track as a waterfall for the 3D spectrogram: `slices` moments spread over the whole track, each the
     spectrum (0 Hz to Nyquist, `bins` linear bands) of about 0.2 s of audio, scaled to 0..1 over -90..0 dB.
     {"duration", "sample_rate", "nyquist_hz", "slices", "bins", "levels": [[...bins] * slices], "times": [...]}"""
-    slices, bins = max(8, min(int(slices), 120)), max(32, min(int(bins), 512))
+    slices, bins = max(8, min(int(slices), 480)), max(32, min(int(bins), 512))
     out_path = _derived(path, f"spec3d{slices}x{bins}", "json")
     if out_path.exists():
         return json.loads(out_path.read_text(encoding="utf-8"))

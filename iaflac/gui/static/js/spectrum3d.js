@@ -1,5 +1,6 @@
 // A track's 3D spectrogram: a waterfall of spectrum slices across the whole track, drawn back to front on a
-// canvas. Front edge = start of the track, back = end; the slice under the playhead is outlined in amber.
+// canvas. Front edge = start of the track, back = end. Album Search's preview outlines the slice under its playhead in
+// amber (setPlayhead); the library's Check quality shows no time marker.
 // Data comes from /api/track/spectrum3d: levels[slice][bin] in 0..1 over -90..0 dB, bins linear from 0 Hz to Nyquist.
 
 import { fmtTime } from "./ui.js";
@@ -13,6 +14,8 @@ export class Spectrum3D {
   constructor(canvas) {
     this.canvas = canvas;
     this.data = null;
+    this.loud = LOUD;           // the colour ramp: setColour() puts the album's own colour in place of the purple
+    this.marker = false;        // the playhead is drawn only once setPlayhead is called
     this.playhead = 0;          // 0..1 of the track
     this.current = 0;           // seconds, for the playhead label
     new ResizeObserver(() => this.draw()).observe(canvas);
@@ -23,7 +26,13 @@ export class Spectrum3D {
     this.draw();
   }
 
+  setColour(colour) {
+    this.loud = colour ? [[0, colour], [1, LOUD[1][1]]] : LOUD;
+    this.draw();
+  }
+
   setPlayhead(fraction, seconds) {
+    this.marker = true;
     const n = this.data ? this.data.slices : 1;
     const before = Math.round(this.playhead * (n - 1));
     this.playhead = Math.max(0, Math.min(1, fraction || 0));
@@ -106,7 +115,7 @@ export class Spectrum3D {
     }
 
     // slices, back to front so nearer ones cover farther ones
-    const playI = Math.round(this.playhead * (nT - 1));
+    const playI = this.marker ? Math.round(this.playhead * (nT - 1)) : -1;
     for (let ti = nT - 1; ti >= 0; ti--) {
       const row = d.levels[ti];
       const [lx, ly] = pt(ti, 0, 0), [rx, ry] = pt(ti, nF - 1, 0);
@@ -119,7 +128,7 @@ export class Spectrum3D {
       ctx.lineTo(rx, ry);
       ctx.closePath();
       const grad = ctx.createLinearGradient(0, ly, 0, ly - g.ampH);
-      for (const [o, c] of LOUD) grad.addColorStop(o, c);
+      for (const [o, c] of this.loud) grad.addColorStop(o, c);
       ctx.globalAlpha = ti <= playI ? 0.96 : 0.82;
       ctx.fillStyle = grad;
       ctx.fill();
@@ -137,7 +146,7 @@ export class Spectrum3D {
   }
 
   _label(ctx) {
-    if (!this._pt) return;
+    if (!this._pt || !this.marker) return;
     const playI = Math.round(this.playhead * (this._nT - 1));
     const [px, py] = this._pt(playI, this._nF - 1, 0);
     ctx.fillStyle = C.text;

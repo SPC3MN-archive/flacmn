@@ -26,7 +26,7 @@ from .tagging import COVER_NAMES, DISC_DIR, read_track, validate
 AUDIO = {".flac", ".mp3", ".m4a", ".wav", ".ogg", ".opus", ".aiff", ".aif", ".wv", ".ape"}
 LOSSLESS = {"FLAC", "WAV", "AIFF", "AIF", "WV", "APE", "ALAC"}      # ALAC: an .m4a whose codec is ALAC (tagging.read_track)
 CHECK_FAILED = "could not check tags"
-CACHE_VERSION = 3          # bump when the checks change, so albums cached with the old checks are read again
+CACHE_VERSION = 4          # bump when the checks change, so albums cached with the old checks are read again
 YEAR_SUFFIX = re.compile(r"\s*[(\[]((?:19|20)\d\d)[)\]]\s*$")
 
 
@@ -45,6 +45,11 @@ class AlbumEntry:
     has_cover: bool = False
     issues: list = field(default_factory=list)
     signature: str = ""
+    # for the tag search: what the tracks say beyond the album's own names
+    genres: list = field(default_factory=list)
+    labels: list = field(default_factory=list)       # record labels and catalogue numbers
+    songs: list = field(default_factory=list)        # track titles, in file order
+    guests: list = field(default_factory=list)       # track artists other than the album artist (features, compilations)
 
     @property
     def format_label(self) -> str:
@@ -106,10 +111,12 @@ def _audio_files(folder: Path) -> list:
         return []
 
 
-def album_folders(root: Path) -> list:
-    """[(album folder, [audio files])]. Disc subfolders are folded into their parent album."""
+def album_folders(root: Path, *, found: Optional[Callable[[int], None]] = None, cancel: Optional[CancelCheck] = None) -> list:
+    """[(album folder, [audio files])]. Disc subfolders are folded into their parent album. `found` hears how many
+    albums the walk has turned up so far."""
     albums: dict = {}
     for dirpath, dirnames, _ in os.walk(root):
+        check(cancel)
         dirnames[:] = sorted(d for d in dirnames if not d.startswith("."))
         folder = Path(dirpath)
         files = _audio_files(folder)
@@ -120,6 +127,8 @@ def album_folders(root: Path) -> list:
             albums.setdefault(parent, []).extend(files)
         else:
             albums.setdefault(folder, []).extend(files)
+        if found is not None:
+            found(len(albums))
     return sorted(albums.items(), key=lambda kv: str(kv[0]).casefold())
 
 
@@ -142,6 +151,17 @@ def signature(files: list) -> str:
 def _majority(values: list) -> str:
     values = [v for v in values if v]
     return Counter(values).most_common(1)[0][0] if values else ""
+
+
+def _distinct(values) -> list:
+    """The non-empty values, each once (ignoring case), in the order first seen."""
+    seen, out = set(), []
+    for v in values:
+        v = str(v or "").strip()
+        if v and v.casefold() not in seen:
+            seen.add(v.casefold())
+            out.append(v)
+    return out
 
 
 def describe_format(t: dict) -> str:
@@ -179,7 +199,11 @@ def read_album(root: Path, folder: Path, files: list) -> AlbumEntry:
                        size=sum(p.stat().st_size for p in files if p.exists()),
                        seconds=round(sum(t.get("length") or 0 for t in tracks), 1),
                        has_cover=any(t.get("has_art") for t in tracks) or any((folder / n).exists() for n in COVER_NAMES),
-                       signature=signature(with_covers(folder, files)))
+                       signature=signature(with_covers(folder, files)),
+                       genres=_distinct(t.get("genre") for t in tracks),
+                       labels=_distinct(x for t in tracks for x in (t.get("label"), t.get("catalog"))),
+                       songs=[t.get("title") or "" for t in tracks],
+                       guests=[a for a in _distinct(t.get("artist") for t in tracks) if a.casefold() != (artist or "").casefold()])
     try:
         entry.issues = validate(folder) if any(p.suffix.lower() in (".flac", ".mp3") for p in files) else []
     except Exception as exc:
@@ -209,7 +233,8 @@ def scan(root: Path, *, cache: Optional[Path] = None, use_cache: bool = True,
         raise FileNotFoundError(f"{root} is not a folder")
     cache = cache or cache_path(root)
     known = load_cache(cache) if use_cache else {}
-    folders = album_folders(root)
+    finding = (lambda n: progress({"stage": "library", "step": "finding", "found": n})) if progress is not None else None
+    folders = album_folders(root, found=finding, cancel=cancel)
     index = LibraryIndex(root=str(root), scanned_at=time.time())
     fields = set(AlbumEntry.__dataclass_fields__)
     for i, (folder, files) in enumerate(folders, 1):
@@ -223,7 +248,7 @@ def scan(root: Path, *, cache: Optional[Path] = None, use_cache: bool = True,
             entry = read_album(root, folder, files)
         index.albums.append(entry)
         if progress is not None:
-            progress({"stage": "library", "index": i, "total": len(folders), "folder": rel})
+            progress({"stage": "library", "step": "reading", "index": i, "total": len(folders), "folder": rel})
     index.albums.sort(key=lambda a: (a.artist.casefold(), a.year, a.album.casefold()))
     try:
         cache.parent.mkdir(parents=True, exist_ok=True)

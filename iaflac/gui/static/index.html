@@ -16,7 +16,9 @@
 <header class="topbar">
   <img class="logo" src="/static/logo.svg" alt="flacmn">
   <nav class="row" id="tabs" aria-label="Main">
-    <button class="tab active" data-view="library">Library<span class="badge" id="lib-badge" hidden></span></button>
+    <button class="tab active" data-view="albums">Albums</button>
+    <button class="tab" data-view="artists">Artists</button>
+    <button class="tab" data-view="playlists">Playlists</button>
     <button class="tab" data-view="search">Album Search</button>
     <button class="tab" data-view="cdart">Case Art</button>
   </nav>
@@ -27,7 +29,9 @@
 </header>
 
 <main>
-  <section class="view active" id="view-library" aria-label="Library"></section>
+  <section class="view active" id="view-albums" aria-label="Albums"></section>
+  <section class="view" id="view-artists" aria-label="Artists"></section>
+  <section class="view" id="view-playlists" aria-label="Playlists"></section>
   <section class="view" id="view-search" aria-label="Album Search"></section>
   <section class="view" id="view-cdart" aria-label="Case Art"></section>
   <section class="view" id="view-settings" aria-label="Settings"></section>

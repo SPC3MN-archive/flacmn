@@ -28,8 +28,10 @@ class Scan(unittest.TestCase):
             p = kob / f"{i:02d}.flac"
             p.write_bytes(self.flac)
             paths[p.name] = p
-        meta = AlbumMeta(albumartist="Miles Davis", album="Kind of Blue", date="1959",
-                         tracks=[TrackMeta("01.flac", "So What", 1), TrackMeta("02.flac", "Freddie Freeloader", 2)])
+        meta = AlbumMeta(albumartist="Miles Davis", album="Kind of Blue", date="1959", genre="Jazz", label="Columbia",
+                         catalog="CL 1355",
+                         tracks=[TrackMeta("01.flac", "So What", 1),
+                                 TrackMeta("02.flac", "Freddie Freeloader", 2, artist="Miles Davis feat. Wynton Kelly")])
         tagging.apply(kob, meta, paths)
         # an untagged MP3 album with disc folders
         for d in (1, 2):
@@ -56,6 +58,14 @@ class Scan(unittest.TestCase):
         self.assertEqual((okc.artist, okc.album, okc.tracks, okc.lossless), ("Radiohead", "OK Computer", 2, False))
         self.assertTrue(okc.format_label.startswith("MP3 3"), okc.format_label)
         self.assertTrue(any("TITLE" in i for i in okc.issues), okc.issues)
+
+    def test_what_the_tag_search_reads(self):
+        kob = {a.folder: a for a in self.scan().albums}["Miles Davis/Kind of Blue (1959)"]
+        self.assertEqual((kob.genres, kob.labels), (["Jazz"], ["Columbia", "CL 1355"]))
+        self.assertEqual(kob.songs, ["So What", "Freddie Freeloader"])
+        self.assertEqual(kob.guests, ["Miles Davis feat. Wynton Kelly"], "the album artist is not a guest")
+        again = {a.folder: a for a in self.scan().albums}["Miles Davis/Kind of Blue (1959)"]
+        self.assertEqual(again.songs, kob.songs, "kept in the cache")
 
     def test_find_matches_what_you_already_have(self):
         index = self.scan()
@@ -89,7 +99,12 @@ class Scan(unittest.TestCase):
     def test_progress_events(self):
         events = []
         self.scan(progress=events.append)
-        self.assertEqual([e["index"] for e in events], [1, 2])
+        finding = [e["found"] for e in events if e["step"] == "finding"]
+        self.assertEqual(finding[-1], 2)                     # the walk counts albums as it finds them
+        self.assertEqual(finding, sorted(finding))
+        reading = [e for e in events if e["step"] == "reading"]
+        self.assertEqual([(e["index"], e["total"]) for e in reading], [(1, 2), (2, 2)])
+        self.assertEqual(events[-1]["step"], "reading")      # finding comes first
 
     def test_missing_folder(self):
         with self.assertRaises(FileNotFoundError):

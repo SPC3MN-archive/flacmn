@@ -40,13 +40,13 @@ function readable([r, g, b]) {
 
 function coverUrl() {
   const al = now.album;
-  return al && al.cover ? url("/library/file", { path: al.cover }) : null;
+  return al && al.cover ? url("/library/cover", { path: al.cover }) : null;
 }
 
 // a colour taken from the cover itself, not an average of it: the cover's pixels are sorted into small colour boxes and
 // the box that is both common and colourful wins; the trace is that box's colour (a light one is only darkened enough
 // to read on the off-white card). A black-and-white cover gives its most common dark shade.
-function traceColour(src) {
+export function traceColour(src) {
   if (!src) return Promise.resolve("");
   if (colours.has(src)) return Promise.resolve(colours.get(src));
   return new Promise((ok) => {

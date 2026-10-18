@@ -16,8 +16,11 @@ python3 -m iaflac replace --scan                      # albums you have only as 
 ```
 
 **Desktop app: flacmn.** `python -m pip install -e ".[gui]"` then `python -m iaflac.gui` opens a window over the
-same engine: Album Search (every format ranked together, pick a track to see its 3D spectrogram and play it, MusicBrainz-checked
-tags), Case Art (CD jewel cases and cassette J-cards: scans, true-size print sheets and a 3D preview), Library and Health Check (missing songs, low quality, missing art and duplicates; see below), with a download queue that saves albums as
+same engine: the library as in flacmn library (Albums, Artists and Playlists; tag search; Check quality with the
+spectrum; covers from the Cover Art Archive; the Health Check for missing songs, low quality, missing art and duplicates,
+whose fixes can also search the Internet Archive; see below), Album Search (every format ranked together, pick a track to
+see its 3D spectrogram and play it, MusicBrainz-checked tags), Case Art (CD jewel cases and cassette J-cards: scans,
+true-size print sheets and a 3D preview), with a download queue that saves albums as
 `Artist/Album (Year)/NN - Title.flac` for players such as Volumio. On a Mac, `bash packaging/macos/dev_setup.sh` does
 the whole setup from a checkout and opens it (`--app` also builds `dist/flacmn.app`). Installers are built by
 `.github/workflows/flacmn-release.yml` at the top of the SPCMN repo; see `packaging/README.md`.

@@ -21,6 +21,8 @@ for (const ev of ["play", "pause", "ended", "loadedmetadata"]) audio.addEventLis
 export const track = () => (now.album && now.index >= 0 ? now.album.tracks[now.index] : null);
 export const playingPath = () => (track() && !audio.paused ? track().path : null);
 
+const searchPlayer = () => document.getElementById("player");    // Album Search's preview player, if this page has one
+
 // Call from a click or key press: browsers only start audio, and the scope's tap, from a user gesture.
 export function playAlbum(album, entry, index = 0) {
   now.album = album;
@@ -28,19 +30,21 @@ export function playAlbum(album, entry, index = 0) {
   start(index);
 }
 
-const searchPlayer = () => document.getElementById("player");    // Album Search's preview player, if this page has one
-
 function start(index) {
   now.index = index;
   const t = track();
   if (!t) return;
+  if (now.album.playlist) {                 // a playlist: each song brings its own cover and album (playlists.js)
+    now.album.cover = t.cover || null;
+    now.entry = { ...now.entry, artist: t.artist || "" };
+  }
   searchPlayer()?.pause();
   audio.src = url("/audio", { path: t.path });
   wireAudio(audio);
   audio.play().catch((e) => toast(`Cannot play: ${errorText(e)}`, "bad"));
   setPlaying({ audio, toggle, card: true, title: t.title || t.path.split("/").pop(),
-    sub: [t.artist || now.entry?.artist, now.entry?.album].filter(Boolean).join(" · "),
-    cover: now.album.cover ? url("/library/file", { path: now.album.cover }) : null });
+    sub: [t.artist || now.entry?.artist, now.album.playlist ? t.album : now.entry?.album].filter(Boolean).join(" · "),
+    cover: now.album.cover ? url("/library/cover", { path: now.album.cover }) : null });
   changed();
 }
 

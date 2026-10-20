@@ -1,0 +1,103 @@
+name: release
+
+# Push a tag like v0.2.0 to build the installers and attach them to a GitHub Release (published as a pre-release, for
+# testing; mark it as the latest release by hand once it is good). "Run workflow" builds without releasing.
+# Paused: only the Apple Silicon disk image is built for now. To build the others again, remove `if: false` from the
+# windows job, put macos-15-intel back in the matrix, and add windows back to the release job's `needs`.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    if: false                                       # paused: no Windows installer for now
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: version
+        shell: bash
+        run: echo "VERSION=$(python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")" >> $GITHUB_ENV
+      - name: install
+        run: python -m pip install -e ".[gui,dev]"
+      - name: bundled tools (flac, LGPL ffmpeg)
+        run: powershell -ExecutionPolicy Bypass -File packaging\tools\fetch_windows.ps1
+      - name: build app
+        run: pyinstaller packaging/iaflac-gui.spec --noconfirm
+      - name: smoke test the built app, started like a double-click (no console, no stdout or stderr)
+        shell: pwsh
+        run: |
+          Start-Process -FilePath "dist\flacmn\flacmn.exe" -ArgumentList "--server-only", "--url-file", "$PWD\url.txt"
+          $i = 0
+          while ($i -lt 60 -and -not ((Test-Path url.txt) -and ((Get-Item url.txt).Length -gt 0))) { Start-Sleep 1; $i++ }
+          $url = (Get-Content url.txt -Raw).Trim()
+          $token = $url.Substring($url.IndexOf("token=") + 6); $base = $url.Substring(0, $url.IndexOf("/?token"))
+          $health = (Invoke-WebRequest -UseBasicParsing -Headers @{ "x-iaflac-token" = $token } "$base/api/health").Content
+          $health
+          if ($health -notmatch "_internal") { throw "the app is not using its bundled tools" }
+          Stop-Process -Name flacmn -Force -ErrorAction SilentlyContinue
+      - name: installer
+        run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" /DAppVersion=${{ env.VERSION }} packaging\windows\iaflac.iss'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/flacmn-*-setup.exe
+
+  macos:
+    strategy:
+      matrix:
+        runner: [macos-15]                          # Apple Silicon only; macos-15-intel (Intel Macs) is paused
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: version
+        run: echo "VERSION=$(python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")" >> $GITHUB_ENV
+      - name: install
+        run: python -m pip install -e ".[gui,dev]"
+      - name: bundled tools (flac, LGPL ffmpeg built from source)
+        run: bash packaging/tools/build_macos.sh
+      - name: build app
+        run: pyinstaller packaging/iaflac-gui.spec --noconfirm
+      - name: smoke test the built app
+        run: |
+          ./dist/flacmn.app/Contents/MacOS/flacmn --server-only --url-file url.txt &
+          for i in $(seq 1 60); do [ -s url.txt ] && break; sleep 1; done
+          URL=$(tr -d '\r\n' < url.txt); TOKEN=${URL##*token=}; BASE=${URL%%/?token*}
+          curl -sf -H "x-iaflac-token: $TOKEN" "$BASE/api/health" | tee health.json
+          grep -q 'flacmn.app' health.json
+          pkill -f flacmn.app || true
+      - name: disk image
+        run: bash packaging/macos/make_dmg.sh "$VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.runner }}
+          path: dist/*.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos]                                  # add windows back when it is built again
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: true                          # test builds: published at once, marked as pre-releases
+          files: artifacts/*
+          body: |
+            Unsigned build for Apple Silicon Macs (the Windows and Intel Mac builds are paused for now).
+            First launch: right-click flacmn in Applications → Open → Open (once).
+
+            Bundled tools: FLAC (BSD-style licence, Xiph.Org) and FFmpeg built under the LGPL; their sources and licences are listed in `bin/SOURCES.txt` inside the app.

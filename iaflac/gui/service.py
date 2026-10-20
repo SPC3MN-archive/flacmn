@@ -11,11 +11,11 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import uuid
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable, Optional
 
 from .. import __version__, binaries, musicbrainz as mb, paths, quality, queries, save, tagging
-from .. import cassette, cdart, designs, health, jewelcase, library_index, retag
+from .. import cassette, cdart, covers, designs, health, jewelcase, library_index, playlists, retag
 from ..ia_client import IAClient, IAError
 from ..names import folder_component
 from ..model import track_files
@@ -134,6 +134,8 @@ class App:
         self.health_found: dict = {}          # album folder -> its last Internet Archive search (health.search_archive)
         self.health_cands: dict = {}          # album folder -> the uploads that search found (Candidates)
         self.health_art: dict = {}            # image id -> cdart.ArtImage offered as a cover by those searches
+        self.cover_offers: dict = {}          # offer id -> covers.CoverOffer dict, from the last Find covers
+        self.playlists = playlists.Store()
         store = queue_store if queue_store is not None else paths.data_dir() / ".gui" / "queue.json"
         self.queue = DownloadQueue(self._run_save, self.broadcast, store=store,
                                    concurrency=self.settings.download_concurrency)
@@ -218,7 +220,10 @@ class App:
         if "audio_cache_mb" in values:
             self.audio.max_bytes = self.settings.audio_cache_mb * 2**20
         if "library" in values:
-            self.library = None
+            with self._lock:
+                self.library = None
+                if self._scan_job:          # a read of the old folder must not stand in for the new one
+                    self.jobs.cancel(self._scan_job)
         return {"settings": self.settings.to_dict(), "rejected": rejected}
 
     def options(self, **over) -> Options:
@@ -479,8 +484,11 @@ class App:
 
             def run(job: Job):
                 try:
-                    self.library = library_index.scan(root, progress=self.jobs.progress(job), cancel=job.cancelled)
-                    return {"albums": len(self.library.albums)}
+                    index = library_index.scan(root, progress=self.jobs.progress(job), cancel=job.cancelled)
+                    with self._lock:
+                        if self.settings.library_path and self.settings.library_path.resolve() == root:
+                            self.library = index
+                    return {"albums": len(index.albums)}
                 finally:
                     with self._lock:
                         self._scan_job = None
@@ -551,11 +559,15 @@ class App:
         files = sorted(p for p in path.rglob("*") if p.is_file() and p.suffix.lower() in library_index.AUDIO and not paths.is_hidden(p, path))
         tracks = []
         for p in files:
-            t = tagging.read_track(p) if p.suffix.lower() in (".flac", ".mp3") else {"format": p.suffix[1:].upper()}
+            try:
+                t = tagging.read_track(p)
+            except Exception:                           # one unreadable file must not hide the album
+                t = {"format": p.suffix[1:].upper(), "error": "unreadable"}
             t["path"] = p.relative_to(root).as_posix()
             tracks.append(t)
+        cover = next((p.relative_to(root).as_posix() for p in path.iterdir() if p.name.lower() in tagging.COVER_NAMES), None)
         return {"folder": folder, "tracks": tracks, "issues": tagging.validate(path),
-                "cover": next((p.relative_to(root).as_posix() for p in path.iterdir() if p.name.lower() in tagging.COVER_NAMES), None)}
+                "cover": cover or next((t["path"] for t in tracks if t.get("has_art")), None)}
 
     # ---- editing an album's tags (Library → Edit tags) ---------------------------------------------------------
     def album_tags(self, folder: str) -> dict:
@@ -967,7 +979,7 @@ class App:
         entry = self._health_entry(folder)
         out = entry.to_dict(tracks=True)
         out["tracks"] = health.sorted_tracks(entry)
-        out["cover"] = f"{folder}/{entry.cover_file}" if entry.cover_file else None
+        out["cover"] = f"{folder}/{entry.cover_file}" if entry.cover_file else self._folder_cover(self._library(), folder)
         out["search"] = self.health_found.get(folder)
         return out
 
@@ -1071,6 +1083,180 @@ class App:
             return result
 
         return {"job_id": self.jobs.submit("health-merge", f"merge {len(folders)} folder(s)", run).id}
+
+    # ---- covers from the Cover Art Archive, only when asked (covers.py) ----------------------------------------
+    def _album_health(self, folder: str) -> health.AlbumHealth:
+        """The album as the health check sees it: from the last check, else read now (offline, just this folder)."""
+        entry = self.health_index.get(folder) if self.health_index is not None else None
+        return entry if entry is not None else health.check_one(self._library(), folder)
+
+    def covers_find(self, folder: str) -> dict:
+        """Look for the album's front covers (a job: a few MusicBrainz lookups at one a second)."""
+        entry = self._album_health(folder)
+
+        def run(job: Job):
+            found = covers.find(self.mb, entry, progress=self.jobs.progress(job), cancel=job.cancelled)
+            for o in found["covers"]:
+                self.cover_offers[o["id"]] = o
+            return {"folder": folder, **found}
+
+        return {"job_id": self.jobs.submit("covers", f"covers for {entry.artist} / {entry.album}", run).id}
+
+    def _offer(self, offer_id: str) -> dict:
+        o = self.cover_offers.get(offer_id)
+        if o is None:
+            raise NotFound(f"no cover {offer_id}: look for the album's covers again")
+        return o
+
+    def cover_image(self, offer_id: str, large: bool = False) -> tuple:
+        o = self._offer(offer_id)
+        try:
+            data = self.mb.image(o["large"] if large else o["thumb"])
+        except mb.MBError as exc:
+            raise audio.AudioError(f"the Cover Art Archive did not send the image: {exc}") from exc
+        return data, image_mime(data)
+
+    def cover_use(self, folder: str, offer_id: str, replace: bool = False) -> dict:
+        """Save a found cover into the album folder; with `replace`, in place of its own (which goes to the Trash)."""
+        data, _ = self.cover_image(offer_id, large=True)
+        out = health.save_cover(self._library(), self._album_health(folder), data, replace=replace)
+        self._health_refresh(folder)
+        self.library = None
+        self.broadcast({"type": "library", "changed": folder})
+        return {**out, "px": health.image_px(data)}
+
+    # ---- playlists (playlists.py): songs by their path in the music folder -------------------------------------
+    def _song(self, root: Path, rel: str) -> dict:
+        path = root / rel
+        if not path.is_file() or not audio.inside(path, [root]):
+            return {"path": rel, "missing": True, "title": PurePosixPath(rel).stem, "folder": str(PurePosixPath(rel).parent)}
+        try:
+            t = tagging.read_track(path)
+        except Exception:                               # one unreadable file must not hide the playlist
+            t = {"format": path.suffix[1:].upper(), "error": "unreadable"}
+        t["path"], t["folder"] = rel, str(PurePosixPath(rel).parent)
+        cover = next((c for c in path.parent.iterdir() if c.name.lower() in tagging.COVER_NAMES), None)
+        t["cover"] = cover.relative_to(root).as_posix() if cover else (rel if t.get("has_art") else None)
+        return t
+
+    @staticmethod
+    def _folder_cover(root: Path, folder: str) -> Optional[str]:
+        """The album's cover as a path in the music folder: its cover file, or else the first of its tracks that has
+        a picture embedded (served by library_cover). None when it has neither."""
+        try:
+            hit = next((c for c in (root / folder).iterdir() if c.name.lower() in tagging.COVER_NAMES), None)
+        except OSError:
+            return None
+        if hit:
+            return hit.relative_to(root).as_posix()
+        album = root / folder
+        files = sorted(p for p in album.rglob("*") if p.is_file() and p.suffix.lower() in library_index.AUDIO
+                       and not paths.is_hidden(p, album))
+        for f in files[:3]:                             # tagged albums embed it in every track: a few is enough to ask
+            if health.embedded_cover(f):
+                return f.relative_to(root).as_posix()
+        return None
+
+    def library_cover(self, rel: str = "", folder: str = "") -> tuple:
+        """(image bytes or a Path, mime type) for a cover: `rel` is a cover file, or a track whose embedded picture
+        is wanted; `folder` an album, whose cover file or embedded picture is found here."""
+        if folder:
+            root = self._root_for(folder)
+            if root is None:                            # an album opened on its own: paths in it are absolute
+                album = self._album_dir(folder)
+                found = self._folder_cover(album.parent, album.name)
+                rel = str(album.parent / found) if found else ""
+            else:
+                rel = self._folder_cover(root, folder) or ""
+            if not rel:
+                raise NotFound(f"{folder} has no cover")
+        path = self.library_file(rel)
+        if not path.is_file():
+            raise NotFound(rel)
+        if path.suffix.lower() in (".jpg", ".jpeg", ".png"):
+            return path, "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
+        data = health.embedded_cover(path)
+        if not data:
+            raise NotFound(f"{rel} has no picture")
+        return data, "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
+
+    def _albums_of(self, root: Path, p: playlists.Playlist, limit: int = 0) -> list:
+        """[{"folder", "cover"}]: the playlist's albums in song order, each once (only those with a cover)."""
+        out, seen = [], set()
+        for rel in p.tracks:
+            folder = str(PurePosixPath(rel).parent)
+            if folder in seen:
+                continue
+            seen.add(folder)
+            cover = self._folder_cover(root, folder)
+            if cover:
+                out.append({"folder": folder, "cover": cover})
+                if limit and len(out) >= limit:
+                    break
+        return out
+
+    def _cover_of(self, root: Optional[Path], p: playlists.Playlist) -> dict:
+        """What the playlist's cover shows: {"kind": "image"} an uploaded picture, {"kind": "album", "cover"} one album's
+        cover, or {"kind": "tiles", "tiles": [up to four album covers]} (the default, and the fallback when the chosen
+        album's cover is gone)."""
+        if p.cover.get("image") and (path := self.playlists.image_path(p)) is not None and path.is_file():
+            return {"kind": "image", "version": p.cover["image"]}
+        if root is None:
+            return {"kind": "tiles", "tiles": []}
+        if p.cover.get("album"):
+            cover = self._folder_cover(root, p.cover["album"])
+            if cover:
+                return {"kind": "album", "album": p.cover["album"], "cover": cover}
+        return {"kind": "tiles", "tiles": [a["cover"] for a in self._albums_of(root, p, limit=4)]}
+
+    def _root_or_none(self) -> Optional[Path]:
+        lib = self.settings.library_path
+        return lib if lib and lib.is_dir() else None
+
+    def playlists_all(self) -> dict:
+        root = self._root_or_none()
+        return {"playlists": [{"id": p.id, "name": p.name, "count": len(p.tracks), "cover": self._cover_of(root, p)}
+                              for p in self.playlists.all()]}
+
+    def playlist(self, pid: str) -> dict:
+        try:
+            p = self.playlists.get(pid)
+        except LookupError as exc:
+            raise NotFound(str(exc)) from exc
+        root = self._library()
+        return {"id": p.id, "name": p.name, "tracks": [self._song(root, rel) for rel in p.tracks],
+                "cover": self._cover_of(root, p), "albums": self._albums_of(root, p)}
+
+    def playlist_change(self, action: str, pid: str = "", name: Optional[str] = None, tracks: Optional[list] = None,
+                        cover: Optional[dict] = None, image: bytes = b"") -> dict:
+        try:
+            if action == "create":
+                p = self.playlists.create(name or "", tracks)
+            elif action == "update":
+                p = self.playlists.update(pid, name=name, tracks=tracks, cover=cover)
+            elif action == "image":
+                p = self.playlists.set_image(pid, image)
+            elif action == "add":
+                p = self.playlists.add(pid, tracks or [])
+            elif action == "delete":
+                self.playlists.delete(pid)
+                self.broadcast({"type": "playlists"})
+                return {"deleted": pid}
+            else:
+                raise ValueError(f"unknown playlist action {action!r}")
+        except LookupError as exc:
+            raise NotFound(str(exc)) from exc
+        self.broadcast({"type": "playlists"})
+        return {"id": p.id, "name": p.name, "count": len(p.tracks), "cover": self._cover_of(self._root_or_none(), p)}
+
+    def playlist_image(self, pid: str) -> Path:
+        try:
+            path = self.playlists.image_path(self.playlists.get(pid))
+        except LookupError as exc:
+            raise NotFound(str(exc)) from exc
+        if path is None or not path.is_file():
+            raise NotFound(f"playlist {pid} has no picture of its own")
+        return path
 
     # ---- audio -------------------------------------------------------------------------------------------------
     def remote_file(self, identifier: str, name: str):

@@ -1,6 +1,6 @@
 [project]
 name = "iaflac"
-version = "0.1.7"
+version = "0.1.8"
 description = "Find and verify FLAC (ideally CD-rip) albums on the Internet Archive"
 readme = "README.md"
 requires-python = ">=3.10"

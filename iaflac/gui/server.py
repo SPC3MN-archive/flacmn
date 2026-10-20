@@ -232,6 +232,68 @@ def create_app(core: Optional[App] = None, token: Optional[str] = None, allowed_
         return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "application/octet-stream"),
                             headers={"Cache-Control": "no-cache"})
 
+    @api.get("/api/library/cover")
+    def library_cover(path: str = "", folder: str = ""):
+        """An album's cover: a cover file, or the picture embedded in a track when the album has no cover file."""
+        data, mime = core.library_cover(path, folder)
+        if isinstance(data, Path):
+            return FileResponse(data, media_type=mime, headers={"Cache-Control": "no-cache"})
+        return Response(data, media_type=mime, headers={"Cache-Control": "no-cache"})
+
+    # ---- playlists --------------------------------------------------------------------------------------------
+    @api.get("/api/playlists")
+    def playlists_all():
+        return core.playlists_all()
+
+    @api.get("/api/playlists/{pid}")
+    def playlist(pid: str):
+        return core.playlist(pid)
+
+    @api.post("/api/playlists")
+    def playlist_create(body: dict = Body(...)):
+        return core.playlist_change("create", name=body.get("name", ""), tracks=body.get("tracks"))
+
+    @api.put("/api/playlists/{pid}")
+    def playlist_update(pid: str, body: dict = Body(...)):
+        return core.playlist_change("update", pid, name=body.get("name"), tracks=body.get("tracks"), cover=body.get("cover"))
+
+    @api.post("/api/playlists/{pid}/image")
+    def playlist_image_set(pid: str, body: dict = Body(...)):
+        import base64
+        try:
+            data = base64.b64decode(str(body.get("data", "")).split(",")[-1], validate=True)
+        except ValueError as exc:
+            raise ValueError("the picture did not arrive whole") from exc
+        return core.playlist_change("image", pid, image=data)
+
+    @api.get("/api/playlists/{pid}/image")
+    def playlist_image(pid: str):
+        p = core.playlist_image(pid)
+        return FileResponse(p, media_type=MIME.get(p.suffix.lower(), "image/" + p.suffix.lower().lstrip(".")),
+                            headers={"Cache-Control": "no-cache"})
+
+    @api.post("/api/playlists/{pid}/add")
+    def playlist_add(pid: str, body: dict = Body(...)):
+        return core.playlist_change("add", pid, tracks=list(body.get("tracks") or []))
+
+    @api.delete("/api/playlists/{pid}")
+    def playlist_delete(pid: str):
+        return core.playlist_change("delete", pid)
+
+    # ---- covers from the Cover Art Archive (only when asked) --------------------------------------------------
+    @api.post("/api/covers/find")
+    def covers_find(body: dict = Body(...)):
+        return core.covers_find(body["folder"])
+
+    @api.get("/api/covers/image/{offer_id}")
+    def cover_image(offer_id: str, large: bool = False):
+        data, mime = core.cover_image(offer_id, large)
+        return Response(data, media_type=mime, headers={"Cache-Control": "max-age=86400"})
+
+    @api.post("/api/covers/use")
+    def cover_use(body: dict = Body(...)):
+        return core.cover_use(body["folder"], body["id"], bool(body.get("replace")))
+
     # ---- Library Health Check (/api/health is the app's own status) ------------------------------------------
     @api.get("/api/health-check")
     def health_report():

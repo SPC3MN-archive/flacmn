@@ -1,5 +1,5 @@
 """The static UI files: the animated loading logo must stay in step with the logo it replaces, and the redesign's
-foundations (the three places, the playing display, contrast, focus and the type scale) must hold."""
+foundations (flacmn's Albums, Artists and Playlists next to Album Search and Case Art, the playing display, contrast, focus and the type scale) must hold."""
 
 import re
 import unittest
@@ -38,11 +38,19 @@ class Redesign(unittest.TestCase):
         self.page = (STATIC / "index.html").read_text()
         self.css = (STATIC / "app.css").read_text()
 
-    def test_three_places_with_the_library_first_and_no_health_check_tab(self):
+    def test_flacmns_library_places_first_then_album_search_and_case_art(self):
         tabs = re.findall(r'class="tab[^"]*" data-view="(\w+)"', self.page)
-        self.assertEqual(tabs, ["library", "search", "cdart"])
+        self.assertEqual(tabs, ["albums", "artists", "playlists", "search", "cdart"])
         self.assertNotIn('data-view="health"', self.page)
-        self.assertIn('id="view-library" aria-label="Library"', self.page)
+        self.assertNotIn('data-view="send"', self.page, "no Send to app here")
+        self.assertIn('id="view-albums" aria-label="Albums"', self.page)
+        self.assertNotIn('class="pill"', (STATIC / "js" / "library.js").read_text(), "no filtering by health, as in flacmn")
+
+    def test_the_library_keeps_its_ways_to_the_internet_archive(self):
+        health = (STATIC / "js" / "health.js").read_text()
+        for word in ("/health-check/search", "/health-check/fetch", "/health-check/replace", "/covers/find"):
+            self.assertIn(word, health)
+        self.assertIn("openSearch", (STATIC / "js" / "library.js").read_text())
 
     def test_the_top_bar_has_the_playing_display_and_the_now_playing_card(self):
         self.assertIn('id="np-mini"', self.page)

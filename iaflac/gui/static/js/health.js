@@ -1,25 +1,30 @@
 // Library Health Check, inside the Library (library.js): an album's problems (missing songs, low-quality files, no cover
 // art, there twice: health.py) and their fixes, drawn in the album's "Needs attention" and "Cover" sections. The fixes:
-// a search of the Internet Archive for what the album is missing (fetch the missing tracks, use a cover), replace the
-// album with a better copy, and merge duplicates (keeping the best copy of every song; the rest goes to the Trash after
-// you have seen the plan). Every replacement asks twice: the first click says what will happen, the second does it.
+// edit the tags, look at a low-quality album's spectrum, find a cover in the Cover Art Archive (only when asked: the
+// images belong to their owners, and the one you choose is saved into your own album folder), merge duplicates
+// (keeping the best copy of every song; the rest goes to the Trash after you have seen the plan), and search the
+// Internet Archive for what the album is missing (fetch the missing tracks, use a cover) or a better copy to replace it
+// with. Every replacement asks twice: the first click says what will happen, the second does it.
 
 import { api, url, on, waitJob, cancelJob } from "./api.js";
-import { h, clear, icon, chip, fmtBytes, fmtTime, toast, errorText } from "./ui.js";
+import { h, clear, icon, chip, fmtBytes, toast, errorText } from "./ui.js";
 
 const KINDS = ["missing_tracks", "low_quality", "missing_art", "duplicates"];
 const LABEL = { missing_tracks: "Missing songs", low_quality: "Low quality", missing_art: "No cover", duplicates: "Duplicates" };
 
 const state = {
   data: null, selected: null, album: null, musicbrainz: false, running: false, progress: null,
-  searching: false, searchStage: "", plan: null, busy: "", picks: {}, confirm: "", showAll: false,
+  plan: null, busy: "", confirm: "",
+  searching: false, searchStage: "", picks: {}, showAll: false,
   replace: null,       // the album replacement running: {folder, identifier, jobId, step, done, total, index, count}
+  covers: {},          // album folder -> {searching, stage, found: {covers, releases, credit}, done: {written, px, embedded, replaced}}
 };
 let needsEl = null, coverEl = null, hooks = {};
 const listeners = new Set();
 const changed = () => { for (const fn of listeners) fn(); };
 
-/** hooks: openSettings, openSearch(artist, album), libraryChanged(), tagIssues(folder) -> [text], editTags(folder) */
+/** hooks: openSettings, openSearch(artist, album), libraryChanged(), tagIssues(folder) -> [text], editTags(folder), coverOf(folder) -> {src, embedded},
+ *  analyse(folder) */
 export function mountHealth(opts) {
   hooks = opts || {};
   on("health", () => load());
@@ -90,6 +95,18 @@ function renderRight() {
   if (!needsEl || !needsEl.isConnected) return;
   renderNeeds();
   renderCover();
+  fitTwoProblems();
+}
+
+// Needs attention is always tall enough for its first two problems, however their text wraps; more scroll inside it
+function fitTwoProblems() {
+  needsEl.style.minHeight = "";
+  requestAnimationFrame(() => {
+    const rows = needsEl.querySelectorAll(".issue, .needs-body > p");
+    if (!rows.length) return;
+    const last = rows[Math.min(1, rows.length - 1)];
+    needsEl.style.minHeight = `${Math.ceil(last.getBoundingClientRect().bottom - needsEl.getBoundingClientRect().top + 2)}px`;
+  });
 }
 
 function section(el, title, ...body) {
@@ -107,7 +124,7 @@ function renderNeeds() {
       h("div.scroll.grow.needs-body", h("ul.issue-list", ...items,
         h("li.issue.info", h("span.issue-dot.wait"),
           h("span.issue-text", h("b", running ? progressText() : "Check your library"),
-            h("span", "Finds missing songs, low-quality files, albums with no cover and albums you have twice, and offers the fixes.")),
+            h("span", "Missing songs, low quality, no cover, albums twice")),
           h("button.btn.primary.sm", { type: "button", onclick: run, disabled: running }, running ? h("span.spinner") : null, running ? "Checking" : "Check library")))));
     return;
   }
@@ -134,61 +151,118 @@ function issueRow(sev, kind, text, action) {
 }
 
 function actionFor(a, f) {
-  if (f.kind === "missing_tracks") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find the songs");
-  if (f.kind === "low_quality") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find a better copy");
-  if (f.kind === "missing_art") return h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, "Find covers");
+  const archive = (label) => h("button.btn.secondary.sm", { type: "button", onclick: () => search(a.folder), disabled: state.searching }, label);
+  if (f.kind === "missing_tracks") return archive("Find the songs");
+  if (f.kind === "low_quality") {
+    return h("span.row", { style: { gap: "6px", flexWrap: "wrap", justifyContent: "flex-end" } },
+      hooks.analyse ? h("button.btn.secondary.sm", { type: "button", onclick: () => hooks.analyse(a.folder) }, "Check the spectrum") : null,
+      archive("Find a better copy"));
+  }
+  if (f.kind === "missing_art") {
+    return h("button.btn.secondary.sm", { type: "button", onclick: () => findCovers(a.folder), disabled: !!state.covers[a.folder]?.searching },
+      "Find covers");
+  }
   return null;
 }
 
+// one row of tiles, never more: the album's cover (a file in the folder, or the picture in its tracks), as many found covers as fit, then a tile that finds covers or
+// shows the next ones
+const TILE = 104 + 8;                       // a tile and the gap after it (app.css .cover-tile)
 function renderCover() {
-  const a = state.album, folder = state.selected;
+  const folder = state.selected;
   const current = hooks.coverOf ? hooks.coverOf(folder) : null;
-  const s = a?.search, art = s?.art || [];
+  const c = state.covers[folder] || {};
+  const found = [...(c.found?.covers || []).map((o) => ({ o })),
+    ...(state.album?.folder === folder ? state.album.search?.art || [] : []).map((im) => ({ im }))];
+  const fit = Math.max(1, Math.floor(((coverEl.clientWidth || coverEl.parentElement?.clientWidth || 560) + 8) / TILE) - 2);
+  const pages = Math.max(1, Math.ceil(found.length / fit)), page = (c.page || 0) % pages;
   const tiles = [h("div.cover-tile.on", { "aria-current": "true" },
-    current ? h("img", { src: current, alt: "" }) : h("div.cover-blank", icon("image")),
-    h("b", current ? "In the folder" : "No cover"), h("span", current ? "In use" : "Find one below"))];
-  for (const im of art.slice(0, 7)) tiles.push(artTile(a, im, !!current));
-  if (!s) {
-    tiles.push(h("button.cover-tile.find", { type: "button", disabled: state.searching || !a,
-      onclick: () => search(folder), title: a ? "" : "Check your library first" },
-      h("div.cover-blank", state.searching ? h("span.spinner") : icon("search")), h("b", "Find covers"),
-      h("span", a ? "Cover Art Archive and archive.org" : "Check your library first")));
+    current ? h("img", { src: current.src, alt: "" }) : h("div.cover-blank", icon("image")),
+    h("b", current ? (current.embedded ? "In the tracks" : "In the folder") : "No cover"), h("span", current ? "In use" : "None yet"))];
+  for (const x of found.slice(page * fit, page * fit + fit)) tiles.push(x.o ? coverTile(folder, x.o, !!current) : archiveTile(folder, x.im, !!current));
+  const more = pages > 1;
+  tiles.push(h("button.cover-tile.find", { type: "button", disabled: !!c.searching,
+    onclick: () => (more ? (c.page = page + 1, renderRight()) : findCovers(folder)),
+    title: more ? "The next covers found" : "Looks the album up on MusicBrainz and shows the front covers the Cover Art Archive has for it" },
+    h("div.cover-blank", c.searching ? h("span.spinner") : icon(more ? "next" : "search")),
+    h("b", c.searching ? "Looking…" : more ? "More covers" : c.found ? "Look again" : "Find covers"),
+    h("span", c.searching ? c.stage || "MusicBrainz" : more ? `${page + 1} of ${pages}` : "Cover Art Archive")));
+  if (!coverEl.dataset.watched) {           // a wider or narrower window fits a different number of tiles
+    coverEl.dataset.watched = "1";
+    let width = coverEl.clientWidth;
+    new ResizeObserver(() => { if (coverEl.clientWidth !== width) { width = coverEl.clientWidth; renderCover(); } }).observe(coverEl);
   }
-  section(coverEl, "Cover",
-    s?.cover_done ? coverDone(s.cover_done) : null,
-    h("div.cover-grid", { role: "list" }, ...tiles));
+  const done = c.done || (state.album?.folder === folder ? state.album.search?.cover_done : null);
+  const head = h("div.section-head", h("h2", "Cover"), done ? coverDone(done) : null);
+  clear(coverEl, head,
+    h("div.cover-grid", { role: "list" }, ...tiles),
+    c.found ? h("p.cover-note", { title: "Covers belong to their owners; the one you choose is saved only into this album's folder." },
+      c.found.covers.length ? `${c.found.covers.length} from ${c.found.releases} MusicBrainz release${c.found.releases === 1 ? "" : "s"} · ` : "None found · ",
+      "from the ", h("a", { href: "https://coverartarchive.org", target: "_blank", rel: "noopener" }, "Cover Art Archive"),
+      "; they belong to their owners") : null);
 }
 
-function artTile(a, im, has) {
-  const key = `cover:${im.id}`, asking = state.confirm === key;
-  const from = im.source.startsWith("coverart") ? "Cover Art Archive" : "archive.org";
-  const size = h("span", from);
-  return h("div.cover-tile", { role: "listitem" },
-    h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label,
-      onload: (e) => {                                     // its size, so a small thumbnail is not chosen by mistake
-        const img = e.target, small = Math.min(img.naturalWidth, img.naturalHeight) < 500;
-        size.textContent = `${img.naturalWidth} × ${img.naturalHeight}${small ? " · small" : ""}`;
-        size.style.color = small ? "var(--warn-text)" : "";
-      } }),
-    h("b", from), size,
-    h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), { type: "button",
-      onclick: () => (has && !asking ? ask(key) : useCover(a.folder, im.id, has)), disabled: !!state.busy,
-    }, state.busy === key ? h("span.spinner") : null, has ? (asking ? "Yes, replace" : "Use this") : "Use this"));
+function coverTile(folder, o, has) {
+  const key = `cover:${o.id}`, asking = state.confirm === key;
+  const what = [o.date && o.date.slice(0, 4), o.country, o.formats].filter(Boolean).join(" · ");
+  return h("div.cover-tile", { role: "listitem", title: [o.title, o.artist, o.label, o.catalog, o.comment].filter(Boolean).join(" · ") },
+    h("img", { src: url(`/covers/image/${o.id}`), alt: `Cover of ${o.title}`, loading: "lazy" }),
+    h("b.ellipsis", o.exact ? "Your release" : what || "MusicBrainz release"),
+    h("span.ellipsis", o.exact ? what : [o.label, o.catalog].filter(Boolean).join(" ") || o.title),
+    h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), { type: "button", disabled: !!state.busy,
+      onclick: () => (has && !asking ? ask(key) : useCover(folder, o, has)) },
+    state.busy === key ? h("span.spinner") : null, has && asking ? "Yes, replace" : "Use this"));
 }
 
-function tracksTable(a) {
-  return h("table.grid.static",
-    h("thead", h("tr", h("th", "#"), h("th", "Title"), h("th", "Format"), h("th.r", "Length"))),
-    h("tbody", ...a.tracks.map((t) => h("tr" + (t.error ? ".changed" : ""), { title: t.name },
-      h("td.num", (t.disc > 1 ? `${t.disc}-` : "") + (t.track || "–")),
-      h("td.strong", h("span.ellipsis", t.title || t.name)),
-      h("td.dim", t.error ? "unreadable" : fmtFormat(t)), h("td.r.num", fmtTime(t.length))))));
+function coverDone(d) {
+  const what = [d.px ? `${d.px} px` : "", d.embedded ? `also embedded in ${d.embedded} track${d.embedded === 1 ? "" : "s"}` : ""]
+    .filter(Boolean).join(" · ");
+  return h("span.cover-done", icon("check"), h("b", d.replaced ? "Cover replaced" : "Cover saved"), h("span.muted", what));
 }
 
-function fmtFormat(t) {
-  if (["FLAC", "WAV", "AIFF", "WV", "APE"].includes(t.format) && t.bits && t.rate) return `${t.format} ${t.bits}/${t.rate / 1000}`;
-  if (t.kbps) return `${t.format} ${t.kbps}`;
-  return t.format;
+// replacing a cover asks first: the first click says so, the second replaces (the old one goes to the Trash)
+function ask(key) {
+  state.confirm = key;
+  renderRight();
+}
+
+async function findCovers(folder) {
+  const c = state.covers[folder] = { ...(state.covers[folder] || {}), searching: true, stage: "", done: null, page: 0 };
+  renderRight();
+  try {
+    const { job_id } = await api("/covers/find", { method: "POST", body: { folder } });
+    c.found = await waitJob(job_id, (e) => {
+      if (e.stage !== "covers") return;
+      c.stage = e.step === "release" ? `Release ${e.index} of ${e.total}` : "Finding the releases";
+      if (state.selected === folder) renderRight();
+    });
+  } catch (e) {
+    toast(`Could not look for covers: ${errorText(e)}`, "bad");
+  } finally {
+    c.searching = false;
+    if (state.selected === folder) renderRight();
+  }
+}
+
+async function useCover(folder, o, replace) {
+  state.busy = `cover:${o.id}`;
+  state.confirm = "";
+  renderRight();
+  try {
+    const r = await api("/covers/use", { method: "POST", body: { folder, id: o.id, replace } });
+    const c = state.covers[folder] || (state.covers[folder] = {});
+    c.done = { written: r.written, px: r.px, embedded: r.embedded, replaced: !!r.trash };
+    c.found = null;                                    // chosen: the others are no longer offered (Find covers brings them back)
+    toast(replace ? `Replaced the cover of ${folder}` + (r.embedded ? ` (and in ${r.embedded} tracks)` : "") + `. The old one is in ${r.trash}`
+      : `Saved ${r.written} in ${folder}`, "good", 7000);
+    hooks.libraryChanged && hooks.libraryChanged();
+    await load();
+  } catch (e) {
+    toast(`Could not save the cover: ${errorText(e)}`, "bad");
+  } finally {
+    state.busy = "";
+    renderRight();
+  }
 }
 
 // ---- duplicates: plan, then merge ---------------------------------------------------------------------------------
@@ -258,7 +332,7 @@ async function merge(p) {
   }
 }
 
-// ---- the Internet Archive -----------------------------------------------------------------------------------------
+// ---- the Internet Archive: the missing songs, a better copy, a cover --------------------------------------------
 function archiveSection(a) {
   const s = a.search;
   const head = h("div.row", { style: { marginTop: "var(--sp-2)" } },
@@ -285,16 +359,21 @@ function archiveSection(a) {
     s.notes?.length ? h("div.muted.small", s.notes.join(" · ")) : null);
 }
 
-function coverDone(c) {
-  const what = [c.written, c.px ? `${c.px} px` : "", c.embedded ? `also embedded in ${c.embedded} track${c.embedded === 1 ? "" : "s"}` : ""]
-    .filter(Boolean).join(" · ");
-  return h("p.cover-done", icon("check"), h("b", c.replaced ? "Cover replaced" : "Cover saved"), h("span.muted", what));
-}
-
-// the first click of a replacement only asks; clicking another replacement asks about that one instead
-function ask(key) {
-  state.confirm = key;
-  renderRight();
+function archiveTile(folder, im, has) {
+  const key = `cover:${im.id}`, asking = state.confirm === key;
+  const from = im.source.startsWith("coverart") ? "Cover Art Archive" : "archive.org";
+  const size = h("span", from);
+  return h("div.cover-tile", { role: "listitem" },
+    h("img", { src: url(`/health-check/image/${im.id}`), alt: "", loading: "lazy", title: im.label,
+      onload: (e) => {                                     // its size, so a small thumbnail is not chosen by mistake
+        const img = e.target, small = Math.min(img.naturalWidth, img.naturalHeight) < 500;
+        size.textContent = `${img.naturalWidth} × ${img.naturalHeight}${small ? " · small" : ""}`;
+        size.style.color = small ? "var(--warn-text)" : "";
+      } }),
+    h("b", from), size,
+    h("button.btn.sm" + (has && asking ? ".danger" : ".secondary"), { type: "button",
+      onclick: () => (has && !asking ? ask(key) : useArchiveCover(folder, im.id, has)), disabled: !!state.busy,
+    }, state.busy === key ? h("span.spinner") : null, has ? (asking ? "Yes, replace" : "Use this") : "Use this"));
 }
 
 function suggestionBox(a, x) {
@@ -444,7 +523,7 @@ async function replaceAlbum(folder, x) {
   }
 }
 
-async function useCover(folder, imageId, replace) {
+async function useArchiveCover(folder, imageId, replace) {
   state.busy = `cover:${imageId}`;
   state.confirm = "";
   renderRight();

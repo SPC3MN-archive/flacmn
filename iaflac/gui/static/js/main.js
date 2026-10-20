@@ -1,4 +1,5 @@
-// Wires the screens together: top-bar tabs, the selected upload shared by the Album Search cards, and Library → CD Art.
+// Wires the screens together: the library as in flacmn (Albums, the home screen, Artists and Playlists), Album Search
+// with the selected upload shared by its cards, Case Art, and Settings; the top bar's playing display and Now playing.
 
 import { connect, on } from "./api.js";
 import { h, hydrateIcons, toast } from "./ui.js";
@@ -8,6 +9,8 @@ import { mountTopbar } from "./topbar.js";
 import { mountSpectrogram, loadCandidate, updateCandidate as updateSpec } from "./spectrogram.js";
 import { mountTags, loadTags } from "./tags.js";
 import { mountLibrary, load as loadLibrary, openAlbum as openLibraryAlbum } from "./library.js";
+import { mountArtists, render as renderArtists } from "./artists.js";
+import { mountPlaylists, load as loadPlaylists } from "./playlists.js";
 import { load as loadHealth } from "./health.js";
 import { mountNowPlaying } from "./nowplaying.js";
 import { mountArtLibrary, load as loadArtLibrary } from "./artlib.js";
@@ -18,14 +21,16 @@ import { mountQueue } from "./queue.js";
 hydrateIcons();
 mountTopbar();
 
-let current = "library", before = "library";
+let current = "albums", before = "albums";
 function show(view) {
   if (view !== current) { before = current; current = view; }
   for (const v of document.querySelectorAll(".view")) v.classList.toggle("active", v.id === `view-${view}`);
   for (const t of document.querySelectorAll("#tabs .tab")) t.classList.toggle("active", t.dataset.view === view);
   document.getElementById("settings-btn").classList.toggle("active", view === "settings");
   if (view === "settings") showSettings();
-  if (view === "library") loadLibrary();
+  if (view === "albums") loadLibrary();
+  if (view === "artists") renderArtists();
+  if (view === "playlists") loadPlaylists();
   if (view === "cdart") refreshArt();
 }
 for (const b of document.querySelectorAll("[data-view]")) b.addEventListener("click", () => show(b.dataset.view === "settings" && current === "settings" ? before : b.dataset.view));
@@ -53,18 +58,24 @@ art.append(artLeft, artRight);
 mountCdArt(artLeft, artRight, { settings: getSettings });
 mountArtLibrary({ changed: () => refreshPicker() });   // Case Art's album picker: the music folder, plus folders opened on their own
 
-// ---- Library (home): the albums on the left, one album on the right; the library check lives inside it ----------
-const lib = document.getElementById("view-library");
-const libList = h("div.card.list-card"), libPane = h("div.pane.album-pane");
-lib.append(libList, libPane);
-const badge = document.getElementById("lib-badge");
+// ---- Albums (home): the albums on the left, one album on the right; the library check lives inside it ------------
+const twoUp = (id, paneCls = "") => {
+  const view = document.getElementById(id), left = h("div.card.list-card"), right = h("div.pane" + paneCls);
+  view.append(left, right);
+  return [left, right];
+};
+const [libList, libPane] = twoUp("view-albums", ".album-pane");
 mountLibrary(libList, libPane, {
   openArt: (folder) => { show("cdart"); openAlbum(folder); },
   openSettings: () => show("settings"),
   openSearch: (artist, album) => { show("search"); searchFor(artist, album); },
   libraryChanged: () => loadArtLibrary(),
-  count: (n) => { badge.hidden = !n; badge.textContent = n; },
+  count: () => renderArtists(),
 });
+
+// ---- Artists and Playlists, as in flacmn ---------------------------------------------------------------------------
+mountArtists(...twoUp("view-artists", ".album-pane"), { openAlbum: (folder) => { show("albums"); openLibraryAlbum(folder); } });
+mountPlaylists(...twoUp("view-playlists", ".album-pane"));
 // the Now playing card (art, scope, XY) opens from the top bar's playing display
 mountNowPlaying(document.getElementById("np-pop"));
 

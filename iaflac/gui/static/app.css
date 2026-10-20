@@ -571,7 +571,7 @@ div.np-cover { display: flex; align-items: center; justify-content: center; }
 /* Album Search keeps the spectrogram and the tags side by side in the bottom half at every window size the app
    allows (its minimum width is 1000 px); only a narrower browser tab stacks them */
 @media (max-width: 900px) {
-  #view-search, #view-library { grid-template-columns: minmax(0, 1fr); grid-template-rows: 420px auto; }
+  #view-search { grid-template-columns: minmax(0, 1fr); grid-template-rows: 420px auto; }
   .pane { overflow: visible; }
 }
 /* narrower windows: stack the CD Art preview, and Settings */
@@ -612,7 +612,7 @@ button.link { border: 0; background: none; padding: 0; color: var(--primary); fo
 .chip.lg .dot { width: 8px; height: 8px; border-radius: 4px; }
 .chip { border-radius: 11px; height: 22px; font-size: var(--fs-xs); }
 
-#view-search, #view-library { grid-template-columns: minmax(340px, 436px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+#view-search { grid-template-columns: minmax(340px, 436px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
 
 /* ---- the list block --------------------------------------------------------------------------------------------- */
 .list-card { padding: 0; overflow: hidden; }
@@ -790,3 +790,90 @@ details.checks li .icon { color: var(--green); margin-top: 1px; }
              border: 1px solid var(--border); border-radius: var(--r-panel); background: var(--raised); }
 .print-what { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); color: var(--text-2); }
 .print-what b { font-size: var(--fs-md); color: var(--text); }
+
+/* ---- the library, as in flacmn (Albums, Artists, Playlists, Check quality) ------------------------------------- */
+.list > li.scan { gap: var(--sp-2); }
+.scan-bar { width: min(240px, 80%); }
+.scan-bar:not(.indeterminate) > i { background: var(--primary); }
+
+/* ---- Quality check (quality.js) ----------------------------------------------------------------------------------- */
+.q-tracks { flex: 0 1 380px; }
+.q-spectrum { flex: 2 1 480px; display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; min-height: 0; }
+.q-plot { flex: 1 1 auto; min-height: 260px; display: flex; align-items: center; justify-content: center; }
+.q-plot .empty { position: absolute; inset: 0; }
+.q-summary { flex: none; }
+
+/* ---- Albums, Artists, Playlists: a list block on the left and the chosen one on the right, all three alike ------
+   The window never scrolls as a page: each view fills it exactly, and only lists inside it scroll. */
+#view-albums, #view-artists, #view-playlists { grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+                                               overflow: hidden; }
+#view-albums .pane, #view-artists .pane, #view-playlists .pane { overflow: hidden; }
+.list-row .thumb.lg { width: 64px; height: 64px; border-radius: var(--r-control); }
+.list-row .thumb.lg .icon { width: 22px; height: 22px; }
+.album-body { min-height: 0; flex-wrap: nowrap; }
+.tag-edit-card { min-height: 0; overflow: auto; }
+.artist-albums { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--sp-4); align-content: start; }
+.album-tile { display: flex; flex-direction: column; gap: var(--sp-1); padding: 0; border: 0; background: none; text-align: left;
+              cursor: pointer; color: var(--text); min-width: 0; font: inherit; }
+.album-tile .thumb-xl, .album-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-control);
+              background: var(--surface-sunk); display: grid; place-items: center; }
+.album-tile:hover img, .album-tile:hover .thumb-xl { outline: 2px solid var(--primary); outline-offset: 2px; }
+.album-tile b { font-size: var(--fs-sm); }
+.album-tile span { font-size: var(--fs-xs); color: var(--text-3); }
+.track-row .row-act { flex: none; opacity: 0; }
+.track-row:hover .row-act, .track-row:focus-within .row-act, .row-act:focus-visible { opacity: 1; }
+.pick-pop { position: fixed; z-index: 900; min-width: 220px; max-height: 320px; overflow: auto; padding: var(--sp-1);
+            background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-panel); box-shadow: 0 8px 24px rgba(0, 0, 0, .12); }
+.pick-pop button { width: 100%; display: flex; align-items: center; gap: var(--sp-2); height: 34px; padding: 0 var(--sp-3); border: 0;
+                   border-radius: var(--r-control); background: none; color: var(--text); font: inherit; font-size: var(--fs-md); cursor: pointer; text-align: left; }
+.pick-pop button:hover { background: var(--surface-alt); }
+.track-row.missing { color: var(--text-3); }
+
+/* the album page's right side: Needs attention takes the room left (two problems always fit; more scroll inside it),
+   the Cover section is one row of fixed-size tiles under it */
+.album-side { gap: var(--sp-4); }
+.needs-section { flex: 1 1 auto; min-height: 168px; }
+.needs-body { overflow: auto; }
+.cover-section { gap: var(--sp-2); }
+.cover-grid { display: flex; gap: var(--sp-2); overflow: hidden; }
+.cover-tile { flex: 0 0 104px; padding: 5px; gap: 2px; }
+.cover-tile img, .cover-blank { width: 92px; height: 92px; }
+.cover-tile .btn { margin-top: 2px; height: 24px; }
+.cover-tile span, .cover-tile b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cover-note { margin: 0; font-size: var(--fs-xs); color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* a short window: a smaller cover beside the album's names, so everything still fits */
+@media (max-height: 820px) { .up-cover { width: 156px; height: 156px; } }
+/* the album header stays one row at any window size the app allows: the tag fields narrow instead of wrapping below */
+.album-pane .up-row { flex-wrap: nowrap; }
+.album-pane .up-head { flex: 1 1 auto; min-width: 0; }
+.album-pane .up-info { min-width: 180px; }
+.album-pane .facts { flex: 0 1 300px; min-width: 170px; gap: var(--sp-3) var(--sp-4); padding-left: var(--sp-4); }
+.album-pane .facts dd { font-size: var(--fs-sm); }
+@media (max-width: 1180px) {
+  .album-pane .up-cover { width: 140px; height: 140px; }
+  .album-pane .up-info .btn.lg { height: 30px; padding: 0 var(--sp-2); font-size: var(--fs-sm); gap: var(--sp-1); }
+  .album-pane .up-info { gap: var(--sp-2); }
+  .album-pane .up-info > .row { display: grid !important; grid-template-columns: repeat(2, max-content); gap: var(--sp-1) var(--sp-2) !important; }
+  .album-pane .up-names h1 { font-size: var(--fs-lg); }
+  .album-body .tracks-section { flex: 1 1 200px; }
+  .album-body .album-side { flex: 1.5 1 300px; min-width: 300px; }
+  .issue { padding: var(--sp-2) var(--sp-3); }
+}
+.needs-section { min-height: 0; }
+
+/* ---- playlist covers (playlists.js): a picture, one album's cover, or four albums' covers tiled -------------------- */
+.pl-art { overflow: hidden; background: var(--surface-sunk); display: grid; place-items: center; }
+.pl-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pl-tiles { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; place-items: stretch; gap: 0; }
+.pl-tiles > * { min-width: 0; min-height: 0; }
+.pl-cover { width: 100%; height: 100%; }
+.pl-cover-btn { position: relative; padding: 0; border: 0; overflow: hidden; cursor: pointer; display: block; }
+.pl-cover-edit { position: absolute; right: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 15px; display: grid; place-items: center;
+                 background: rgba(246, 244, 238, .92); color: var(--text); opacity: 0; transition: opacity .15s; }
+.pl-cover-btn:hover .pl-cover-edit, .pl-cover-btn:focus-visible .pl-cover-edit { opacity: 1; }
+.cover-pop { width: 300px; }
+.cover-pop-head { padding: var(--sp-2) var(--sp-3) var(--sp-1); font-size: var(--fs-xs); color: var(--text-3); }
+.cover-pop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-1); padding: 0 var(--sp-2) var(--sp-2); }
+.pick-pop .cover-pop-album { height: auto; padding: 2px; border-radius: var(--r-control); }
+.cover-pop-album img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; display: block; }
+.cover-pop-album.on { box-shadow: inset 0 0 0 2px var(--primary); }
